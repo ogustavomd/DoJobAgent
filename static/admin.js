@@ -811,12 +811,157 @@ class AdminManager {
             this.calendar.render();
         }
     }
+
+    // Agent configuration methods
+    async loadAgentConfig() {
+        try {
+            const response = await fetch('/config/api/config');
+            if (response.ok) {
+                const config = await response.json();
+                document.getElementById('agentName').value = config.name || 'Anna';
+                document.getElementById('agentModel').value = config.model || 'gemini-2.0-flash';
+                document.getElementById('agentDescription').value = config.description || '';
+                document.getElementById('agentInstructions').value = config.instructions || '';
+                document.getElementById('agentTemperature').value = config.temperature || 0.7;
+                document.getElementById('agentMaxTokens').value = config.max_tokens || 1000;
+                
+                // Set tool checkboxes
+                const tools = config.tools || [];
+                document.getElementById('toolRoutines').checked = tools.includes('get_anna_routines');
+                document.getElementById('toolMemories').checked = tools.includes('search_memories');
+                document.getElementById('toolMedia').checked = tools.includes('get_anna_routine_media');
+            }
+        } catch (error) {
+            console.error('Error loading agent config:', error);
+        }
+    }
+
+    async saveAgentConfig() {
+        try {
+            const tools = [];
+            if (document.getElementById('toolRoutines').checked) tools.push('get_anna_routines');
+            if (document.getElementById('toolMemories').checked) tools.push('search_memories');
+            if (document.getElementById('toolMedia').checked) tools.push('get_anna_routine_media');
+            tools.push('get_recent_conversations', 'search_content', 'save_conversation_memory');
+
+            const config = {
+                name: document.getElementById('agentName').value,
+                model: document.getElementById('agentModel').value,
+                description: document.getElementById('agentDescription').value,
+                instructions: document.getElementById('agentInstructions').value,
+                temperature: parseFloat(document.getElementById('agentTemperature').value),
+                max_tokens: parseInt(document.getElementById('agentMaxTokens').value),
+                tools: tools
+            };
+
+            const response = await fetch('/config/api/config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(config)
+            });
+
+            if (response.ok) {
+                alert('Configuração salva com sucesso!');
+            } else {
+                throw new Error('Erro ao salvar configuração');
+            }
+        } catch (error) {
+            alert('Erro ao salvar configuração: ' + error.message);
+        }
+    }
+
+    // Image upload functionality
+    async uploadImage() {
+        const fileInput = document.getElementById('imageUpload');
+        const file = fileInput.files[0];
+        
+        if (!file) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/admin/api/upload-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert('Imagem enviada com sucesso!');
+                this.loadImages(); // Reload images list
+                fileInput.value = ''; // Clear file input
+            } else {
+                throw new Error('Erro no upload da imagem');
+            }
+        } catch (error) {
+            alert('Erro ao enviar imagem: ' + error.message);
+        }
+    }
+
+    // Enhanced image loading with grid display
+    async loadImages() {
+        try {
+            const response = await fetch('/admin/api/images');
+            if (response.ok) {
+                const data = await response.json();
+                const imagesList = document.getElementById('images-list');
+                
+                if (data.success && data.images.length > 0) {
+                    imagesList.innerHTML = data.images.map(image => `
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <img src="${image.image_url}" class="card-img-top" style="height: 200px; object-fit: cover;" 
+                                     alt="${image.name}" onerror="this.src='/static/placeholder.jpg'">
+                                <div class="card-body">
+                                    <h6 class="card-title">${image.name}</h6>
+                                    <p class="card-text text-muted small">${image.description || ''}</p>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="openImageModal(${image.id})">
+                                            <i data-feather="edit" class="me-1"></i>Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="adminApp.deleteImage(${image.id})">
+                                            <i data-feather="trash-2" class="me-1"></i>Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    feather.replace();
+                } else {
+                    imagesList.innerHTML = '<div class="col-12"><div class="alert alert-info">Nenhuma imagem encontrada.</div></div>';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading images:', error);
+            document.getElementById('images-list').innerHTML = '<div class="col-12"><div class="alert alert-danger">Erro ao carregar imagens.</div></div>';
+        }
+    }
 }
 
 // Global functions for modals
 function openKnowledgeModal() {
     // Placeholder for knowledge modal
     alert('Funcionalidade do Banco de Conhecimento em desenvolvimento');
+}
+
+// Global agent config function
+function saveAgentConfig() {
+    if (window.adminApp) {
+        window.adminApp.saveAgentConfig();
+    }
+}
+
+// Global image upload function
+function uploadImage() {
+    if (window.adminApp) {
+        window.adminApp.uploadImage();
+    }
 }
 
 // Global functions for modal handling
@@ -860,3 +1005,305 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 100);
 });
+
+// AdminApp class for tab functionality
+class AdminApp {
+    constructor() {
+        // Initialize admin functionality
+        setTimeout(() => {
+            this.loadAgentConfig(); 
+            this.loadImages();
+            this.loadMemories();
+        }, 500);
+    }
+
+    // Agent configuration methods
+    async loadAgentConfig() {
+        try {
+            const response = await fetch('/config/api/config');
+            if (response.ok) {
+                const config = await response.json();
+                const elements = {
+                    agentName: document.getElementById('agentName'),
+                    agentModel: document.getElementById('agentModel'),
+                    agentDescription: document.getElementById('agentDescription'),
+                    agentInstructions: document.getElementById('agentInstructions'),
+                    agentTemperature: document.getElementById('agentTemperature'),
+                    agentMaxTokens: document.getElementById('agentMaxTokens'),
+                    toolRoutines: document.getElementById('toolRoutines'),
+                    toolMemories: document.getElementById('toolMemories'),
+                    toolMedia: document.getElementById('toolMedia')
+                };
+                
+                if (elements.agentName) {
+                    elements.agentName.value = config.name || 'Anna';
+                    elements.agentModel.value = config.model || 'gemini-2.0-flash';
+                    elements.agentDescription.value = config.description || '';
+                    elements.agentInstructions.value = config.instructions || '';
+                    elements.agentTemperature.value = config.temperature || 0.7;
+                    elements.agentMaxTokens.value = config.max_tokens || 1000;
+                    
+                    // Set tool checkboxes
+                    const tools = config.tools || [];
+                    elements.toolRoutines.checked = tools.includes('get_anna_routines');
+                    elements.toolMemories.checked = tools.includes('search_memories');
+                    elements.toolMedia.checked = tools.includes('get_anna_routine_media');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading agent config:', error);
+        }
+    }
+
+    async saveAgentConfig() {
+        try {
+            const tools = [];
+            if (document.getElementById('toolRoutines').checked) tools.push('get_anna_routines');
+            if (document.getElementById('toolMemories').checked) tools.push('search_memories');
+            if (document.getElementById('toolMedia').checked) tools.push('get_anna_routine_media');
+            tools.push('get_recent_conversations', 'search_content', 'save_conversation_memory');
+
+            const config = {
+                name: document.getElementById('agentName').value,
+                model: document.getElementById('agentModel').value,
+                description: document.getElementById('agentDescription').value,
+                instructions: document.getElementById('agentInstructions').value,
+                temperature: parseFloat(document.getElementById('agentTemperature').value),
+                max_tokens: parseInt(document.getElementById('agentMaxTokens').value),
+                tools: tools
+            };
+
+            const response = await fetch('/config/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+
+            if (response.ok) {
+                alert('Configuração salva com sucesso!');
+            } else {
+                throw new Error('Erro ao salvar configuração');
+            }
+        } catch (error) {
+            alert('Erro ao salvar configuração: ' + error.message);
+        }
+    }
+
+    // Image upload functionality
+    async uploadImage() {
+        const fileInput = document.getElementById('imageUpload');
+        const file = fileInput.files[0];
+        
+        if (!file) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/admin/api/upload-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert('Imagem enviada com sucesso!');
+                this.loadImages();
+                fileInput.value = '';
+            } else {
+                throw new Error('Erro no upload da imagem');
+            }
+        } catch (error) {
+            alert('Erro ao enviar imagem: ' + error.message);
+        }
+    }
+
+    async loadImages() {
+        try {
+            const response = await fetch('/admin/api/images');
+            if (response.ok) {
+                const data = await response.json();
+                const imagesList = document.getElementById('images-list');
+                
+                if (imagesList && data.success && data.images.length > 0) {
+                    imagesList.innerHTML = data.images.map(image => `
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <img src="${image.image_url}" class="card-img-top" style="height: 200px; object-fit: cover;" 
+                                     alt="${image.name}" onerror="this.src='https://via.placeholder.com/400x300/333/fff?text=Erro'">
+                                <div class="card-body">
+                                    <h6 class="card-title">${image.name}</h6>
+                                    <p class="card-text text-muted small">${image.description || ''}</p>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="openImageModal(${image.id})">
+                                            <i data-feather="edit" class="me-1"></i>Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="adminApp.deleteImage(${image.id})">
+                                            <i data-feather="trash-2" class="me-1"></i>Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    feather.replace();
+                } else if (imagesList) {
+                    imagesList.innerHTML = '<div class="col-12"><div class="alert alert-info">Nenhuma imagem encontrada. Use o botão "Upload Imagem" para adicionar imagens.</div></div>';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading images:', error);
+            const imagesList = document.getElementById('images-list');
+            if (imagesList) {
+                imagesList.innerHTML = '<div class="col-12"><div class="alert alert-danger">Erro ao carregar imagens.</div></div>';
+            }
+        }
+    }
+
+    async loadMemories() {
+        try {
+            const response = await fetch('/admin/api/memories');
+            if (response.ok) {
+                const data = await response.json();
+                const memoriesList = document.getElementById('memories-list');
+                
+                if (memoriesList && data.success && data.memories.length > 0) {
+                    memoriesList.innerHTML = data.memories.map(memory => `
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">${memory.name}</h6>
+                                <p class="card-text">${memory.description || ''}</p>
+                                <p class="card-text small text-muted">Quando usar: ${memory.when_to_use || 'Não especificado'}</p>
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="openMemoryModal(${memory.id})">
+                                        <i data-feather="edit" class="me-1"></i>Editar
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="adminApp.deleteMemory(${memory.id})">
+                                        <i data-feather="trash-2" class="me-1"></i>Excluir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    feather.replace();
+                } else if (memoriesList) {
+                    memoriesList.innerHTML = '<div class="alert alert-info">Nenhuma memória encontrada. Use o botão "Nova Memória" para adicionar memórias.</div>';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading memories:', error);
+            const memoriesList = document.getElementById('memories-list');
+            if (memoriesList) {
+                memoriesList.innerHTML = '<div class="alert alert-danger">Erro ao carregar memórias.</div>';
+            }
+        }
+    }
+
+    async saveMemory() {
+        try {
+            const memoryData = {
+                name: document.getElementById('memoryName').value,
+                description: document.getElementById('memoryDescription').value,
+                when_to_use: document.getElementById('memoryWhenToUse').value,
+                content: document.getElementById('memoryContent').value,
+                keywords: document.getElementById('memoryKeywords').value.split(',').map(k => k.trim()),
+                is_active: true
+            };
+
+            const memoryId = document.getElementById('memoryId').value;
+            const url = memoryId ? `/admin/api/memories/${memoryId}` : '/admin/api/memories';
+            const method = memoryId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(memoryData)
+            });
+
+            if (response.ok) {
+                alert('Memória salva com sucesso!');
+                bootstrap.Modal.getInstance(document.getElementById('memoryModal')).hide();
+                this.loadMemories();
+            } else {
+                throw new Error('Erro ao salvar memória');
+            }
+        } catch (error) {
+            alert('Erro ao salvar memória: ' + error.message);
+        }
+    }
+
+    async saveImage() {
+        try {
+            const imageData = {
+                name: document.getElementById('imageName').value,
+                description: document.getElementById('imageDescription').value,
+                when_to_use: document.getElementById('imageWhenToUse').value,
+                image_url: document.getElementById('imageUrl').value,
+                keywords: document.getElementById('imageKeywords').value.split(',').map(k => k.trim()),
+                is_active: true
+            };
+
+            const imageId = document.getElementById('imageId').value;
+            const url = imageId ? `/admin/api/images/${imageId}` : '/admin/api/images';
+            const method = imageId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(imageData)
+            });
+
+            if (response.ok) {
+                alert('Imagem salva com sucesso!');
+                bootstrap.Modal.getInstance(document.getElementById('imageModal')).hide();
+                this.loadImages();
+            } else {
+                throw new Error('Erro ao salvar imagem');
+            }
+        } catch (error) {
+            alert('Erro ao salvar imagem: ' + error.message);
+        }
+    }
+
+    async deleteImage(imageId) {
+        if (confirm('Tem certeza que deseja excluir esta imagem?')) {
+            try {
+                const response = await fetch(`/admin/api/images/${imageId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Imagem excluída com sucesso!');
+                    this.loadImages();
+                } else {
+                    throw new Error('Erro ao excluir imagem');
+                }
+            } catch (error) {
+                alert('Erro ao excluir imagem: ' + error.message);
+            }
+        }
+    }
+
+    async deleteMemory(memoryId) {
+        if (confirm('Tem certeza que deseja excluir esta memória?')) {
+            try {
+                const response = await fetch(`/admin/api/memories/${memoryId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Memória excluída com sucesso!');
+                    this.loadMemories();
+                } else {
+                    throw new Error('Erro ao excluir memória');
+                }
+            } catch (error) {
+                alert('Erro ao excluir memória: ' + error.message);
+            }
+        }
+    }
+}

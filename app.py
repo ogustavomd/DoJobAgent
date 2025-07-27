@@ -3,6 +3,7 @@ import logging
 import asyncio
 from flask import Flask, render_template, request, jsonify, session
 from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.utils import secure_filename
 from anna_agent import create_anna_agent
 from google.genai import types
 
@@ -733,6 +734,42 @@ def delete_image_bank_entry(image_id):
     except Exception as e:
         logging.error(f"Error deleting image: {e}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/upload-image', methods=['POST'])
+def upload_image():
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'error': 'Nenhum arquivo enviado'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'Nenhum arquivo selecionado'}), 400
+        
+        if file and file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+            from supabase_tools import create_anna_image
+            
+            # For now, we'll use a placeholder URL since we don't have actual file storage
+            # In a real implementation, you'd upload to Supabase Storage or similar
+            filename = secure_filename(file.filename)
+            
+            # Create image record with placeholder URL
+            image_data = {
+                'name': filename.split('.')[0],
+                'description': f'Imagem enviada: {filename}',
+                'when_to_use': 'Imagem personalizada enviada pelo usuário',
+                'image_url': f'https://via.placeholder.com/400x300/333/fff?text={filename}',
+                'keywords': ['upload', 'personalizada'],
+                'is_active': True
+            }
+            
+            # Save to database
+            result = create_anna_image(image_data)
+            return jsonify(result)
+        else:
+            return jsonify({'success': False, 'error': 'Tipo de arquivo não suportado'}), 400
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
