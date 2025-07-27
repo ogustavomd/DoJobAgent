@@ -252,27 +252,34 @@ def admin_create_activity():
     """Create new activity"""
     try:
         from supabase_tools import supabase
+        import json
         import uuid
         
-        logging.info(f"Creating activity with form data: {dict(request.form)}")
-        logging.info(f"Media files received: {len(request.files.getlist('media_files'))}")
+        # Get JSON data from request
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        logging.info(f"Creating activity with data: {data}")
         
-        # Get form data
+        # Map frontend fields to database fields
         activity_data = {
-            'date': request.form.get('date'),
-            'time_start': request.form.get('time_start'),
-            'time_end': request.form.get('time_end'),
-            'activity': request.form.get('activity'),
-            'category': request.form.get('category'),
-            'location': request.form.get('location'),
-            'description': request.form.get('description'),
+            'date': data.get('date'),
+            'time_start': data.get('time_start'),
+            'time_end': data.get('time_end'),
+            'activity': data.get('activity'),
+            'category': data.get('category'),
+            'location': data.get('location', ''),
+            'description': data.get('description', ''),
+            'activity_type': data.get('activity_type', 'consulta'),
             'status': 'upcoming',
             'has_images': False,
-            'has_videos': False
+            'has_videos': False,
+            'rating': None
         }
         
         # Validate required fields
-        required_fields = ['date', 'time_start', 'time_end', 'activity', 'category']
+        required_fields = ['date', 'activity', 'category']
         for field in required_fields:
             if not activity_data.get(field):
                 return jsonify({'error': f'Campo obrigatório: {field}'}), 400
@@ -341,21 +348,44 @@ def admin_create_activity():
                     logging.error(f"Error uploading file {file.filename}: {e}")
                     continue
         
+        # Handle media URLs from the frontend
+        media_urls = data.get('media_urls', [])
+        for url in media_urls:
+            if url.strip():
+                # Determine media type from URL extension
+                media_type = 'video' if any(ext in url.lower() for ext in ['.mp4', '.mov', '.avi', '.webm']) else 'image'
+                
+                media_data = {
+                    'routine_id': activity_id,
+                    'media_url': url.strip(),
+                    'media_type': media_type,
+                    'description': f"Mídia da atividade: {activity_data['activity']}"
+                }
+                
+                try:
+                    media_response = supabase.table('anna_routine_media').insert(media_data).execute()
+                    logging.info(f"Media URL record created: {media_response.data}")
+                    
+                    if media_type == 'image':
+                        has_images = True
+                    else:
+                        has_videos = True
+                        
+                except Exception as e:
+                    logging.error(f"Error saving media URL {url}: {e}")
+        
         # Update activity with media flags
         if has_images or has_videos:
-            update_response = supabase.table('anna_routine').update({
+            update_data = {
                 'has_images': has_images,
                 'has_videos': has_videos
-            }).eq('id', activity_id).execute()
-            logging.info(f"Activity updated with media flags: {update_response.data}")
-        
-        logging.info(f"Activity creation completed. Uploaded {uploaded_count} files.")
+            }
+            supabase.table('anna_routine').update(update_data).eq('id', activity_id).execute()
+            
         return jsonify({
             'success': True, 
-            'id': activity_id, 
-            'uploaded_files': uploaded_count,
-            'has_images': has_images,
-            'has_videos': has_videos
+            'id': activity_id,
+            'message': f'Atividade criada com sucesso! {uploaded_count + len([u for u in media_urls if u.strip()])} arquivos de mídia processados.'
         })
         
     except Exception as e:

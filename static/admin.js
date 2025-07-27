@@ -297,24 +297,21 @@ class AdminManager {
             }
 
             const activityData = {
-                name: document.getElementById('activityName').value,
+                activity: document.getElementById('activityName').value,
                 date: document.getElementById('activityDate').value,
-                time_start: document.getElementById('activityStartTime').value || null,
-                time_end: document.getElementById('activityEndTime').value || null,
+                time_start: document.getElementById('activityStartTime').value || '09:00',
+                time_end: document.getElementById('activityEndTime').value || '10:00',
                 description: document.getElementById('activityDescription').value,
                 location: document.getElementById('activityLocation').value,
                 category: document.getElementById('activityCategory').value,
                 activity_type: document.getElementById('activityType') ? document.getElementById('activityType').value : 'consulta',
                 media_urls: mediaUrls,
-                status: 'upcoming',
-                rating: null,
-                created_at: new Date().toISOString()
+                status: 'upcoming'
             };
 
-            const isEdit = document.getElementById('activityId').value !== '';
-            const url = isEdit ? '/admin/api/activities/update' : '/admin/api/activities/create';
+            console.log('Sending activity data:', activityData);
 
-            const response = await fetch(url, {
+            const response = await fetch('/admin/api/activities/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -325,12 +322,13 @@ class AdminManager {
             const result = await response.json();
             
             if (response.ok) {
-                this.showAlert ? this.showAlert(isEdit ? 'Atividade atualizada com sucesso' : 'Atividade criada com sucesso', 'success') : alert('Atividade salva com sucesso!');
+                alert('Atividade criada com sucesso!');
                 bootstrap.Modal.getInstance(document.getElementById('activityModal')).hide();
                 if (this.calendar) this.calendar.refetchEvents();
-                this.loadTodayActivities();
+                if (this.loadTodayActivities) this.loadTodayActivities();
             } else {
-                this.showAlert ? this.showAlert(result.error || 'Erro ao salvar atividade', 'danger') : alert('Erro ao salvar atividade');
+                console.error('Server response:', response.status, result);
+                alert('Erro ao salvar atividade: ' + (result.error || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('Error saving activity:', error);

@@ -801,7 +801,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-outline-modern" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn-modern" onclick="saveActivity()">Salvar</button>
+                    <button type="button" class="btn-modern" onclick="window.adminApp.saveActivity()">Salvar</button>
                 </div>
             </div>
         </div>
@@ -1085,16 +1085,22 @@
             }, 100);
         }
 
-        function saveActivity() {
-            adminApp.saveActivity();
-        }
-
         function saveMemory() {
-            adminApp.saveMemory();
+            if (window.adminApp) {
+                window.adminApp.saveMemory();
+            }
         }
 
         function saveImage() {
-            adminApp.saveImage();
+            if (window.adminApp) {
+                window.adminApp.saveImage();
+            }
+        }
+
+        function saveActivity() {
+            if (window.adminApp) {
+                window.adminApp.saveActivity();
+            }
         }
 
         function saveAgentConfig() {
