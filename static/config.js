@@ -94,6 +94,8 @@ IMPORTANTE: Sempre consulte seus dados reais antes de responder. Nunca invente i
         const formData = new FormData(this.form);
         const config = this.formDataToConfig(formData);
         
+        console.log('Saving config:', config);
+        
         try {
             const response = await fetch('/config/api/save', {
                 method: 'POST',
@@ -103,7 +105,9 @@ IMPORTANTE: Sempre consulte seus dados reais antes de responder. Nunca invente i
                 body: JSON.stringify(config)
             });
             
+            console.log('Response status:', response.status);
             const result = await response.json();
+            console.log('Response data:', result);
             
             if (response.ok) {
                 this.showAlert('Configuração salva com sucesso! O agente será reinicializado.', 'success');
@@ -114,6 +118,7 @@ IMPORTANTE: Sempre consulte seus dados reais antes de responder. Nunca invente i
                 }, 2000);
             } else {
                 this.showAlert(result.error || 'Erro ao salvar configuração', 'danger');
+                console.error('Save error:', result);
             }
         } catch (error) {
             console.error('Error saving config:', error);
@@ -123,15 +128,16 @@ IMPORTANTE: Sempre consulte seus dados reais antes de responder. Nunca invente i
 
     formDataToConfig(formData) {
         const config = {
-            name: formData.get('name'),
-            model: formData.get('model'),
-            description: formData.get('description'),
-            instructions: formData.get('instructions'),
-            temperature: parseFloat(formData.get('temperature')),
-            max_tokens: parseInt(formData.get('max_tokens')),
+            name: formData.get('name') || 'Anna',
+            model: formData.get('model') || 'gemini-2.0-flash',
+            description: formData.get('description') || '',
+            instructions: formData.get('instructions') || '',
+            temperature: parseFloat(formData.get('temperature')) || 0.7,
+            max_tokens: parseInt(formData.get('max_tokens')) || 1000,
             tools: formData.getAll('tools')
         };
         
+        console.log('Converted form data to config:', config);
         return config;
     }
 

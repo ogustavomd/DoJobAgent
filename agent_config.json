@@ -1,0 +1,12 @@
+{
+  "name": "Anna",
+  "model": "gemini-2.0-flash",
+  "description": "Test description",
+  "instructions": "Test instructions",
+  "tools": [
+    "get_anna_routines",
+    "get_anna_routine_media"
+  ],
+  "temperature": 0.8,
+  "max_tokens": 1500
+}

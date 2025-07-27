@@ -80,7 +80,10 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str):
         )
         
         # Create runner
-        runner = Runner(agent=anna_agent, app_name="anna_chat", session_service=session_service)
+        if anna_agent:
+            runner = Runner(agent=anna_agent, app_name="anna_chat", session_service=session_service)
+        else:
+            raise Exception("Agent not initialized")
         
         # Create user content
         content = types.Content(role='user', parts=[types.Part(text=user_message)])
@@ -246,7 +249,7 @@ def admin_create_activity():
                     logging.info(f"Public URL: {file_url}")
                     
                     # Determine media type
-                    media_type = 'video' if file.content_type and file.content_type.startswith('video/') else 'image'
+                    media_type = 'video' if (file.content_type and file.content_type.startswith('video/')) else 'image'
                     
                     # Save media record
                     media_data = {
@@ -507,11 +510,13 @@ def config_save():
     """Save agent configuration and reinitialize agent"""
     try:
         config = request.get_json()
+        logging.info(f"Received config save request: {config}")
         
         # Validate required fields
         required_fields = ['name', 'model', 'instructions', 'tools']
         for field in required_fields:
             if field not in config or not config[field]:
+                logging.error(f"Missing required field: {field}")
                 return jsonify({'error': f'Campo obrigatório: {field}'}), 400
         
         # Save configuration to file (in production, this would be a database)
@@ -555,14 +560,9 @@ def create_anna_agent_from_config(config):
         'search_content': search_content
     }
     
-    # Import save_conversation_memory if it exists
-    try:
-        from supabase_tools import save_conversation_memory
-        tool_mapping['save_conversation_memory'] = save_conversation_memory
-    except ImportError:
-        # Remove from available tools if function doesn't exist
-        if 'save_conversation_memory' in config['tools']:
-            config['tools'].remove('save_conversation_memory')
+    # Remove save_conversation_memory as it doesn't exist yet
+    if 'save_conversation_memory' in config['tools']:
+        config['tools'].remove('save_conversation_memory')
     
     # Get enabled tools
     enabled_tools = [tool_mapping[tool_name] for tool_name in config['tools'] if tool_name in tool_mapping]
@@ -571,7 +571,7 @@ def create_anna_agent_from_config(config):
     agent = LlmAgent(
         model=config.get('model', 'gemini-2.0-flash'),
         name=config.get('name', 'anna').lower(),
-        instructions=config.get('instructions', ''),
+        description=config.get('instructions', ''),
         tools=enabled_tools
     )
     
