@@ -136,8 +136,26 @@ class AnnaChat {
     }
 
     parseMessageContent(content) {
-        // Convert URLs to clickable links and handle media
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        // First handle markdown links [text](url)
+        content = content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+            const cleanUrl = url.replace(/[.,;:!?]$/, '');
+            
+            // Check if it's an image URL
+            if (this.isImageUrl(cleanUrl)) {
+                return `<div class="message-media"><img src="${cleanUrl}" alt="${text}" loading="lazy" onerror="this.style.display='none'" /></div>`;
+            }
+            // Check if it's a video URL
+            else if (this.isVideoUrl(cleanUrl)) {
+                return `<div class="message-media"><video src="${cleanUrl}" controls preload="metadata" onerror="this.style.display='none'">Seu navegador não suporta vídeos.</video></div>`;
+            }
+            // Regular link
+            else {
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+            }
+        });
+        
+        // Then handle plain URLs
+        const urlRegex = /(https?:\/\/[^\s\)]+)/g;
         
         return content.replace(urlRegex, (url) => {
             // Clean URL (remove trailing punctuation)
@@ -168,7 +186,8 @@ class AnnaChat {
     isVideoUrl(url) {
         return /\.(mp4|webm|ogg|mov|avi)(\?.*)?$/i.test(url) ||
                url.includes('/video/') ||
-               url.includes('sample-videos.com');
+               url.includes('sample-videos.com') ||
+               url.includes('supabase.co/storage') && url.includes('.mp4');
     }
 
     addErrorMessage(message) {

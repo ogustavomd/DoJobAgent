@@ -29,8 +29,9 @@ def get_anna_routines(days: int, activity_filter: Optional[str]) -> Dict[str, An
         # Calculate date range
         end_date = datetime.now().date()
         start_date = end_date - timedelta(days=days)
+        current_time = datetime.now().time()
         
-        query = supabase.table('anna_routine').select('*').gte('date', start_date.isoformat()).lte('date', end_date.isoformat()).order('date', desc=True).order('time_start', desc=True)
+        query = supabase.table('anna_routine').select('*').gte('date', start_date.isoformat()).lte('date', end_date.isoformat()).order('date', desc=True).order('time_start', desc=False)
         
         if activity_filter:
             query = query.ilike('activity', f'%{activity_filter}%')
@@ -38,6 +39,20 @@ def get_anna_routines(days: int, activity_filter: Optional[str]) -> Dict[str, An
         response = query.execute()
         
         activities = response.data
+        
+        # Update status based on current time for today's activities
+        today = datetime.now().date()
+        for activity in activities:
+            if activity['date'] == str(today):
+                routine_start = datetime.strptime(activity['time_start'], '%H:%M:%S').time()
+                routine_end = datetime.strptime(activity['time_end'], '%H:%M:%S').time()
+                
+                if current_time < routine_start:
+                    activity['status'] = 'upcoming'
+                elif routine_start <= current_time <= routine_end:
+                    activity['status'] = 'current'
+                else:
+                    activity['status'] = 'completed'
         
         # Format the response
         formatted_activities = []
