@@ -386,52 +386,103 @@
             accent-color: var(--accent-purple);
         }
 
-        /* Modal Overrides */
+        /* Modal Overrides - Force correct modal behavior */
         .modal {
-            z-index: 1050;
+            z-index: 1055 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            outline: 0 !important;
+            display: none !important;
+        }
+
+        .modal.show {
+            display: block !important;
         }
 
         .modal-backdrop {
-            z-index: 1040;
-            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1050 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background-color: rgba(0, 0, 0, 0.8) !important;
+        }
+
+        .modal-dialog {
+            position: relative !important;
+            width: auto !important;
+            margin: 1.75rem !important;
+            pointer-events: none !important;
         }
 
         .modal-content {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            position: relative !important;
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            pointer-events: auto !important;
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+            outline: 0 !important;
         }
 
         .modal-header {
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 20px 24px;
+            display: flex !important;
+            flex-shrink: 0 !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            color: var(--text-primary) !important;
+            padding: 20px 24px !important;
         }
 
         .modal-header .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-primary);
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            color: var(--text-primary) !important;
+            margin-bottom: 0 !important;
+            line-height: 1.5 !important;
         }
 
         .modal-body {
-            color: var(--text-primary);
-            padding: 24px;
+            position: relative !important;
+            flex: 1 1 auto !important;
+            color: var(--text-primary) !important;
+            padding: 24px !important;
         }
 
         .modal-footer {
-            border-top: 1px solid var(--border-color);
-            padding: 20px 24px;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            flex-shrink: 0 !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
+            border-top: 1px solid var(--border-color) !important;
+            padding: 20px 24px !important;
+            gap: 12px !important;
         }
 
         .btn-close {
-            filter: invert(1);
-            opacity: 0.8;
+            filter: invert(1) !important;
+            opacity: 0.8 !important;
+            box-sizing: content-box !important;
+            width: 1em !important;
+            height: 1em !important;
+            padding: 0.25em 0.25em !important;
+            color: var(--text-primary) !important;
+            background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='m.235.225.032-.039a.746.746 0 0 1 1.034-.034L8 6.85l6.699-6.698a.746.746 0 0 1 1.04-.019.746.746 0 0 1 .018 1.04L9.05 8l6.707 6.707a.746.746 0 0 1-.018 1.04.746.746 0 0 1-1.055-.018L8 9.15 1.301 15.85a.746.746 0 0 1-1.034.019.746.746 0 0 1-.019-1.055L6.95 8 .235.225a.746.746 0 0 1-.001-1.034z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
+            border: 0 !important;
         }
 
         .btn-close:hover {
-            opacity: 1;
+            opacity: 1 !important;
         }
 
         .today-activity {
@@ -591,7 +642,7 @@
                     <div class="text-body">Visualize e gerencie as atividades da Anna</div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                        <button class="btn-modern" data-bs-toggle="modal" data-bs-target="#activityModal">
+                        <button class="btn-modern" onclick="openActivityModal()">
                             <i data-lucide="plus" width="16" height="16"></i>
                             Nova Atividade
                         </button>
@@ -652,6 +703,7 @@
         </div>
     </div>
 
+    <!-- Move all modals outside the main container for proper z-index -->
     <!-- Activity Modal -->
     <div class="modal fade" id="activityModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -909,36 +961,60 @@
         }
 
         function openImageModal(imageId = null) {
-            document.getElementById('imageModalLabel').textContent = imageId ? 'Editar Imagem' : 'Nova Imagem';
-            document.getElementById('imageId').value = imageId || '';
-            
-            if (imageId) {
-                // Load existing image data (implement this function in admin.js)
-                adminApp.loadImageForEdit(imageId);
-            } else {
-                // Clear form for new image
-                document.getElementById('imageForm').reset();
-                document.getElementById('urlInputDiv').style.display = 'none';
+            // Ensure modal is properly hidden first
+            const existingModal = bootstrap.Modal.getInstance(document.getElementById('imageModal'));
+            if (existingModal) {
+                existingModal.hide();
             }
             
-            const modal = new bootstrap.Modal(document.getElementById('imageModal'));
-            modal.show();
+            // Wait a moment then show
+            setTimeout(() => {
+                document.getElementById('imageModalLabel').textContent = imageId ? 'Editar Imagem' : 'Nova Imagem';
+                document.getElementById('imageId').value = imageId || '';
+                
+                if (imageId && window.adminApp) {
+                    window.adminApp.loadImageForEdit(imageId);
+                } else {
+                    // Clear form for new image
+                    document.getElementById('imageForm').reset();
+                    document.getElementById('urlInputDiv').style.display = 'none';
+                }
+                
+                const modal = new bootstrap.Modal(document.getElementById('imageModal'), {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+                modal.show();
+            }, 100);
         }
 
         function openMemoryModal(memoryId = null) {
-            document.getElementById('memoryModalLabel').textContent = memoryId ? 'Editar Memória' : 'Nova Memória';
-            document.getElementById('memoryId').value = memoryId || '';
-            
-            if (memoryId) {
-                // Load existing memory data
-                adminApp.loadMemoryForEdit(memoryId);
-            } else {
-                // Clear form for new memory
-                document.getElementById('memoryForm').reset();
+            // Ensure modal is properly hidden first
+            const existingModal = bootstrap.Modal.getInstance(document.getElementById('memoryModal'));
+            if (existingModal) {
+                existingModal.hide();
             }
             
-            const modal = new bootstrap.Modal(document.getElementById('memoryModal'));
-            modal.show();
+            // Wait a moment then show
+            setTimeout(() => {
+                document.getElementById('memoryModalLabel').textContent = memoryId ? 'Editar Memória' : 'Nova Memória';
+                document.getElementById('memoryId').value = memoryId || '';
+                
+                if (memoryId && window.adminApp) {
+                    window.adminApp.loadMemoryForEdit(memoryId);
+                } else {
+                    // Clear form for new memory
+                    document.getElementById('memoryForm').reset();
+                }
+                
+                const modal = new bootstrap.Modal(document.getElementById('memoryModal'), {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+                modal.show();
+            }, 100);
         }
 
         function saveActivity() {
@@ -954,11 +1030,75 @@
         }
 
         function saveAgentConfig() {
-            adminApp.saveAgentConfig();
+            if (window.adminApp) {
+                window.adminApp.saveAgentConfig();
+            }
+        }
+
+        function openActivityModal(activityId = null) {
+            // Ensure modal is properly hidden first
+            const existingModal = bootstrap.Modal.getInstance(document.getElementById('activityModal'));
+            if (existingModal) {
+                existingModal.hide();
+            }
+            
+            // Wait a moment then show
+            setTimeout(() => {
+                document.getElementById('activityModalLabel').textContent = activityId ? 'Editar Atividade' : 'Nova Atividade';
+                document.getElementById('activityId').value = activityId || '';
+                
+                if (activityId && window.adminApp) {
+                    // Load existing activity data if editing
+                    // adminApp.loadActivityForEdit(activityId);
+                } else {
+                    // Clear form for new activity
+                    document.getElementById('activityForm').reset();
+                    // Set today's date as default
+                    document.getElementById('activityDate').value = new Date().toISOString().split('T')[0];
+                }
+                
+                const modal = new bootstrap.Modal(document.getElementById('activityModal'), {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+                modal.show();
+            }, 100);
         }
         
-        // Initialize the admin app
-        window.adminApp = new AdminApp();
+        // Initialize the admin app after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure Bootstrap is fully loaded
+            if (typeof bootstrap !== 'undefined') {
+                window.adminApp = new AdminApp();
+                console.log('AdminApp initialized successfully');
+            } else {
+                console.error('Bootstrap not loaded');
+            }
+        });
+
+        // Force all modals to behave correctly
+        document.addEventListener('DOMContentLoaded', function() {
+            // Remove any inline styles that might interfere
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+                modal.style.position = 'fixed';
+                modal.style.zIndex = '1055';
+                
+                // Ensure proper Bootstrap initialization
+                modal.addEventListener('show.bs.modal', function() {
+                    document.body.classList.add('modal-open');
+                });
+                
+                modal.addEventListener('hidden.bs.modal', function() {
+                    document.body.classList.remove('modal-open');
+                    // Remove any leftover backdrops
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                });
+            });
+        });
     </script>
 </body>
 </html>
