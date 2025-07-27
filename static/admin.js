@@ -394,6 +394,8 @@ class AdminManager {
     initializeTabHandlers() {
         const memoriesTab = document.getElementById('memories-tab');
         const imagesTab = document.getElementById('images-tab');
+        const knowledgeTab = document.getElementById('knowledge-tab');
+        const activitiesTab = document.getElementById('activities-tab');
         const actionType = document.getElementById('actionType');
         const imageUrl = document.getElementById('imageUrl');
         
@@ -406,6 +408,18 @@ class AdminManager {
         if (imagesTab) {
             imagesTab.addEventListener('click', () => {
                 this.loadImages();
+            });
+        }
+        
+        if (knowledgeTab) {
+            knowledgeTab.addEventListener('click', () => {
+                this.loadKnowledge();
+            });
+        }
+        
+        if (activitiesTab) {
+            activitiesTab.addEventListener('click', () => {
+                this.loadCalendar();
             });
         }
         
@@ -772,6 +786,37 @@ class AdminManager {
             alert('Erro ao excluir imagem: ' + error.message);
         }
     }
+
+    // Knowledge management methods
+    loadKnowledge() {
+        console.log('Loading knowledge bank...');
+        const knowledgeList = document.getElementById('knowledge-list');
+        if (!knowledgeList) return;
+
+        // For now, show placeholder for knowledge bank
+        knowledgeList.innerHTML = `
+            <div class="alert alert-info">
+                <h6>Banco de Conhecimento</h6>
+                <p>Aqui serão armazenados artigos, documentos e conteúdo educacional da Anna.</p>
+                <p class="mb-0"><em>Funcionalidade em desenvolvimento...</em></p>
+            </div>
+        `;
+    }
+
+    loadCalendar() {
+        console.log('Loading calendar for activities...');
+        // The calendar is already initialized, just ensure it's visible
+        const calendar = document.getElementById('calendar');
+        if (calendar && this.calendar) {
+            this.calendar.render();
+        }
+    }
+}
+
+// Global functions for modals
+function openKnowledgeModal() {
+    // Placeholder for knowledge modal
+    alert('Funcionalidade do Banco de Conhecimento em desenvolvimento');
 }
 
 // Global functions for modal handling

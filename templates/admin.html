@@ -143,18 +143,33 @@
                             <h4>Painel de Administração</h4>
                             <ul class="nav nav-tabs" id="adminTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar" type="button" role="tab">
-                                        <i data-feather="calendar" class="me-1"></i>Rotinas
+                                    <button class="nav-link active" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button" role="tab">
+                                        <i data-feather="message-circle" class="me-1"></i>Chat
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="memories-tab" data-bs-toggle="tab" data-bs-target="#memories" type="button" role="tab">
-                                        <i data-feather="bookmark" class="me-1"></i>Memórias
+                                    <button class="nav-link" id="agent-tab" data-bs-toggle="tab" data-bs-target="#agent" type="button" role="tab">
+                                        <i data-feather="settings" class="me-1"></i>Agente
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities" type="button" role="tab">
+                                        <i data-feather="calendar" class="me-1"></i>Atividades
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="knowledge-tab" data-bs-toggle="tab" data-bs-target="#knowledge" type="button" role="tab">
+                                        <i data-feather="book" class="me-1"></i>Banco de conhecimento
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button" role="tab">
-                                        <i data-feather="image" class="me-1"></i>Banco de Imagens
+                                        <i data-feather="image" class="me-1"></i>Banco de imagens
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="memories-tab" data-bs-toggle="tab" data-bs-target="#memories" type="button" role="tab">
+                                        <i data-feather="database" class="me-1"></i>Banco de memoria
                                     </button>
                                 </li>
                             </ul>
@@ -164,35 +179,112 @@
                             Nova Atividade
                         </button>
                     </div>
-                            <div id="calendar"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Memories Tab -->
-                    <div class="tab-pane fade" id="memories" role="tabpanel">
-                        <div class="p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5>Gerenciar Memórias</h5>
-                                <button class="btn btn-primary" onclick="openMemoryModal()">
-                                    <i data-feather="plus" class="me-1"></i>Nova Memória
-                                </button>
+
+                        <div class="tab-content mt-4" id="adminTabsContent">
+                            <!-- Chat Tab -->
+                            <div class="tab-pane fade show active" id="chat" role="tabpanel" aria-labelledby="chat-tab">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="card-title mb-0">Interface de Chat</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="text-muted">Converse diretamente com a Anna aqui no painel administrativo.</p>
+                                                <div class="text-center">
+                                                    <a href="/" class="btn btn-primary" target="_blank">
+                                                        <i data-feather="external-link" class="me-1"></i>
+                                                        Abrir Chat Principal
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="memories-list"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Images Tab -->
-                    <div class="tab-pane fade" id="images" role="tabpanel">
-                        <div class="p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5>Banco de Imagens</h5>
-                                <button class="btn btn-primary" onclick="openImageModal()">
-                                    <i data-feather="plus" class="me-1"></i>Nova Imagem
-                                </button>
+
+                            <!-- Agent Tab -->
+                            <div class="tab-pane fade" id="agent" role="tabpanel" aria-labelledby="agent-tab">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="card-title mb-0">Configuração do Agente</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="text-muted">Configure o comportamento e personalidade da Anna.</p>
+                                                <div class="text-center">
+                                                    <a href="/config" class="btn btn-primary" target="_blank">
+                                                        <i data-feather="external-link" class="me-1"></i>
+                                                        Abrir Configurações
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="images-list"></div>
+
+                            <!-- Activities Tab -->
+                            <div class="tab-pane fade" id="activities" role="tabpanel" aria-labelledby="activities-tab">
+                                <div class="calendar-container p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5>Gerenciar Atividades</h5>
+                                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#activityModal">
+                                            <i data-feather="plus" class="me-1"></i>
+                                            Nova Atividade
+                                        </button>
+                                    </div>
+                                    <div id="calendar"></div>
+                                </div>
+                            </div>
+
+                            <!-- Knowledge Tab -->
+                            <div class="tab-pane fade" id="knowledge" role="tabpanel" aria-labelledby="knowledge-tab">
+                                <div class="p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5>Banco de Conhecimento</h5>
+                                        <button class="btn btn-primary" onclick="openKnowledgeModal()">
+                                            <i data-feather="plus" class="me-1"></i>
+                                            Novo Conhecimento
+                                        </button>
+                                    </div>
+                                    <div id="knowledge-list">
+                                        <div class="alert alert-info">
+                                            <h6>Banco de Conhecimento</h6>
+                                            <p>Aqui serão armazenados artigos, documentos e conteúdo educacional da Anna.</p>
+                                            <p class="mb-0"><em>Funcionalidade em desenvolvimento...</em></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <!-- Images Tab -->
+                            <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">
+                                <div class="p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5>Banco de Imagens</h5>
+                                        <button class="btn btn-primary" onclick="openImageModal()">
+                                            <i data-feather="plus" class="me-1"></i>Nova Imagem
+                                        </button>
+                                    </div>
+                                    <div id="images-list"></div>
+                                </div>
+                            </div>
+
+                            <!-- Memories Tab -->
+                            <div class="tab-pane fade" id="memories" role="tabpanel" aria-labelledby="memories-tab">
+                                <div class="p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5>Banco de Memória</h5>
+                                        <button class="btn btn-primary" onclick="openMemoryModal()">
+                                            <i data-feather="plus" class="me-1"></i>Nova Memória
+                                        </button>
+                                    </div>
+                                    <div id="memories-list"></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
                 </div>
             </div>
 
