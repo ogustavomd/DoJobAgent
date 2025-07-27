@@ -18,14 +18,22 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 anna_agent = None
 
 def init_agent():
-    """Initialize Anna agent"""
+    """Initialize Anna agent with configuration from persistent storage"""
     global anna_agent
     try:
-        anna_agent = create_anna_agent()
-        logging.info("Anna agent initialized successfully")
+        from supabase_tools import get_active_agent_configuration
+        config = get_active_agent_configuration()
+        anna_agent = create_anna_agent_from_config(config)
+        logging.info("Anna agent initialized successfully with persistent configuration")
     except Exception as e:
         logging.error(f"Failed to initialize Anna agent: {e}")
-        raise
+        # Fallback to default agent
+        try:
+            anna_agent = create_anna_agent()
+            logging.info("Anna agent initialized with fallback configuration")
+        except Exception as fallback_error:
+            logging.error(f"Fallback initialization also failed: {fallback_error}")
+            raise
 
 # Initialize agent on startup
 init_agent()
@@ -452,54 +460,8 @@ def health():
 def config_get_current():
     """Get current agent configuration"""
     try:
-        # This would normally load from a config file or database
-        # For now, return default configuration based on current agent
-        config = {
-            'name': 'Anna',
-            'model': 'gemini-2.0-flash',
-            'description': 'Uma criadora de conteúdo brasileira carismática e autêntica que compartilha sua rotina diária.',
-            'instructions': '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. Você tem uma personalidade vibrante, 
-é espontânea e se conecta facilmente com as pessoas. Você ama criar conteúdo, compartilhar sua rotina e 
-interagir de forma genuína e humana.
-
-## Sua Personalidade:
-- Carismática e extrovertida
-- Espontânea e autêntica
-- Criativa e apaixonada por conteúdo
-- Calorosa e acolhedora
-- Usa linguagem natural e brasileira
-- Gosta de emojis e expressões informais
-- Compartilha detalhes de sua vida de forma natural
-
-## Como você deve se comportar:
-- Responda como se fosse uma conversa real entre amigos
-- SEMPRE use suas ferramentas para buscar informações atualizadas antes de responder
-- NUNCA invente ou assuma informações - sempre consulte o banco de dados primeiro
-- Quando alguém mencionar qualquer atividade, rotina, fotos ou vídeos, IMEDIATAMENTE chame as funções apropriadas
-- Mantenha contexto das conversas usando get_recent_conversations(5) frequentemente
-- Se alguém perguntar sobre sua rotina ou atividades, SEMPRE use get_anna_routines(7, None) primeiro
-- Se alguém mencionar fotos, imagens, ou pedir para ver algo visual, SEMPRE chame get_anna_routine_media(None, "image", 10)
-- Se alguém pedir vídeos, SEMPRE chame get_anna_routine_media(None, "video", 10)
-- Após receber dados das funções, inclua URLs diretamente na resposta (sem markdown): https://exemplo.com/foto.jpg
-- Use search_memories("termo", 10) para lembrar de conversas específicas
-- Seja específica sobre lugares, atividades e pessoas baseado nos dados reais do banco
-
-REGRA FUNDAMENTAL: Antes de responder QUALQUER pergunta sobre atividades, rotina, fotos ou vídeos, 
-você DEVE chamar as funções apropriadas para buscar dados reais. NUNCA responda sem consultar o banco primeiro.
-
-Seja sempre natural, humana e engajada. Responda como Anna responderia de verdade, mas com informações REAIS!''',
-            'tools': [
-                'get_anna_routines',
-                'get_anna_routine_media', 
-                'search_memories',
-                'get_recent_conversations',
-                'search_content',
-                'save_conversation_memory'
-            ],
-            'temperature': 0.7,
-            'max_tokens': 1000
-        }
-        
+        from supabase_tools import get_active_agent_configuration
+        config = get_active_agent_configuration()
         return jsonify(config)
     except Exception as e:
         logging.error(f"Error getting current config: {e}")
@@ -519,11 +481,13 @@ def config_save():
                 logging.error(f"Missing required field: {field}")
                 return jsonify({'error': f'Campo obrigatório: {field}'}), 400
         
-        # Save configuration to file (in production, this would be a database)
-        config_file = 'agent_config.json'
-        import json
-        with open(config_file, 'w', encoding='utf-8') as f:
-            json.dump(config, f, indent=2, ensure_ascii=False)
+        # Save configuration to database
+        from supabase_tools import save_agent_configuration
+        save_result = save_agent_configuration(config)
+        
+        if not save_result.get('success'):
+            logging.error(f"Failed to save config to database: {save_result.get('error')}")
+            return jsonify({'error': f'Erro ao salvar no banco: {save_result.get("error")}'}), 500
         
         # Reinitialize the agent with new config
         global anna_agent
