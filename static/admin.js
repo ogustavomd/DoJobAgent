@@ -160,12 +160,7 @@ class AdminManager {
         document.getElementById('activityCategory').value = activity.category;
         document.getElementById('activityLocation').value = activity.location || '';
         document.getElementById('activityDescription').value = activity.description || '';
-        document.getElementById('activityStatus').value = activity.status;
-        
-        // Set rating if available
-        if (activity.rating) {
-            document.getElementById(`rating${activity.rating}`).checked = true;
-        }
+
         
         // Load existing media
         this.loadExistingMedia(activity.id);
@@ -237,12 +232,20 @@ class AdminManager {
         const formData = new FormData(form);
         
         // Add media files
-        this.mediaFiles.forEach(file => {
+        console.log('Media files to upload:', this.mediaFiles.length);
+        this.mediaFiles.forEach((file, index) => {
+            console.log(`Adding file ${index}:`, file.name, file.type, file.size);
             formData.append('media_files', file);
         });
         
         const isEdit = document.getElementById('activityId').value !== '';
         const url = isEdit ? '/admin/api/activities/update' : '/admin/api/activities/create';
+        
+        console.log('Submitting to:', url);
+        console.log('Form data entries:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key, ':', value);
+        }
         
         try {
             const response = await fetch(url, {
@@ -250,7 +253,9 @@ class AdminManager {
                 body: formData
             });
             
+            console.log('Response status:', response.status);
             const result = await response.json();
+            console.log('Response data:', result);
             
             if (response.ok) {
                 this.showAlert(isEdit ? 'Atividade atualizada com sucesso' : 'Atividade criada com sucesso', 'success');
@@ -262,7 +267,7 @@ class AdminManager {
             }
         } catch (error) {
             console.error('Error saving activity:', error);
-            this.showAlert('Erro ao salvar atividade', 'danger');
+            this.showAlert('Erro ao salvar atividade: ' + error.message, 'danger');
         }
     }
 
@@ -359,10 +364,7 @@ class AdminManager {
         this.existingMedia = [];
         this.currentActivity = null;
         
-        // Clear rating selection
-        document.querySelectorAll('input[name="rating"]').forEach(input => {
-            input.checked = false;
-        });
+
     }
 
     showAlert(message, type = 'info') {

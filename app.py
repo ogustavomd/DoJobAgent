@@ -178,6 +178,9 @@ def admin_create_activity():
         from supabase_tools import supabase
         import uuid
         
+        logging.info(f"Creating activity with form data: {dict(request.form)}")
+        logging.info(f"Media files received: {len(request.files.getlist('media_files'))}")
+        
         # Get form data
         activity_data = {
             'date': request.form.get('date'),
@@ -187,37 +190,58 @@ def admin_create_activity():
             'category': request.form.get('category'),
             'location': request.form.get('location'),
             'description': request.form.get('description'),
-            'status': request.form.get('status', 'upcoming'),
-            'rating': int(request.form.get('rating')) if request.form.get('rating') else None,
+            'status': 'upcoming',
             'has_images': False,
             'has_videos': False
         }
         
+        # Validate required fields
+        required_fields = ['date', 'time_start', 'time_end', 'activity', 'category']
+        for field in required_fields:
+            if not activity_data.get(field):
+                return jsonify({'error': f'Campo obrigatório: {field}'}), 400
+        
         # Insert activity
         response = supabase.table('anna_routine').insert(activity_data).execute()
+        
+        if not response.data:
+            return jsonify({'error': 'Erro ao criar atividade'}), 500
+            
         activity_id = response.data[0]['id']
+        logging.info(f"Activity created with ID: {activity_id}")
         
         # Handle media files
         media_files = request.files.getlist('media_files')
         has_images = False
         has_videos = False
+        uploaded_count = 0
         
         for file in media_files:
-            if file and file.filename:
+            if file and file.filename and file.filename != '':
+                logging.info(f"Processing file: {file.filename}, type: {file.content_type}, size: {file.content_length}")
+                
                 # Upload to Supabase storage
-                file_extension = file.filename.split('.')[-1]
+                file_extension = file.filename.split('.')[-1].lower()
                 file_name = f"{uuid.uuid4()}.{file_extension}"
                 
                 # Upload file
                 file.seek(0)  # Reset file pointer
+                file_content = file.read()
+                
+                if len(file_content) == 0:
+                    logging.warning(f"File {file.filename} is empty, skipping")
+                    continue
+                
                 try:
-                    storage_response = supabase.storage.from_('conteudo').upload(file_name, file.read())
+                    storage_response = supabase.storage.from_('conteudo').upload(file_name, file_content)
+                    logging.info(f"Storage response: {storage_response}")
                     
                     # Get public URL
                     file_url = supabase.storage.from_('conteudo').get_public_url(file_name)
+                    logging.info(f"Public URL: {file_url}")
                     
                     # Determine media type
-                    media_type = 'video' if file.content_type.startswith('video/') else 'image'
+                    media_type = 'video' if file.content_type and file.content_type.startswith('video/') else 'image'
                     
                     # Save media record
                     media_data = {
@@ -227,12 +251,15 @@ def admin_create_activity():
                         'description': f"Mídia da atividade: {activity_data['activity']}"
                     }
                     
-                    supabase.table('anna_routine_media').insert(media_data).execute()
+                    media_response = supabase.table('anna_routine_media').insert(media_data).execute()
+                    logging.info(f"Media record created: {media_response.data}")
                     
                     if media_type == 'image':
                         has_images = True
                     else:
                         has_videos = True
+                        
+                    uploaded_count += 1
                         
                 except Exception as e:
                     logging.error(f"Error uploading file {file.filename}: {e}")
@@ -240,15 +267,25 @@ def admin_create_activity():
         
         # Update activity with media flags
         if has_images or has_videos:
-            supabase.table('anna_routine').update({
+            update_response = supabase.table('anna_routine').update({
                 'has_images': has_images,
                 'has_videos': has_videos
             }).eq('id', activity_id).execute()
+            logging.info(f"Activity updated with media flags: {update_response.data}")
         
-        return jsonify({'success': True, 'id': activity_id})
+        logging.info(f"Activity creation completed. Uploaded {uploaded_count} files.")
+        return jsonify({
+            'success': True, 
+            'id': activity_id, 
+            'uploaded_files': uploaded_count,
+            'has_images': has_images,
+            'has_videos': has_videos
+        })
         
     except Exception as e:
         logging.error(f"Error creating activity: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/api/activities/update', methods=['POST'])
@@ -269,8 +306,7 @@ def admin_update_activity():
             'category': request.form.get('category'),
             'location': request.form.get('location'),
             'description': request.form.get('description'),
-            'status': request.form.get('status', 'upcoming'),
-            'rating': int(request.form.get('rating')) if request.form.get('rating') else None
+            'status': 'upcoming'
         }
         
         # Update activity
