@@ -1127,37 +1127,35 @@ class AdminApp {
                 
                 if (imagesList && data.success && data.images.length > 0) {
                     imagesList.innerHTML = data.images.map(image => `
-                        <div class="col-md-4 mb-3">
-                            <div class="card">
-                                <img src="${image.image_url}" class="card-img-top" style="height: 200px; object-fit: cover;" 
-                                     alt="${image.name}" onerror="this.src='https://via.placeholder.com/400x300/333/fff?text=Erro'">
-                                <div class="card-body">
-                                    <h6 class="card-title">${image.name}</h6>
-                                    <p class="card-text text-muted small">${image.description || ''}</p>
-                                    <div class="d-flex justify-content-between">
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                onclick="openImageModal(${image.id})">
-                                            <i data-feather="edit" class="me-1"></i>Editar
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" 
-                                                onclick="adminApp.deleteImage(${image.id})">
-                                            <i data-feather="trash-2" class="me-1"></i>Excluir
-                                        </button>
-                                    </div>
+                        <div class="image-card">
+                            <img src="${image.image_url}" alt="${image.name}" 
+                                 onerror="this.src='https://via.placeholder.com/400x300/333/fff?text=Erro'">
+                            <div class="image-card-body">
+                                <div class="image-card-title">${image.name}</div>
+                                <div class="image-card-text">${image.description || ''}</div>
+                                <div class="image-card-actions">
+                                    <button class="btn-outline-modern btn-sm-modern" 
+                                            onclick="openImageModal(${image.id})">
+                                        <i data-lucide="edit" width="12" height="12"></i>Editar
+                                    </button>
+                                    <button class="btn-danger-modern btn-sm-modern" 
+                                            onclick="adminApp.deleteImage(${image.id})">
+                                        <i data-lucide="trash-2" width="12" height="12"></i>Excluir
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     `).join('');
-                    feather.replace();
+                    lucide.createIcons();
                 } else if (imagesList) {
-                    imagesList.innerHTML = '<div class="col-12"><div class="alert alert-info">Nenhuma imagem encontrada. Use o botão "Upload Imagem" para adicionar imagens.</div></div>';
+                    imagesList.innerHTML = '<div style="grid-column: 1 / -1;"><div class="alert-modern">Nenhuma imagem encontrada. Use o botão "Nova Imagem" para adicionar imagens.</div></div>';
                 }
             }
         } catch (error) {
             console.error('Error loading images:', error);
             const imagesList = document.getElementById('images-list');
             if (imagesList) {
-                imagesList.innerHTML = '<div class="col-12"><div class="alert alert-danger">Erro ao carregar imagens.</div></div>';
+                imagesList.innerHTML = '<div style="grid-column: 1 / -1;"><div class="alert-modern" style="background: rgba(220, 53, 69, 0.1); border-color: rgba(220, 53, 69, 0.3);">Erro ao carregar imagens.</div></div>';
             }
         }
     }
@@ -1171,34 +1169,34 @@ class AdminApp {
                 
                 if (memoriesList && data.success && data.memories.length > 0) {
                     memoriesList.innerHTML = data.memories.map(memory => `
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h6 class="card-title">${memory.name}</h6>
-                                <p class="card-text">${memory.description || ''}</p>
-                                <p class="card-text small text-muted">Quando usar: ${memory.when_to_use || 'Não especificado'}</p>
-                                <div class="d-flex justify-content-between">
-                                    <button class="btn btn-sm btn-outline-primary" 
-                                            onclick="openMemoryModal(${memory.id})">
-                                        <i data-feather="edit" class="me-1"></i>Editar
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" 
-                                            onclick="adminApp.deleteMemory(${memory.id})">
-                                        <i data-feather="trash-2" class="me-1"></i>Excluir
-                                    </button>
-                                </div>
+                        <div class="memory-card">
+                            <div class="memory-card-title">${memory.name}</div>
+                            <div class="memory-card-text">${memory.description || ''}</div>
+                            <div class="memory-card-text" style="font-size: 12px; font-style: italic;">
+                                Quando usar: ${memory.when_to_use || 'Não especificado'}
+                            </div>
+                            <div class="memory-card-actions">
+                                <button class="btn-outline-modern btn-sm-modern" 
+                                        onclick="openMemoryModal(${memory.id})">
+                                    <i data-lucide="edit" width="12" height="12"></i>Editar
+                                </button>
+                                <button class="btn-danger-modern btn-sm-modern" 
+                                        onclick="adminApp.deleteMemory(${memory.id})">
+                                    <i data-lucide="trash-2" width="12" height="12"></i>Excluir
+                                </button>
                             </div>
                         </div>
                     `).join('');
-                    feather.replace();
+                    lucide.createIcons();
                 } else if (memoriesList) {
-                    memoriesList.innerHTML = '<div class="alert alert-info">Nenhuma memória encontrada. Use o botão "Nova Memória" para adicionar memórias.</div>';
+                    memoriesList.innerHTML = '<div class="alert-modern">Nenhuma memória encontrada. Use o botão "Nova Memória" para adicionar memórias.</div>';
                 }
             }
         } catch (error) {
             console.error('Error loading memories:', error);
             const memoriesList = document.getElementById('memories-list');
             if (memoriesList) {
-                memoriesList.innerHTML = '<div class="alert alert-danger">Erro ao carregar memórias.</div>';
+                memoriesList.innerHTML = '<div class="alert-modern" style="background: rgba(220, 53, 69, 0.1); border-color: rgba(220, 53, 69, 0.3);">Erro ao carregar memórias.</div>';
             }
         }
     }

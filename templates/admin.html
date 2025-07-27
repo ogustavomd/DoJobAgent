@@ -4,240 +4,608 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Anna Agent</title>
-    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <style>
-        .admin-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        :root {
+            --bg-primary: #0E0E10;
+            --bg-secondary: #1A1A1D;
+            --bg-tertiary: #141417;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --accent-purple: #8F5CFF;
+            --accent-purple-hover: #A178F1;
+            --border-color: #2A2A2D;
+            --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-accent: 0 0 20px rgba(143, 92, 255, 0.3);
         }
-        .nav-tabs .nav-link {
-            color: var(--bs-body-color);
-            border: 1px solid transparent;
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        .nav-tabs .nav-link.active {
-            color: var(--bs-primary);
-            background-color: var(--bs-body-bg);
-            border-color: var(--bs-border-color);
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
         }
-        .nav-tabs .nav-link:hover {
-            border-color: var(--bs-border-color);
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+            gap: 24px;
+            padding: 24px;
         }
-        .card {
-            border: 1px solid var(--bs-border-color);
+
+        .sidebar {
+            width: 80px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 24px 16px;
+            box-shadow: var(--shadow-subtle);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
         }
-        .calendar-container {
-            background: var(--bs-body-bg);
-            border-radius: 0.375rem;
-            border: 1px solid var(--bs-border-color);
+
+        .sidebar-logo {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-purple);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
         }
-        .fc-event {
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .nav-item {
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
             cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
         }
-        .activity-item {
-            border-left: 4px solid var(--bs-primary);
-            padding-left: 1rem;
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
-        .activity-current {
-            border-left-color: var(--bs-success);
+
+        .nav-item.active {
+            background: var(--accent-purple);
+            color: white;
+            box-shadow: var(--shadow-accent);
         }
-        .activity-completed {
-            border-left-color: var(--bs-secondary);
-            opacity: 0.7;
+
+        .main-content {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            box-shadow: var(--shadow-subtle);
+            overflow: hidden;
         }
-        .activity-upcoming {
-            border-left-color: var(--bs-info);
+
+        .content-header {
+            padding: 32px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple-hover) 100%);
         }
-        .status-indicator {
+
+        .content-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: white;
+        }
+
+        .content-header p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+
+        .content-body {
+            padding: 32px;
+        }
+
+        .tab-content-area {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .sidebar-right {
+            width: 320px;
+            background: rgba(26, 26, 29, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-subtle);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-modern {
+            background: var(--accent-purple);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-modern:hover {
+            background: var(--accent-purple-hover);
+            box-shadow: var(--shadow-accent);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-outline-modern {
+            background: transparent;
+            color: var(--accent-purple);
+            border: 2px solid var(--accent-purple);
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-outline-modern:hover {
+            background: var(--accent-purple);
+            color: white;
+            box-shadow: var(--shadow-accent);
+            transform: translateY(-2px);
+        }
+
+        .card-modern {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .card-modern:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .form-control-modern {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control-modern:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 4px rgba(143, 92, 255, 0.1);
+        }
+
+        .form-control-modern::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .text-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .text-subtitle {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .text-body {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .image-card {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .image-card-body {
+            padding: 20px;
+        }
+
+        .image-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .image-card-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .image-card-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-sm-modern {
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 24px;
+        }
+
+        .modal-title {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 24px;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        .alert-modern {
+            background: rgba(143, 92, 255, 0.1);
+            border: 1px solid rgba(143, 92, 255, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text-primary);
+        }
+
+        .calendar-container {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        /* FullCalendar customization */
+        .fc {
+            background: transparent;
+        }
+
+        .fc-theme-standard .fc-scrollgrid {
+            border: 1px solid var(--border-color);
+        }
+
+        .fc-theme-standard td, .fc-theme-standard th {
+            border-color: var(--border-color);
+        }
+
+        .fc-col-header-cell {
+            background: var(--bg-secondary);
+        }
+
+        .fc-daygrid-day {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .fc-button {
+            background: var(--accent-purple) !important;
+            border-color: var(--accent-purple) !important;
+            border-radius: 8px !important;
+        }
+
+        .fc-button:hover {
+            background: var(--accent-purple-hover) !important;
+        }
+
+        .fc-event {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+            border-radius: 6px;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
             width: 8px;
-            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-purple);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple-hover);
+        }
+
+        /* Animation for particles background */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .floating-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent-purple);
             border-radius: 50%;
-            display: inline-block;
-            margin-right: 0.5rem;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.3;
         }
-        .status-current {
-            background-color: var(--bs-success);
+
+        .tab-panel {
+            animation: fadeIn 0.3s ease-in-out;
         }
-        .status-completed {
-            background-color: var(--bs-secondary);
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .status-upcoming {
-            background-color: var(--bs-info);
+
+        .memory-card {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .memory-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .memory-card-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .memory-card-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-danger-modern {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 500;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-danger-modern:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        select.form-control-modern {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px 12px;
+            padding-right: 40px;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-purple);
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .today-activity {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--accent-purple);
+        }
+
+        .today-activity-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .today-activity-time {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <!-- Header -->
-        <header class="admin-header text-white p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-0">
-                        <i data-feather="user" class="me-2"></i>
-                        Admin - Anna Agent
-                    </h1>
-                    <p class="mb-0 opacity-75">Painel de administração completo</p>
-                </div>
-                <div>
-                    <a href="/" class="btn btn-outline-light me-2">
-                        <i data-feather="message-circle" class="me-1"></i>
-                        Chat
-                    </a>
-                    <a href="/config" class="btn btn-outline-light">
-                        <i data-feather="settings" class="me-1"></i>
-                        Config
-                    </a>
-                </div>
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 0.5s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 1.5s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 3.5s;"></div>
+    </div>
+
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">A</div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="chat" title="Chat">
+                    <i data-lucide="message-circle" width="20" height="20"></i>
+                </button>
+                <button class="nav-item" data-tab="agent" title="Agente">
+                    <i data-lucide="settings" width="20" height="20"></i>
+                </button>
+                <button class="nav-item" data-tab="activities" title="Atividades">
+                    <i data-lucide="calendar" width="20" height="20"></i>
+                </button>
+                <button class="nav-item" data-tab="knowledge" title="Conhecimento">
+                    <i data-lucide="book-open" width="20" height="20"></i>
+                </button>
+                <button class="nav-item" data-tab="images" title="Imagens">
+                    <i data-lucide="image" width="20" height="20"></i>
+                </button>
+                <button class="nav-item" data-tab="memories" title="Memórias">
+                    <i data-lucide="database" width="20" height="20"></i>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h1>Anna Agent</h1>
+                <p>Painel de administração completo para gerenciar sua IA</p>
             </div>
-        </header>
+            
+            <div class="content-body">
+                <div class="tab-content-area">
 
-        <div class="row">
-            <!-- Main Content Column -->
-            <div class="col-lg-8">
-                <!-- Admin Navigation Tabs -->
-                <div class="mb-4">
-                    <h4>Painel de Administração</h4>
-                    <ul class="nav nav-tabs" id="adminTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button" role="tab">
-                                <i data-feather="message-circle" class="me-1"></i>Chat
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="agent-tab" data-bs-toggle="tab" data-bs-target="#agent" type="button" role="tab">
-                                <i data-feather="settings" class="me-1"></i>Agente
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities" type="button" role="tab">
-                                <i data-feather="calendar" class="me-1"></i>Atividades
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="knowledge-tab" data-bs-toggle="tab" data-bs-target="#knowledge" type="button" role="tab">
-                                <i data-feather="book" class="me-1"></i>Banco de conhecimento
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button" role="tab">
-                                <i data-feather="image" class="me-1"></i>Banco de imagens
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="memories-tab" data-bs-toggle="tab" data-bs-target="#memories" type="button" role="tab">
-                                <i data-feather="database" class="me-1"></i>Banco de memoria
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Tab Content -->
-                <div class="tab-content" id="adminTabContent">
-                    <!-- Chat Tab -->
-                    <div class="tab-pane fade show active" id="chat" role="tabpanel" aria-labelledby="chat-tab">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Interface de Chat</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <p class="text-muted">Converse diretamente com a Anna aqui no painel administrativo.</p>
-                                        <div class="text-center">
-                                            <a href="/" class="btn btn-primary" target="_blank">
-                                                <i data-feather="external-link" class="me-1"></i>
-                                                Abrir Chat Principal
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="tabContent">
+                        <!-- Chat Tab -->
+                        <div class="tab-panel active" id="chat-panel">
+                            <div class="text-title">Interface de Chat</div>
+                            <div class="text-body">Converse diretamente com a Anna através do chat principal.</div>
+                            <div style="margin-top: 24px; text-align: center;">
+                                <a href="/" class="btn-modern" target="_blank">
+                                    <i data-lucide="external-link" width="16" height="16"></i>
+                                    Abrir Chat Principal
+                                </a>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Agent Tab -->
-                    <div class="tab-pane fade" id="agent" role="tabpanel" aria-labelledby="agent-tab">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Configuração do Agente</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form id="agentConfigForm">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label for="agentName" class="form-label">Nome do Agente</label>
-                                                        <input type="text" class="form-control" id="agentName" value="Anna">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label for="agentModel" class="form-label">Modelo</label>
-                                                        <select class="form-control" id="agentModel">
-                                                            <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                                                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                                                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="agentDescription" class="form-label">Descrição</label>
-                                                <textarea class="form-control" id="agentDescription" rows="2" 
-                                                    placeholder="Uma criadora de conteúdo brasileira carismática..."></textarea>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="agentInstructions" class="form-label">Instruções de Personalidade</label>
-                                                <textarea class="form-control" id="agentInstructions" rows="8" 
-                                                    placeholder="Digite as instruções de personalidade da Anna..."></textarea>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label for="agentTemperature" class="form-label">Temperatura (0-1)</label>
-                                                        <input type="number" class="form-control" id="agentTemperature" 
-                                                            min="0" max="1" step="0.1" value="0.7">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label for="agentMaxTokens" class="form-label">Max Tokens</label>
-                                                        <input type="number" class="form-control" id="agentMaxTokens" value="1000">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Ferramentas Ativas</label>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" id="toolRoutines" checked>
-                                                            <label class="form-check-label" for="toolRoutines">Rotinas</label>
-                                                        </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" id="toolMemories" checked>
-                                                            <label class="form-check-label" for="toolMemories">Memórias</label>
-                                                        </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" id="toolMedia" checked>
-                                                            <label class="form-check-label" for="toolMedia">Mídia</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="text-end">
-                                                <button type="button" class="btn btn-primary" onclick="saveAgentConfig()">
-                                                    <i data-feather="save" class="me-1"></i>
-                                                    Salvar Configuração
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <!-- Activities Tab -->
                     <div class="tab-pane fade" id="activities" role="tabpanel" aria-labelledby="activities-tab">
@@ -273,22 +641,133 @@
                         </div>
                     </div>
 
-                    <!-- Images Tab -->
-                    <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">
-                        <div class="p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5>Banco de Imagens</h5>
+                        <!-- Agent Tab -->
+                        <div class="tab-panel" id="agent-panel" style="display: none;">
+                            <div class="text-title">Configuração do Agente</div>
+                            <div class="text-body" style="margin-bottom: 24px;">Configure a personalidade e comportamento da Anna</div>
+                            
+                            <form id="agentConfigForm" style="display: grid; gap: 24px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Nome do Agente</label>
+                                        <input type="text" class="form-control-modern" id="agentName" value="Anna">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Modelo</label>
+                                        <select class="form-control-modern" id="agentModel">
+                                            <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
                                 <div>
-                                    <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="uploadImage()">
-                                    <button class="btn btn-outline-primary me-2" onclick="document.getElementById('imageUpload').click()">
-                                        <i data-feather="upload" class="me-1"></i>Upload Imagem
-                                    </button>
-                                    <button class="btn btn-primary" onclick="openImageModal()">
-                                        <i data-feather="plus" class="me-1"></i>Nova Imagem
+                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Descrição</label>
+                                    <textarea class="form-control-modern" id="agentDescription" rows="2" 
+                                        placeholder="Uma criadora de conteúdo brasileira carismática..."></textarea>
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Instruções de Personalidade</label>
+                                    <textarea class="form-control-modern" id="agentInstructions" rows="8" 
+                                        placeholder="Digite as instruções de personalidade da Anna..."></textarea>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Temperatura (0-1)</label>
+                                        <input type="number" class="form-control-modern" id="agentTemperature" 
+                                            min="0" max="1" step="0.1" value="0.7">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Max Tokens</label>
+                                        <input type="number" class="form-control-modern" id="agentMaxTokens" value="1000">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Ferramentas Ativas</label>
+                                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                                            <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 14px;">
+                                                <input type="checkbox" id="toolRoutines" checked>
+                                                Rotinas
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 14px;">
+                                                <input type="checkbox" id="toolMemories" checked>
+                                                Memórias
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 14px;">
+                                                <input type="checkbox" id="toolMedia" checked>
+                                                Mídia
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="text-align: right;">
+                                    <button type="button" class="btn-modern" onclick="saveAgentConfig()">
+                                        <i data-lucide="save" width="16" height="16"></i>
+                                        Salvar Configuração
                                     </button>
                                 </div>
+                            </form>
+                        </div>
+
+                        <!-- Activities Tab -->
+                        <div class="tab-panel" id="activities-panel" style="display: none;">
+                            <div class="text-title">Gerenciar Atividades</div>
+                            <div class="text-body" style="margin-bottom: 24px;">Visualize e gerencie as atividades da Anna</div>
+                            
+                            <div class="calendar-container">
+                                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 24px;">
+                                    <button class="btn-modern" data-bs-toggle="modal" data-bs-target="#activityModal">
+                                        <i data-lucide="plus" width="16" height="16"></i>
+                                        Nova Atividade
+                                    </button>
+                                </div>
+                                <div id="calendar"></div>
                             </div>
-                            <div id="images-list" class="row"></div>
+                        </div>
+
+                        <!-- Knowledge Tab -->
+                        <div class="tab-panel" id="knowledge-panel" style="display: none;">
+                            <div class="text-title">Banco de Conhecimento</div>
+                            <div class="text-body" style="margin-bottom: 24px;">Gerencie o conhecimento e conteúdo da Anna</div>
+                            
+                            <div class="alert-modern">
+                                <h6 style="color: var(--text-primary); margin-bottom: 8px;">Banco de Conhecimento</h6>
+                                <p style="margin-bottom: 8px;">Aqui serão armazenados artigos, documentos e conteúdo educacional da Anna.</p>
+                                <p style="margin: 0;"><em>Funcionalidade em desenvolvimento...</em></p>
+                            </div>
+                        </div>
+
+                        <!-- Images Tab -->
+                        <div class="tab-panel" id="images-panel" style="display: none;">
+                            <div class="text-title">Banco de Imagens</div>
+                            <div class="text-body" style="margin-bottom: 24px;">Gerencie as imagens e mídia da Anna</div>
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                                <button class="btn-modern" onclick="openImageModal()">
+                                    <i data-lucide="plus" width="16" height="16"></i>
+                                    Nova Imagem
+                                </button>
+                            </div>
+                            
+                            <div id="images-list" class="images-grid"></div>
+                        </div>
+
+                        <!-- Memories Tab -->
+                        <div class="tab-panel" id="memories-panel" style="display: none;">
+                            <div class="text-title">Banco de Memória</div>
+                            <div class="text-body" style="margin-bottom: 24px;">Gerencie as memórias e experiências da Anna</div>
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                                <button class="btn-modern" onclick="openMemoryModal()">
+                                    <i data-lucide="plus" width="16" height="16"></i>
+                                    Nova Memória
+                                </button>
+                            </div>
+                            
+                            <div id="memories-list"></div>
                         </div>
                     </div>
 
@@ -307,16 +786,18 @@
                 </div>
             </div>
 
-            <!-- Sidebar -->
-            <div class="col-lg-4">
-                <div class="activity-form p-4">
-                    <h5>Atividades de Hoje</h5>
-                    <div id="todayActivities" class="mt-3">
-                        <!-- Today's activities will be loaded here -->
-                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Sidebar Right -->
+        <div class="sidebar-right">
+            <div class="text-subtitle">Atividades de Hoje</div>
+            <div id="todayActivities">
+                <!-- Today's activities will be loaded here -->
+            </div>
+        </div>
+    </div>
 
         <!-- Activity Modal -->
         <div class="modal fade" id="activityModal" tabindex="-1">
@@ -444,35 +925,60 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="imageForm">
+                        <form id="imageForm" style="display: grid; gap: 20px;">
                             <input type="hidden" id="imageId">
-                            <div class="mb-3">
-                                <label for="imageName" class="form-label">Nome da Imagem</label>
-                                <input type="text" class="form-control" id="imageName" required>
+                            
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Nome da Imagem</label>
+                                <input type="text" class="form-control-modern" id="imageName" required>
                             </div>
-                            <div class="mb-3">
-                                <label for="imageDescription" class="form-label">Descrição</label>
-                                <textarea class="form-control" id="imageDescription" rows="2"></textarea>
+                            
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Descrição</label>
+                                <textarea class="form-control-modern" id="imageDescription" rows="2"></textarea>
                             </div>
-                            <div class="mb-3">
-                                <label for="imageWhenToUse" class="form-label">Quando Usar</label>
-                                <textarea class="form-control" id="imageWhenToUse" rows="2" 
+                            
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Quando Usar</label>
+                                <textarea class="form-control-modern" id="imageWhenToUse" rows="2" 
                                     placeholder="Ex: Para mostrar onde treino ou equipamentos..."></textarea>
                             </div>
-                            <div class="mb-3">
-                                <label for="imageUrl" class="form-label">URL da Imagem</label>
-                                <input type="url" class="form-control" id="imageUrl" required>
+                            
+                            <!-- Upload Options -->
+                            <div>
+                                <label style="display: block; margin-bottom: 12px; color: var(--text-primary); font-weight: 500;">Adicionar Mídia</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                    <div>
+                                        <input type="file" id="imageUpload" accept="image/*,video/*" style="display: none;" onchange="handleFileUpload()">
+                                        <button type="button" class="btn-outline-modern" onclick="document.getElementById('imageUpload').click()" style="width: 100%; justify-content: center;">
+                                            <i data-lucide="upload" width="16" height="16"></i>
+                                            Upload Arquivo
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <button type="button" class="btn-outline-modern" onclick="toggleUrlInput()" style="width: 100%; justify-content: center;">
+                                            <i data-lucide="link" width="16" height="16"></i>
+                                            Inserir URL
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="imageKeywords" class="form-label">Palavras-chave (separadas por vírgula)</label>
-                                <input type="text" class="form-control" id="imageKeywords" 
+                            
+                            <div id="urlInputDiv" style="display: none;">
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">URL da Imagem/Vídeo</label>
+                                <input type="url" class="form-control-modern" id="imageUrl" placeholder="https://exemplo.com/imagem.jpg">
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Palavras-chave (separadas por vírgula)</label>
+                                <input type="text" class="form-control-modern" id="imageKeywords" 
                                     placeholder="academia, treino, equipamentos">
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" onclick="saveImage()">Salvar</button>
+                        <button type="button" class="btn-outline-modern" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn-modern" onclick="saveImage()">Salvar</button>
                     </div>
                 </div>
             </div>
@@ -482,8 +988,69 @@
 
     <script src="{{ url_for('static', filename='admin.js') }}"></script>
     <script>
-        // Initialize Feather icons
-        feather.replace();
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Tab switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            
+            function switchTab(tabName) {
+                // Remove active class from all nav items
+                navItems.forEach(item => item.classList.remove('active'));
+                
+                // Hide all tab panels
+                tabPanels.forEach(panel => panel.style.display = 'none');
+                
+                // Show selected tab panel
+                const targetPanel = document.getElementById(tabName + '-panel');
+                if (targetPanel) {
+                    targetPanel.style.display = 'block';
+                }
+                
+                // Add active class to clicked nav item
+                const clickedNav = document.querySelector(`[data-tab="${tabName}"]`);
+                if (clickedNav) {
+                    clickedNav.classList.add('active');
+                }
+            }
+            
+            // Add click handlers to nav items
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const tabName = item.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+            
+            // Initialize first tab
+            switchTab('chat');
+        });
+        
+        // Helper functions for image modal
+        function toggleUrlInput() {
+            const urlDiv = document.getElementById('urlInputDiv');
+            urlDiv.style.display = urlDiv.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function handleFileUpload() {
+            const fileInput = document.getElementById('imageUpload');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const fileName = file.name;
+                // Update the name field with the filename
+                document.getElementById('imageName').value = fileName.split('.')[0];
+                
+                // If it's an image, show preview (optional enhancement)
+                if (file.type.startsWith('image/')) {
+                    console.log('Image selected:', fileName);
+                } else if (file.type.startsWith('video/')) {
+                    console.log('Video selected:', fileName);
+                }
+            }
+        }
         
         // Initialize the admin app
         window.adminApp = new AdminApp();
