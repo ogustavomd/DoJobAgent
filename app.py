@@ -101,6 +101,303 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str):
         logging.error(f"Error running Anna agent: {e}")
         return "Desculpe, ocorreu um erro interno. Tente novamente em alguns instantes."
 
+# Admin routes
+@app.route('/admin')
+def admin():
+    """Admin interface for managing Anna's routine"""
+    return render_template('admin.html')
+
+@app.route('/admin/api/activities')
+def admin_get_activities():
+    """Get all activities for calendar display"""
+    try:
+        from supabase_tools import supabase
+        response = supabase.table('anna_routine').select('*').order('date', desc=False).execute()
+        
+        # Format for FullCalendar
+        events = []
+        for activity in response.data:
+            events.append({
+                'id': activity['id'],
+                'title': activity['activity'],
+                'start': f"{activity['date']}T{activity['time_start']}",
+                'end': f"{activity['date']}T{activity['time_end']}",
+                'className': f"fc-event-{activity['category']}",
+                'extendedProps': {
+                    'category': activity['category'],
+                    'status': activity['status'],
+                    'location': activity.get('location'),
+                    'description': activity.get('description'),
+                    'has_images': activity.get('has_images', False),
+                    'has_videos': activity.get('has_videos', False)
+                }
+            })
+        
+        return jsonify(events)
+    except Exception as e:
+        logging.error(f"Error getting activities: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/activities/<activity_id>')
+def admin_get_activity(activity_id):
+    """Get specific activity details"""
+    try:
+        from supabase_tools import supabase
+        response = supabase.table('anna_routine').select('*').eq('id', activity_id).single().execute()
+        return jsonify(response.data)
+    except Exception as e:
+        logging.error(f"Error getting activity: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/activities/date/<date>')
+def admin_get_activities_by_date(date):
+    """Get activities for specific date"""
+    try:
+        from supabase_tools import supabase
+        response = supabase.table('anna_routine').select('*').eq('date', date).order('time_start').execute()
+        return jsonify(response.data)
+    except Exception as e:
+        logging.error(f"Error getting activities by date: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/activities/<activity_id>/media')
+def admin_get_activity_media(activity_id):
+    """Get media for specific activity"""
+    try:
+        from supabase_tools import supabase
+        response = supabase.table('anna_routine_media').select('*').eq('routine_id', activity_id).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        logging.error(f"Error getting activity media: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/activities/create', methods=['POST'])
+def admin_create_activity():
+    """Create new activity"""
+    try:
+        from supabase_tools import supabase
+        import uuid
+        
+        # Get form data
+        activity_data = {
+            'date': request.form.get('date'),
+            'time_start': request.form.get('time_start'),
+            'time_end': request.form.get('time_end'),
+            'activity': request.form.get('activity'),
+            'category': request.form.get('category'),
+            'location': request.form.get('location'),
+            'description': request.form.get('description'),
+            'status': request.form.get('status', 'upcoming'),
+            'rating': int(request.form.get('rating')) if request.form.get('rating') else None,
+            'has_images': False,
+            'has_videos': False
+        }
+        
+        # Insert activity
+        response = supabase.table('anna_routine').insert(activity_data).execute()
+        activity_id = response.data[0]['id']
+        
+        # Handle media files
+        media_files = request.files.getlist('media_files')
+        has_images = False
+        has_videos = False
+        
+        for file in media_files:
+            if file and file.filename:
+                # Upload to Supabase storage
+                file_extension = file.filename.split('.')[-1]
+                file_name = f"{uuid.uuid4()}.{file_extension}"
+                
+                # Upload file
+                file.seek(0)  # Reset file pointer
+                try:
+                    storage_response = supabase.storage.from_('conteudo').upload(file_name, file.read())
+                    
+                    # Get public URL
+                    file_url = supabase.storage.from_('conteudo').get_public_url(file_name)
+                    
+                    # Determine media type
+                    media_type = 'video' if file.content_type.startswith('video/') else 'image'
+                    
+                    # Save media record
+                    media_data = {
+                        'routine_id': activity_id,
+                        'media_url': file_url,
+                        'media_type': media_type,
+                        'description': f"Mídia da atividade: {activity_data['activity']}"
+                    }
+                    
+                    supabase.table('anna_routine_media').insert(media_data).execute()
+                    
+                    if media_type == 'image':
+                        has_images = True
+                    else:
+                        has_videos = True
+                        
+                except Exception as e:
+                    logging.error(f"Error uploading file {file.filename}: {e}")
+                    continue
+        
+        # Update activity with media flags
+        if has_images or has_videos:
+            supabase.table('anna_routine').update({
+                'has_images': has_images,
+                'has_videos': has_videos
+            }).eq('id', activity_id).execute()
+        
+        return jsonify({'success': True, 'id': activity_id})
+        
+    except Exception as e:
+        logging.error(f"Error creating activity: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/activities/update', methods=['POST'])
+def admin_update_activity():
+    """Update existing activity"""
+    try:
+        from supabase_tools import supabase
+        import uuid
+        
+        activity_id = request.form.get('id')
+        
+        # Get form data
+        activity_data = {
+            'date': request.form.get('date'),
+            'time_start': request.form.get('time_start'),
+            'time_end': request.form.get('time_end'),
+            'activity': request.form.get('activity'),
+            'category': request.form.get('category'),
+            'location': request.form.get('location'),
+            'description': request.form.get('description'),
+            'status': request.form.get('status', 'upcoming'),
+            'rating': int(request.form.get('rating')) if request.form.get('rating') else None
+        }
+        
+        # Update activity
+        supabase.table('anna_routine').update(activity_data).eq('id', activity_id).execute()
+        
+        # Handle new media files
+        media_files = request.files.getlist('media_files')
+        has_new_media = False
+        
+        for file in media_files:
+            if file and file.filename:
+                # Upload to Supabase storage
+                file_extension = file.filename.split('.')[-1]
+                file_name = f"{uuid.uuid4()}.{file_extension}"
+                
+                # Upload file
+                file.seek(0)  # Reset file pointer
+                try:
+                    storage_response = supabase.storage.from_('conteudo').upload(file_name, file.read())
+                    
+                    # Get public URL
+                    file_url = supabase.storage.from_('conteudo').get_public_url(file_name)
+                    
+                    # Determine media type
+                    media_type = 'video' if file.content_type.startswith('video/') else 'image'
+                    
+                    # Save media record
+                    media_data = {
+                        'routine_id': activity_id,
+                        'media_url': file_url,
+                        'media_type': media_type,
+                        'description': f"Mídia da atividade: {activity_data['activity']}"
+                    }
+                    
+                    supabase.table('anna_routine_media').insert(media_data).execute()
+                    has_new_media = True
+                    
+                except Exception as e:
+                    logging.error(f"Error uploading file {file.filename}: {e}")
+                    continue
+        
+        # Update media flags if new media was added
+        if has_new_media:
+            # Check current media
+            media_response = supabase.table('anna_routine_media').select('media_type').eq('routine_id', activity_id).execute()
+            
+            has_images = any(item['media_type'] == 'image' for item in media_response.data)
+            has_videos = any(item['media_type'] == 'video' for item in media_response.data)
+            
+            supabase.table('anna_routine').update({
+                'has_images': has_images,
+                'has_videos': has_videos
+            }).eq('id', activity_id).execute()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        logging.error(f"Error updating activity: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/activities/<activity_id>', methods=['DELETE'])
+def admin_delete_activity(activity_id):
+    """Delete activity and its media"""
+    try:
+        from supabase_tools import supabase
+        
+        # Delete media files from storage
+        media_response = supabase.table('anna_routine_media').select('media_url').eq('routine_id', activity_id).execute()
+        
+        for media in media_response.data:
+            # Extract filename from URL and delete from storage
+            file_name = media['media_url'].split('/')[-1]
+            try:
+                supabase.storage.from_('conteudo').remove([file_name])
+            except:
+                pass  # Continue even if file deletion fails
+        
+        # Delete media records first
+        supabase.table('anna_routine_media').delete().eq('routine_id', activity_id).execute()
+        
+        # Delete activity
+        supabase.table('anna_routine').delete().eq('id', activity_id).execute()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        logging.error(f"Error deleting activity: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/media/<media_id>', methods=['DELETE'])
+def admin_delete_media(media_id):
+    """Delete specific media file"""
+    try:
+        from supabase_tools import supabase
+        
+        # Get media info
+        media_response = supabase.table('anna_routine_media').select('*').eq('id', media_id).single().execute()
+        media = media_response.data
+        
+        # Delete from storage
+        file_name = media['media_url'].split('/')[-1]
+        try:
+            supabase.storage.from_('conteudo').remove([file_name])
+        except:
+            pass  # Continue even if file deletion fails
+        
+        # Delete media record
+        supabase.table('anna_routine_media').delete().eq('id', media_id).execute()
+        
+        # Update activity media flags
+        routine_id = media['routine_id']
+        remaining_media = supabase.table('anna_routine_media').select('media_type').eq('routine_id', routine_id).execute()
+        
+        has_images = any(item['media_type'] == 'image' for item in remaining_media.data)
+        has_videos = any(item['media_type'] == 'video' for item in remaining_media.data)
+        
+        supabase.table('anna_routine').update({
+            'has_images': has_images,
+            'has_videos': has_videos
+        }).eq('id', routine_id).execute()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        logging.error(f"Error deleting media: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/health')
 def health():
     """Health check endpoint"""

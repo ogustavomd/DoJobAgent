@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Rotina da Anna</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/main.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/main.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, var(--bs-primary), var(--bs-info));
+            border-bottom: 1px solid var(--bs-border-color);
+        }
+        
+        .calendar-container {
+            background: var(--bs-body-bg);
+            border-radius: 12px;
+            border: 1px solid var(--bs-border-color);
+        }
+        
+        .fc-event {
+            border: none !important;
+            border-radius: 6px !important;
+            font-size: 12px !important;
+        }
+        
+        .fc-event-fitness { background-color: var(--bs-success) !important; }
+        .fc-event-trabalho { background-color: var(--bs-primary) !important; }
+        .fc-event-reuniao { background-color: var(--bs-warning) !important; }
+        .fc-event-social { background-color: var(--bs-info) !important; }
+        .fc-event-pessoal { background-color: var(--bs-danger) !important; }
+        
+        .activity-form {
+            background: var(--bs-body-bg);
+            border-radius: 12px;
+            border: 1px solid var(--bs-border-color);
+        }
+        
+        .media-upload-area {
+            border: 2px dashed var(--bs-border-color);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .media-upload-area:hover {
+            border-color: var(--bs-primary);
+            background-color: var(--bs-primary-bg-subtle);
+        }
+        
+        .media-upload-area.dragover {
+            border-color: var(--bs-success);
+            background-color: var(--bs-success-bg-subtle);
+        }
+        
+        .media-preview {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .media-item {
+            position: relative;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .media-remove {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--bs-danger);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .activity-card {
+            background: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .activity-card:hover {
+            border-color: var(--bs-primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+        
+        .rating-stars {
+            color: var(--bs-warning);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="admin-header text-white p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Admin - Rotina da Anna
+                    </h1>
+                    <p class="mb-0 opacity-75">Gerencie as atividades e conteúdo</p>
+                </div>
+                <div>
+                    <a href="/" class="btn btn-outline-light">
+                        <i data-feather="message-circle" class="me-1"></i>
+                        Voltar ao Chat
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="row">
+            <!-- Calendar Column -->
+            <div class="col-lg-8">
+                <div class="calendar-container p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Calendário de Atividades</h4>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#activityModal">
+                            <i data-feather="plus" class="me-1"></i>
+                            Nova Atividade
+                        </button>
+                    </div>
+                    <div id="calendar"></div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="activity-form p-4">
+                    <h5>Atividades de Hoje</h5>
+                    <div id="todayActivities" class="mt-3">
+                        <!-- Today's activities will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Modal -->
+    <div class="modal fade" id="activityModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i data-feather="edit-3" class="me-2"></i>
+                        <span id="modalTitle">Nova Atividade</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="activityForm">
+                        <input type="hidden" id="activityId" name="id">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Data</label>
+                                <input type="date" class="form-control" id="activityDate" name="date" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Início</label>
+                                <input type="time" class="form-control" id="activityTimeStart" name="time_start" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Fim</label>
+                                <input type="time" class="form-control" id="activityTimeEnd" name="time_end" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Atividade</label>
+                                <input type="text" class="form-control" id="activityName" name="activity" placeholder="Ex: Treino na academia" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Categoria</label>
+                                <select class="form-select" id="activityCategory" name="category" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="fitness">Fitness</option>
+                                    <option value="trabalho">Trabalho</option>
+                                    <option value="reuniao">Reunião</option>
+                                    <option value="social">Social</option>
+                                    <option value="pessoal">Pessoal</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label">Local</label>
+                            <input type="text" class="form-control" id="activityLocation" name="location" placeholder="Ex: Academia Fitness Plus">
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label">Descrição</label>
+                            <textarea class="form-control" id="activityDescription" name="description" rows="3" placeholder="Descreva como foi a atividade..."></textarea>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="activityStatus" name="status">
+                                    <option value="upcoming">Próxima</option>
+                                    <option value="current">Em andamento</option>
+                                    <option value="completed">Concluída</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Avaliação</label>
+                                <div class="rating-input">
+                                    <div class="btn-group" role="group" data-bs-toggle="buttons">
+                                        <input type="radio" class="btn-check" name="rating" id="rating1" value="1">
+                                        <label class="btn btn-outline-warning btn-sm" for="rating1">⭐</label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="rating2" value="2">
+                                        <label class="btn btn-outline-warning btn-sm" for="rating2">⭐⭐</label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="rating3" value="3">
+                                        <label class="btn btn-outline-warning btn-sm" for="rating3">⭐⭐⭐</label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="rating4" value="4">
+                                        <label class="btn btn-outline-warning btn-sm" for="rating4">⭐⭐⭐⭐</label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="rating5" value="5">
+                                        <label class="btn btn-outline-warning btn-sm" for="rating5">⭐⭐⭐⭐⭐</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="form-label">Mídia (Fotos e Vídeos)</label>
+                            <div class="media-upload-area p-4 text-center" id="mediaUploadArea">
+                                <i data-feather="upload-cloud" size="48" class="text-muted mb-2"></i>
+                                <h6 class="text-muted mb-2">Arraste arquivos aqui ou clique para selecionar</h6>
+                                <p class="text-muted small mb-0">Suporta JPG, PNG, GIF, MP4, MOV</p>
+                                <input type="file" id="mediaFiles" name="media_files" multiple accept="image/*,video/*" class="d-none">
+                            </div>
+                            <div id="mediaPreview" class="mt-3"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteActivity" style="display:none;">
+                        <i data-feather="trash-2" class="me-1"></i>
+                        Excluir
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveActivity">
+                        <i data-feather="save" class="me-1"></i>
+                        Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.15/main.min.js"></script>
+    <script src="{{ url_for('static', filename='admin.js') }}"></script>
+    <script>
+        // Initialize feather icons
+        feather.replace();
+        
+        // Initialize admin when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof AdminManager !== 'undefined') {
+                window.adminManager = new AdminManager();
+            }
+        });
+    </script>
+</body>
+</html>
