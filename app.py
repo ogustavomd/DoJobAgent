@@ -541,5 +541,139 @@ def create_anna_agent_from_config(config):
     
     return agent
 
+# Memory management API routes
+@app.route('/admin/api/memories')
+def get_memories():
+    """Get all memories"""
+    try:
+        from supabase_tools import get_anna_memories
+        result = get_anna_memories(50)
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"Error getting memories: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/memories', methods=['POST'])
+def create_memory():
+    """Create new memory"""
+    try:
+        from supabase_tools import save_anna_memory
+        data = request.get_json()
+        
+        memory_data = {
+            'name': data.get('name'),
+            'description': data.get('description'),
+            'when_to_use': data.get('when_to_use'),
+            'content': data.get('content'),
+            'keywords': data.get('keywords', []),
+            'is_active': True
+        }
+        
+        result = save_anna_memory(memory_data)
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"Error creating memory: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/memories/<int:memory_id>', methods=['PUT'])
+def update_memory(memory_id):
+    """Update memory"""
+    try:
+        from supabase_tools import update_anna_memory
+        data = request.get_json()
+        
+        memory_data = {
+            'name': data.get('name'),
+            'description': data.get('description'),
+            'when_to_use': data.get('when_to_use'),
+            'content': data.get('content'),
+            'keywords': data.get('keywords', []),
+            'is_active': data.get('is_active', True)
+        }
+        
+        result = update_anna_memory(memory_id, memory_data)
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"Error updating memory: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/memories/<int:memory_id>', methods=['DELETE'])
+def delete_memory(memory_id):
+    """Delete memory"""
+    try:
+        from supabase_tools import delete_anna_memory
+        result = delete_anna_memory(memory_id)
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"Error deleting memory: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Image bank management API routes
+@app.route('/admin/api/images')
+def get_image_bank():
+    """Get all images from bank"""
+    try:
+        from supabase_tools import get_anna_images
+        result = get_anna_images(50)
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"Error getting images: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/images', methods=['POST'])
+def create_image_bank_entry():
+    """Create new image bank entry"""
+    try:
+        from supabase_tools import save_anna_image
+        data = request.get_json()
+        
+        image_data = {
+            'name': data.get('name'),
+            'description': data.get('description'),
+            'when_to_use': data.get('when_to_use'),
+            'image_url': data.get('image_url'),
+            'keywords': data.get('keywords', []),
+            'is_active': True
+        }
+        
+        result = save_anna_image(image_data)
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"Error creating image: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/images/<int:image_id>', methods=['PUT'])
+def update_image_bank_entry(image_id):
+    """Update image bank entry"""
+    try:
+        from supabase_tools import update_anna_image
+        data = request.get_json()
+        
+        image_data = {
+            'name': data.get('name'),
+            'description': data.get('description'),
+            'when_to_use': data.get('when_to_use'),
+            'image_url': data.get('image_url'),
+            'keywords': data.get('keywords', []),
+            'is_active': data.get('is_active', True)
+        }
+        
+        result = update_anna_image(image_id, image_data)
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"Error updating image: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/images/<int:image_id>', methods=['DELETE'])
+def delete_image_bank_entry(image_id):
+    """Delete image bank entry"""
+    try:
+        from supabase_tools import delete_anna_image
+        result = delete_anna_image(image_id)
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"Error deleting image: {e}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)

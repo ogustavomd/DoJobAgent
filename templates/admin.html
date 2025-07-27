@@ -132,17 +132,67 @@
         </header>
 
         <div class="row">
-            <!-- Calendar Column -->
+            <!-- Main Content Column -->
             <div class="col-lg-8">
-                <div class="calendar-container p-4">
+                <div class="tab-content" id="adminTabContent">
+                    <!-- Calendar Tab -->
+                    <div class="tab-pane fade show active" id="calendar" role="tabpanel">
+                        <div class="calendar-container p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4>Calendário de Atividades</h4>
+                        <div>
+                            <h4>Painel de Administração</h4>
+                            <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar" type="button" role="tab">
+                                        <i data-feather="calendar" class="me-1"></i>Rotinas
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="memories-tab" data-bs-toggle="tab" data-bs-target="#memories" type="button" role="tab">
+                                        <i data-feather="brain" class="me-1"></i>Memórias
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button" role="tab">
+                                        <i data-feather="image" class="me-1"></i>Banco de Imagens
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#activityModal">
                             <i data-feather="plus" class="me-1"></i>
                             Nova Atividade
                         </button>
                     </div>
-                    <div id="calendar"></div>
+                            <div id="calendar"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Memories Tab -->
+                    <div class="tab-pane fade" id="memories" role="tabpanel">
+                        <div class="p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Gerenciar Memórias</h5>
+                                <button class="btn btn-primary" onclick="openMemoryModal()">
+                                    <i data-feather="plus" class="me-1"></i>Nova Memória
+                                </button>
+                            </div>
+                            <div id="memories-list"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Images Tab -->
+                    <div class="tab-pane fade" id="images" role="tabpanel">
+                        <div class="p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Banco de Imagens</h5>
+                                <button class="btn btn-primary" onclick="openImageModal()">
+                                    <i data-feather="plus" class="me-1"></i>Nova Imagem
+                                </button>
+                            </div>
+                            <div id="images-list"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -211,9 +261,28 @@
                             <input type="text" class="form-control" id="activityLocation" name="location" placeholder="Ex: Academia Fitness Plus">
                         </div>
 
-                        <div class="mt-3">
-                            <label class="form-label">Descrição</label>
-                            <textarea class="form-control" id="activityDescription" name="description" rows="3" placeholder="Descreva como foi a atividade..."></textarea>
+                        <div class="row mt-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Descrição</label>
+                                <textarea class="form-control" id="activityDescription" name="description" rows="3" placeholder="Descreva como foi a atividade..."></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Tipo de Ação</label>
+                                <select class="form-control" id="actionType" name="action_type">
+                                    <option value="consulta">Consulta (buscar dados)</option>
+                                    <option value="envio">Envio (enviar automático)</option>
+                                </select>
+                                
+                                <div id="envioFields" class="mt-3" style="display: none;">
+                                    <label class="form-label">Mensagem para Envio</label>
+                                    <textarea class="form-control" id="envioMessage" name="envio_message" rows="2" placeholder="Mensagem que será enviada automaticamente"></textarea>
+                                    
+                                    <label class="form-label mt-2">Imagem (opcional)</label>
+                                    <select class="form-control" id="envioImage" name="envio_image">
+                                        <option value="">Selecione uma imagem...</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
 
@@ -239,6 +308,123 @@
                     <button type="button" class="btn btn-primary" id="saveActivity">
                         <i data-feather="save" class="me-1"></i>
                         Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memory Modal -->
+    <div class="modal fade" id="memoryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i data-feather="brain" class="me-2"></i>
+                        <span id="memoryModalTitle">Nova Memória</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="memoryForm">
+                        <input type="hidden" id="memoryId" name="id">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nome da Memória</label>
+                            <input type="text" class="form-control" id="memoryName" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Descrição</label>
+                            <textarea class="form-control" id="memoryDescription" name="description" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Quando Usar</label>
+                            <textarea class="form-control" id="memoryWhenToUse" name="when_to_use" rows="2" placeholder="Descreva em que situações Anna deve usar esta memória"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Conteúdo da Memória</label>
+                            <textarea class="form-control" id="memoryContent" name="content" rows="4" placeholder="O conteúdo detalhado da memória"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Palavras-chave (separadas por vírgula)</label>
+                            <input type="text" class="form-control" id="memoryKeywords" name="keywords" placeholder="palavra1, palavra2, palavra3">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteMemory" style="display:none;">
+                        <i data-feather="trash-2" class="me-1"></i>Excluir
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveMemory">
+                        <i data-feather="save" class="me-1"></i>Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i data-feather="image" class="me-2"></i>
+                        <span id="imageModalTitle">Nova Imagem</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="imageForm">
+                        <input type="hidden" id="imageId" name="id">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nome da Imagem</label>
+                            <input type="text" class="form-control" id="imageName" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">URL da Imagem</label>
+                            <input type="url" class="form-control" id="imageUrl" name="image_url" required>
+                            <div class="form-text">Cole o link direto da imagem (Unsplash, etc.)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Descrição</label>
+                            <textarea class="form-control" id="imageDescription" name="description" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Quando Usar</label>
+                            <textarea class="form-control" id="imageWhenToUse" name="when_to_use" rows="2" placeholder="Descreva quando Anna deve usar esta imagem"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Palavras-chave (separadas por vírgula)</label>
+                            <input type="text" class="form-control" id="imageKeywords" name="keywords" placeholder="palavra1, palavra2, palavra3">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Preview da Imagem</label>
+                            <div id="imagePreview" class="text-center">
+                                <img id="previewImg" src="" alt="Preview" class="img-fluid" style="max-height: 200px; display: none;">
+                                <p class="text-muted">Digite uma URL acima para ver o preview</p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteImage" style="display:none;">
+                        <i data-feather="trash-2" class="me-1"></i>Excluir
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveImage">
+                        <i data-feather="save" class="me-1"></i>Salvar
                     </button>
                 </div>
             </div>

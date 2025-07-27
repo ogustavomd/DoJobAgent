@@ -4,10 +4,13 @@ class AdminManager {
         this.currentActivity = null;
         this.mediaFiles = [];
         this.existingMedia = [];
+        this.currentMemory = null;
+        this.currentImage = null;
         
         this.initializeCalendar();
         this.initializeEventListeners();
         this.loadTodayActivities();
+        setTimeout(() => this.initializeTabHandlers(), 100);
     }
 
     initializeCalendar() {
@@ -386,4 +389,414 @@ class AdminManager {
             }
         }, 5000);
     }
+
+    // Tab handling methods
+    initializeTabHandlers() {
+        document.getElementById('memories-tab').addEventListener('click', () => {
+            this.loadMemories();
+        });
+        
+        document.getElementById('images-tab').addEventListener('click', () => {
+            this.loadImages();
+        });
+        
+        // Action type handler for routines
+        document.getElementById('actionType').addEventListener('change', (e) => {
+            const envioFields = document.getElementById('envioFields');
+            if (e.target.value === 'envio') {
+                envioFields.style.display = 'block';
+                this.loadImagesForSelect();
+            } else {
+                envioFields.style.display = 'none';
+            }
+        });
+        
+        // Image URL preview
+        document.getElementById('imageUrl').addEventListener('input', (e) => {
+            this.updateImagePreview(e.target.value);
+        });
+    }
+
+    // Memory management methods
+    async loadMemories() {
+        try {
+            const response = await fetch('/admin/api/memories');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.renderMemories(data.memories);
+            } else {
+                console.error('Error loading memories:', data.error);
+            }
+        } catch (error) {
+            console.error('Error loading memories:', error);
+        }
+    }
+
+    renderMemories(memories) {
+        const container = document.getElementById('memories-list');
+        container.innerHTML = '';
+        
+        memories.forEach(memory => {
+            const memoryCard = document.createElement('div');
+            memoryCard.className = 'card mb-3';
+            memoryCard.innerHTML = `
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title">${memory.name}</h6>
+                            <p class="card-text text-muted">${memory.description}</p>
+                            <small class="text-muted">Quando usar: ${memory.when_to_use || 'Não especificado'}</small>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="adminManager.editMemory(${memory.id})">
+                                <i data-feather="edit-2"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="adminManager.deleteMemoryConfirm(${memory.id})">
+                                <i data-feather="trash-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    ${memory.keywords && memory.keywords.length > 0 ? `
+                        <div class="mt-2">
+                            ${memory.keywords.map(keyword => `<span class="badge bg-secondary me-1">${keyword}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            container.appendChild(memoryCard);
+        });
+        
+        // Re-initialize feather icons
+        feather.replace();
+    }
+
+    editMemory(memoryId) {
+        // Load memory data and open modal
+        fetch(`/admin/api/memories`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const memory = data.memories.find(m => m.id === memoryId);
+                    if (memory) {
+                        this.openMemoryModal(memory);
+                    }
+                }
+            });
+    }
+
+    openMemoryModal(memory = null) {
+        this.currentMemory = memory;
+        const modal = new bootstrap.Modal(document.getElementById('memoryModal'));
+        
+        if (memory) {
+            document.getElementById('memoryModalTitle').textContent = 'Editar Memória';
+            document.getElementById('memoryId').value = memory.id;
+            document.getElementById('memoryName').value = memory.name;
+            document.getElementById('memoryDescription').value = memory.description;
+            document.getElementById('memoryWhenToUse').value = memory.when_to_use || '';
+            document.getElementById('memoryContent').value = memory.content || '';
+            document.getElementById('memoryKeywords').value = memory.keywords ? memory.keywords.join(', ') : '';
+            document.getElementById('deleteMemory').style.display = 'inline-block';
+        } else {
+            document.getElementById('memoryModalTitle').textContent = 'Nova Memória';
+            document.getElementById('memoryForm').reset();
+            document.getElementById('deleteMemory').style.display = 'none';
+        }
+        
+        modal.show();
+    }
+
+    async saveMemory() {
+        const form = document.getElementById('memoryForm');
+        const formData = new FormData(form);
+        
+        const memoryData = {
+            name: formData.get('name'),
+            description: formData.get('description'),
+            when_to_use: formData.get('when_to_use'),
+            content: formData.get('content'),
+            keywords: formData.get('keywords').split(',').map(k => k.trim()).filter(k => k)
+        };
+        
+        try {
+            const memoryId = formData.get('id');
+            const url = memoryId ? `/admin/api/memories/${memoryId}` : '/admin/api/memories';
+            const method = memoryId ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(memoryData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                bootstrap.Modal.getInstance(document.getElementById('memoryModal')).hide();
+                this.loadMemories();
+            } else {
+                alert('Erro ao salvar memória: ' + result.error);
+            }
+        } catch (error) {
+            alert('Erro ao salvar memória: ' + error.message);
+        }
+    }
+
+    // Image management methods
+    async loadImages() {
+        try {
+            const response = await fetch('/admin/api/images');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.renderImages(data.images);
+            } else {
+                console.error('Error loading images:', data.error);
+            }
+        } catch (error) {
+            console.error('Error loading images:', error);
+        }
+    }
+
+    renderImages(images) {
+        const container = document.getElementById('images-list');
+        container.innerHTML = '';
+        
+        const row = document.createElement('div');
+        row.className = 'row';
+        
+        images.forEach(image => {
+            const imageCard = document.createElement('div');
+            imageCard.className = 'col-md-6 col-lg-4 mb-4';
+            imageCard.innerHTML = `
+                <div class="card">
+                    <img src="${image.image_url}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="${image.name}">
+                    <div class="card-body">
+                        <h6 class="card-title">${image.name}</h6>
+                        <p class="card-text text-muted small">${image.description}</p>
+                        ${image.keywords && image.keywords.length > 0 ? `
+                            <div class="mb-2">
+                                ${image.keywords.map(keyword => `<span class="badge bg-secondary me-1">${keyword}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        <div class="btn-group btn-group-sm w-100">
+                            <button class="btn btn-outline-primary" onclick="adminManager.editImage(${image.id})">
+                                <i data-feather="edit-2"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="adminManager.deleteImageConfirm(${image.id})">
+                                <i data-feather="trash-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            row.appendChild(imageCard);
+        });
+        
+        container.appendChild(row);
+        feather.replace();
+    }
+
+    editImage(imageId) {
+        fetch(`/admin/api/images`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const image = data.images.find(i => i.id === imageId);
+                    if (image) {
+                        this.openImageModal(image);
+                    }
+                }
+            });
+    }
+
+    openImageModal(image = null) {
+        this.currentImage = image;
+        const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+        
+        if (image) {
+            document.getElementById('imageModalTitle').textContent = 'Editar Imagem';
+            document.getElementById('imageId').value = image.id;
+            document.getElementById('imageName').value = image.name;
+            document.getElementById('imageUrl').value = image.image_url;
+            document.getElementById('imageDescription').value = image.description;
+            document.getElementById('imageWhenToUse').value = image.when_to_use || '';
+            document.getElementById('imageKeywords').value = image.keywords ? image.keywords.join(', ') : '';
+            document.getElementById('deleteImage').style.display = 'inline-block';
+            this.updateImagePreview(image.image_url);
+        } else {
+            document.getElementById('imageModalTitle').textContent = 'Nova Imagem';
+            document.getElementById('imageForm').reset();
+            document.getElementById('deleteImage').style.display = 'none';
+            this.updateImagePreview('');
+        }
+        
+        modal.show();
+    }
+
+    updateImagePreview(url) {
+        const preview = document.getElementById('previewImg');
+        const placeholder = document.querySelector('#imagePreview .text-muted');
+        
+        if (url) {
+            preview.src = url;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        } else {
+            preview.style.display = 'none';
+            placeholder.style.display = 'block';
+        }
+    }
+
+    async saveImage() {
+        const form = document.getElementById('imageForm');
+        const formData = new FormData(form);
+        
+        const imageData = {
+            name: formData.get('name'),
+            image_url: formData.get('image_url'),
+            description: formData.get('description'),
+            when_to_use: formData.get('when_to_use'),
+            keywords: formData.get('keywords').split(',').map(k => k.trim()).filter(k => k)
+        };
+        
+        try {
+            const imageId = formData.get('id');
+            const url = imageId ? `/admin/api/images/${imageId}` : '/admin/api/images';
+            const method = imageId ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(imageData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                bootstrap.Modal.getInstance(document.getElementById('imageModal')).hide();
+                this.loadImages();
+            } else {
+                alert('Erro ao salvar imagem: ' + result.error);
+            }
+        } catch (error) {
+            alert('Erro ao salvar imagem: ' + error.message);
+        }
+    }
+
+    async loadImagesForSelect() {
+        try {
+            const response = await fetch('/admin/api/images');
+            const data = await response.json();
+            
+            if (data.success) {
+                const select = document.getElementById('envioImage');
+                select.innerHTML = '<option value="">Selecione uma imagem...</option>';
+                
+                data.images.forEach(image => {
+                    const option = document.createElement('option');
+                    option.value = image.id;
+                    option.textContent = image.name;
+                    select.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading images for select:', error);
+        }
+    }
+
+    deleteMemoryConfirm(memoryId) {
+        if (confirm('Tem certeza que deseja excluir esta memória?')) {
+            this.deleteMemory(memoryId);
+        }
+    }
+
+    async deleteMemory(memoryId) {
+        try {
+            const response = await fetch(`/admin/api/memories/${memoryId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.loadMemories();
+            } else {
+                alert('Erro ao excluir memória: ' + result.error);
+            }
+        } catch (error) {
+            alert('Erro ao excluir memória: ' + error.message);
+        }
+    }
+
+    deleteImageConfirm(imageId) {
+        if (confirm('Tem certeza que deseja excluir esta imagem?')) {
+            this.deleteImage(imageId);
+        }
+    }
+
+    async deleteImage(imageId) {
+        try {
+            const response = await fetch(`/admin/api/images/${imageId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.loadImages();
+            } else {
+                alert('Erro ao excluir imagem: ' + result.error);
+            }
+        } catch (error) {
+            alert('Erro ao excluir imagem: ' + error.message);
+        }
+    }
 }
+
+// Global functions for modal handling
+function openMemoryModal() {
+    window.adminManager.openMemoryModal();
+}
+
+function openImageModal() {
+    window.adminManager.openImageModal();
+}
+
+// Add event listeners for save buttons when DOM loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        if (document.getElementById('saveMemory')) {
+            document.getElementById('saveMemory').addEventListener('click', () => {
+                window.adminManager.saveMemory();
+            });
+        }
+        
+        if (document.getElementById('saveImage')) {
+            document.getElementById('saveImage').addEventListener('click', () => {
+                window.adminManager.saveImage();
+            });
+        }
+        
+        if (document.getElementById('deleteMemory')) {
+            document.getElementById('deleteMemory').addEventListener('click', () => {
+                if (window.adminManager.currentMemory) {
+                    window.adminManager.deleteMemoryConfirm(window.adminManager.currentMemory.id);
+                }
+            });
+        }
+        
+        if (document.getElementById('deleteImage')) {
+            document.getElementById('deleteImage').addEventListener('click', () => {
+                if (window.adminManager.currentImage) {
+                    window.adminManager.deleteImageConfirm(window.adminManager.currentImage.id);
+                }
+            });
+        }
+    }, 100);
+});

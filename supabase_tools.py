@@ -447,3 +447,95 @@ Seja sempre natural, humana e engajada. Responda como Anna responderia de verdad
             'temperature': 0.7,
             'max_tokens': 1000
         }
+
+
+# Memory management functions
+def get_anna_memories(limit: int = 10) -> dict:
+    """Get Anna's memories"""
+    try:
+        response = supabase.table('anna_memories').select('*').eq('is_active', True).order('created_at', desc=True).limit(limit).execute()
+        return {'success': True, 'memories': response.data}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+def save_anna_memory(memory_data: dict) -> dict:
+    """Save a new memory"""
+    try:
+        response = supabase.table('anna_memories').insert(memory_data).execute()
+        return {'success': True, 'memory': response.data[0]}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+def update_anna_memory(memory_id: int, memory_data: dict) -> dict:
+    """Update an existing memory"""
+    try:
+        response = supabase.table('anna_memories').update(memory_data).eq('id', memory_id).execute()
+        return {'success': True, 'memory': response.data[0]}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+def delete_anna_memory(memory_id: int) -> dict:
+    """Delete a memory"""
+    try:
+        supabase.table('anna_memories').delete().eq('id', memory_id).execute()
+        return {'success': True}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+# Image bank management functions
+def get_anna_images(limit: int = 20) -> dict:
+    """Get Anna's image bank"""
+    try:
+        response = supabase.table('anna_image_bank').select('*').eq('is_active', True).order('created_at', desc=True).limit(limit).execute()
+        return {'success': True, 'images': response.data}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+def save_anna_image(image_data: dict) -> dict:
+    """Save a new image to bank"""
+    try:
+        response = supabase.table('anna_image_bank').insert(image_data).execute()
+        return {'success': True, 'image': response.data[0]}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+def update_anna_image(image_id: int, image_data: dict) -> dict:
+    """Update an existing image"""
+    try:
+        response = supabase.table('anna_image_bank').update(image_data).eq('id', image_id).execute()
+        return {'success': True, 'image': response.data[0]}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+def delete_anna_image(image_id: int) -> dict:
+    """Delete an image"""
+    try:
+        supabase.table('anna_image_bank').delete().eq('id', image_id).execute()
+        return {'success': True}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+# Scheduled routine functions
+def get_scheduled_routines() -> dict:
+    """Get scheduled routines"""
+    try:
+        response = supabase.table('anna_routine').select('*').eq('is_scheduled', True).eq('is_active', True).order('date', desc=True).execute()
+        return {'success': True, 'routines': response.data}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+def schedule_routine_action(routine_id: int, action_type: str, message: str = None, image_id: int = None) -> dict:
+    """Schedule an automatic action for a routine"""
+    try:
+        action_data = {
+            'routine_id': routine_id,
+            'action_type': action_type,  # 'send_message' or 'query_data'
+            'message': message,
+            'image_id': image_id,
+            'is_active': True,
+            'executed': False
+        }
+        response = supabase.table('routine_actions').insert(action_data).execute()
+        return {'success': True, 'action': response.data[0]}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
