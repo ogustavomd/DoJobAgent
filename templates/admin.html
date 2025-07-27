@@ -748,8 +748,8 @@
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Categoria</label>
-                                <select class="form-control-modern" id="activityCategory">
-                                    <option value="treino">Treino</option>
+                                <select class="form-control-modern" id="activityCategory" required>
+                                    <option value="">Selecione uma categoria</option>
                                     <option value="trabalho">Trabalho</option>
                                     <option value="social">Social</option>
                                     <option value="pessoal">Pessoal</option>
@@ -801,7 +801,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-outline-modern" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn-modern" onclick="saveActivity()">Salvar</button>
+                    <button type="button" class="btn-modern" id="saveActivityBtn" onclick="window.adminManager ? window.adminManager.saveActivity() : console.error('adminManager not found')">Salvar</button>
                 </div>
             </div>
         </div>
@@ -955,11 +955,11 @@
 
                 // Load content for specific tabs
                 if (tabName === 'images') {
-                    if (adminApp && adminApp.loadImages) adminApp.loadImages();
+                    if (window.adminApp && window.adminApp.loadImages) window.adminApp.loadImages();
                 } else if (tabName === 'memories') {
-                    if (adminApp && adminApp.loadMemories) adminApp.loadMemories();
+                    if (window.adminApp && window.adminApp.loadMemories) window.adminApp.loadMemories();
                 } else if (tabName === 'activities') {
-                    if (adminApp && adminApp.loadActivities) adminApp.loadActivities();
+                    if (window.adminApp && window.adminApp.loadActivities) window.adminApp.loadActivities();
                 }
             }
             

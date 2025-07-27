@@ -44,24 +44,36 @@ class AdminManager {
     }
 
     initializeEventListeners() {
-        // Media upload area
+        // Media upload area - check if elements exist first
         const uploadArea = document.getElementById('mediaUploadArea');
         const fileInput = document.getElementById('mediaFiles');
         
-        uploadArea.addEventListener('click', () => fileInput.click());
-        uploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
-        uploadArea.addEventListener('drop', this.handleDrop.bind(this));
+        if (uploadArea && fileInput) {
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
+            uploadArea.addEventListener('drop', this.handleDrop.bind(this));
+            
+            fileInput.addEventListener('change', (e) => {
+                this.handleFileSelect(e.target.files);
+            });
+        }
         
-        fileInput.addEventListener('change', (e) => {
-            this.handleFileSelect(e.target.files);
-        });
+        // Form submission - check if elements exist
+        const saveActivityBtn = document.getElementById('saveActivity');
+        const deleteActivityBtn = document.getElementById('deleteActivity');
+        const activityModal = document.getElementById('activityModal');
         
-        // Form submission
-        document.getElementById('saveActivity').addEventListener('click', this.saveActivity.bind(this));
-        document.getElementById('deleteActivity').addEventListener('click', this.deleteActivity.bind(this));
+        if (saveActivityBtn) {
+            saveActivityBtn.addEventListener('click', this.saveActivity.bind(this));
+        }
         
-        // Modal reset
-        document.getElementById('activityModal').addEventListener('hidden.bs.modal', this.resetModal.bind(this));
+        if (deleteActivityBtn) {
+            deleteActivityBtn.addEventListener('click', this.deleteActivity.bind(this));
+        }
+        
+        if (activityModal) {
+            activityModal.addEventListener('hidden.bs.modal', this.resetModal.bind(this));
+        }
     }
 
     handleDragOver(e) {
@@ -304,7 +316,6 @@ class AdminManager {
                 description: document.getElementById('activityDescription').value,
                 location: document.getElementById('activityLocation').value,
                 category: document.getElementById('activityCategory').value,
-                activity_type: document.getElementById('activityType') ? document.getElementById('activityType').value : 'consulta',
                 media_urls: mediaUrls,
                 status: 'upcoming'
             };

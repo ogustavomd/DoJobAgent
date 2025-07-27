@@ -271,11 +271,10 @@ def admin_create_activity():
             'category': data.get('category'),
             'location': data.get('location', ''),
             'description': data.get('description', ''),
-            'activity_type': data.get('activity_type', 'consulta'),
+
             'status': 'upcoming',
             'has_images': False,
-            'has_videos': False,
-            'rating': None
+            'has_videos': False
         }
         
         # Validate required fields
