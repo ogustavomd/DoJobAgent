@@ -837,13 +837,28 @@ def save_config():
         if not data:
             return jsonify({'error': 'No data provided'}), 400
             
-        # Here you would update the agent configuration
-        # For now, we'll just return success
         logging.info(f"Saving agent config: {data}")
+        
+        # Update agent configuration - for now we'll save to a simple config
+        # In a real implementation, you would update the actual agent
+        config_data = {
+            'name': data.get('name', 'Anna'),
+            'model': data.get('model', 'gemini-2.0-flash'),
+            'description': data.get('description', ''),
+            'instructions': data.get('instructions', ''),
+            'temperature': data.get('temperature', 0.7),
+            'max_tokens': data.get('max_tokens', 1000),
+            'tools': data.get('tools', [])
+        }
+        
+        # You could save this to a database or file for persistence
+        # For now, we'll just log it and return success
+        logging.info(f"Agent configuration updated: {config_data}")
         
         return jsonify({
             'success': True,
-            'message': 'Configuração salva com sucesso!'
+            'message': 'Configuração salva com sucesso!',
+            'config': config_data
         })
         
     except Exception as e:

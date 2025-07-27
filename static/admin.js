@@ -1038,29 +1038,37 @@ function openImageModal() {
 // Add event listeners for save buttons when DOM loads
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
-        if (document.getElementById('saveMemory')) {
-            document.getElementById('saveMemory').addEventListener('click', () => {
-                window.adminManager.saveMemory();
+        const saveMemoryBtn = document.getElementById('saveMemory');
+        if (saveMemoryBtn) {
+            saveMemoryBtn.addEventListener('click', () => {
+                if (window.adminManager) {
+                    window.adminManager.saveMemory();
+                }
             });
         }
         
-        if (document.getElementById('saveImage')) {
-            document.getElementById('saveImage').addEventListener('click', () => {
-                window.adminManager.saveImage();
+        const saveImageBtn = document.getElementById('saveImage');
+        if (saveImageBtn) {
+            saveImageBtn.addEventListener('click', () => {
+                if (window.adminManager) {
+                    window.adminManager.saveImage();
+                }
             });
         }
         
-        if (document.getElementById('deleteMemory')) {
-            document.getElementById('deleteMemory').addEventListener('click', () => {
-                if (window.adminManager.currentMemory) {
+        const deleteMemoryBtn = document.getElementById('deleteMemory');
+        if (deleteMemoryBtn) {
+            deleteMemoryBtn.addEventListener('click', () => {
+                if (window.adminManager && window.adminManager.currentMemory) {
                     window.adminManager.deleteMemoryConfirm(window.adminManager.currentMemory.id);
                 }
             });
         }
         
-        if (document.getElementById('deleteImage')) {
-            document.getElementById('deleteImage').addEventListener('click', () => {
-                if (window.adminManager.currentImage) {
+        const deleteImageBtn = document.getElementById('deleteImage');
+        if (deleteImageBtn) {
+            deleteImageBtn.addEventListener('click', () => {
+                if (window.adminManager && window.adminManager.currentImage) {
                     window.adminManager.deleteImageConfirm(window.adminManager.currentImage.id);
                 }
             });
@@ -1127,20 +1135,38 @@ class AdminApp {
     async saveAgentConfig() {
         try {
             const tools = [];
-            if (document.getElementById('toolRoutines').checked) tools.push('get_anna_routines');
-            if (document.getElementById('toolMemories').checked) tools.push('search_memories');
-            if (document.getElementById('toolMedia').checked) tools.push('get_anna_routine_media');
+            const toolRoutines = document.getElementById('toolRoutines');
+            const toolMemories = document.getElementById('toolMemories');
+            const toolMedia = document.getElementById('toolMedia');
+            
+            if (toolRoutines && toolRoutines.checked) tools.push('get_anna_routines');
+            if (toolMemories && toolMemories.checked) tools.push('search_memories');
+            if (toolMedia && toolMedia.checked) tools.push('get_anna_routine_media');
             tools.push('get_recent_conversations', 'search_content', 'save_conversation_memory');
 
+            const agentName = document.getElementById('agentName');
+            const agentModel = document.getElementById('agentModel');
+            const agentDescription = document.getElementById('agentDescription');
+            const agentInstructions = document.getElementById('agentInstructions');
+            const agentTemperature = document.getElementById('agentTemperature');
+            const agentMaxTokens = document.getElementById('agentMaxTokens');
+
+            if (!agentName || !agentModel) {
+                alert('Elementos de configuração não encontrados na página');
+                return;
+            }
+
             const config = {
-                name: document.getElementById('agentName').value,
-                model: document.getElementById('agentModel').value,
-                description: document.getElementById('agentDescription').value,
-                instructions: document.getElementById('agentInstructions').value,
-                temperature: parseFloat(document.getElementById('agentTemperature').value),
-                max_tokens: parseInt(document.getElementById('agentMaxTokens').value),
+                name: agentName.value || 'Anna',
+                model: agentModel.value || 'gemini-2.0-flash',
+                description: agentDescription ? agentDescription.value : '',
+                instructions: agentInstructions ? agentInstructions.value : '',
+                temperature: agentTemperature ? parseFloat(agentTemperature.value) : 0.7,
+                max_tokens: agentMaxTokens ? parseInt(agentMaxTokens.value) : 1000,
                 tools: tools
             };
+
+            console.log('Salvando configuração:', config);
 
             const response = await fetch('/config/api/config', {
                 method: 'POST',
@@ -1149,11 +1175,15 @@ class AdminApp {
             });
 
             if (response.ok) {
+                const result = await response.json();
                 alert('Configuração salva com sucesso!');
             } else {
+                const error = await response.text();
+                console.error('Erro do servidor:', error);
                 throw new Error('Erro ao salvar configuração');
             }
         } catch (error) {
+            console.error('Erro ao salvar configuração:', error);
             alert('Erro ao salvar configuração: ' + error.message);
         }
     }
