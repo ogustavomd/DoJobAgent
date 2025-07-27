@@ -1201,6 +1201,88 @@ class AdminApp {
         }
     }
 
+    async loadActivities() {
+        try {
+            const response = await fetch('/admin/api/activities');
+            if (response.ok) {
+                const data = await response.json();
+                this.renderCalendar(data.activities || []);
+                this.loadTodayActivities(data.activities || []);
+            }
+        } catch (error) {
+            console.error('Error loading activities:', error);
+        }
+    }
+
+    // Alias for compatibility
+    loadCalendar() {
+        return this.loadActivities();
+    }
+
+    renderCalendar(activities) {
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+
+        // Initialize calendar if not already done
+        if (!this.calendar) {
+            this.calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                locale: 'pt-br',
+                selectable: true,
+                selectMirror: true,
+                dayMaxEvents: true,
+                weekends: true,
+                events: activities.map(activity => ({
+                    id: activity.id,
+                    title: activity.name,
+                    start: activity.date + (activity.time_start ? 'T' + activity.time_start : ''),
+                    end: activity.date + (activity.time_end ? 'T' + activity.time_end : ''),
+                    allDay: !activity.time_start
+                })),
+                eventClick: (info) => {
+                    // Open activity modal for editing
+                    const modal = new bootstrap.Modal(document.getElementById('activityModal'));
+                    modal.show();
+                }
+            });
+            this.calendar.render();
+        } else {
+            // Update existing calendar
+            this.calendar.removeAllEvents();
+            this.calendar.addEventSource(activities.map(activity => ({
+                id: activity.id,
+                title: activity.name,
+                start: activity.date + (activity.time_start ? 'T' + activity.time_start : ''),
+                end: activity.date + (activity.time_end ? 'T' + activity.time_end : ''),
+                allDay: !activity.time_start
+            })));
+        }
+    }
+
+    loadTodayActivities(activities) {
+        const today = new Date().toISOString().split('T')[0];
+        const todayActivities = activities.filter(activity => activity.date === today);
+        
+        const todayContainer = document.getElementById('todayActivities');
+        if (todayContainer) {
+            if (todayActivities.length > 0) {
+                todayContainer.innerHTML = todayActivities.map(activity => `
+                    <div class="today-activity">
+                        <div class="today-activity-title">${activity.name}</div>
+                        <div class="today-activity-time">${activity.time_start || 'Horário livre'}</div>
+                    </div>
+                `).join('');
+            } else {
+                todayContainer.innerHTML = '<div style="color: var(--text-secondary); font-size: 14px;">Nenhuma atividade para hoje</div>';
+            }
+        }
+    }
+
     async saveMemory() {
         try {
             const memoryData = {
@@ -1236,11 +1318,44 @@ class AdminApp {
 
     async saveImage() {
         try {
+            if (!document.getElementById('imageName').value) {
+                alert('Nome da imagem é obrigatório');
+                return;
+            }
+
+            const imageUrl = document.getElementById('imageUrl').value;
+            const fileInput = document.getElementById('imageUpload');
+            
+            if (!imageUrl && !fileInput.files[0]) {
+                alert('URL da imagem ou arquivo é obrigatório');
+                return;
+            }
+
+            let finalImageUrl = imageUrl;
+            
+            // If file upload, handle file first
+            if (fileInput.files[0] && !imageUrl) {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const uploadResponse = await fetch('/admin/api/upload-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (uploadResponse.ok) {
+                    const uploadResult = await uploadResponse.json();
+                    finalImageUrl = uploadResult.url;
+                } else {
+                    throw new Error('Erro ao fazer upload do arquivo');
+                }
+            }
+
             const imageData = {
                 name: document.getElementById('imageName').value,
                 description: document.getElementById('imageDescription').value,
                 when_to_use: document.getElementById('imageWhenToUse').value,
-                image_url: document.getElementById('imageUrl').value,
+                image_url: finalImageUrl,
                 keywords: document.getElementById('imageKeywords').value.split(',').map(k => k.trim()),
                 is_active: true
             };
