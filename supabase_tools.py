@@ -6,7 +6,7 @@ from supabase import create_client, Client
 
 # Initialize Supabase client
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://dzesbxohplkuequmfzbs.supabase.co")
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6ZXNieG9ocGxrdWVxdW1memJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDU0MjcyMDAsImV4cCI6MjAyMTAwMzIwMH0.Y9xXzI7d5nHhkH-qRKMoNcWLJ1s1YcYb0OLhX-QA0lE"
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6ZXNieG9ocGxrdWVxdW1memJzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjMyNzU2MiwiZXhwIjoyMDY3OTAzNTYyfQ.LyeIaTUqi0ZnPwsBO0BVeQvpUqUc8sYJWjKV2q4SIqw")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
