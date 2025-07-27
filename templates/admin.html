@@ -801,7 +801,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-outline-modern" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn-modern" onclick="window.adminApp.saveActivity()">Salvar</button>
+                    <button type="button" class="btn-modern" onclick="saveActivity()">Salvar</button>
                 </div>
             </div>
         </div>
@@ -1098,8 +1098,8 @@
         }
 
         function saveActivity() {
-            if (window.adminApp) {
-                window.adminApp.saveActivity();
+            if (window.adminManager) {
+                window.adminManager.saveActivity();
             }
         }
 
@@ -1143,12 +1143,13 @@
             }, 100);
         }
         
-        // Initialize the admin app after DOM is ready
+        // Initialize both admin managers after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             // Ensure Bootstrap is fully loaded
             if (typeof bootstrap !== 'undefined') {
+                window.adminManager = new AdminManager();
                 window.adminApp = new AdminApp();
-                console.log('AdminApp initialized successfully');
+                console.log('Admin systems initialized successfully');
             } else {
                 console.error('Bootstrap not loaded');
             }

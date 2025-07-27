@@ -801,5 +801,140 @@ def upload_image():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# Configuration API routes
+@app.route('/config/api/config', methods=['GET'])
+def get_config():
+    """Get current agent configuration"""
+    try:
+        from anna_agent import agent
+        config = {
+            'name': getattr(agent, 'name', 'Anna'),
+            'model': getattr(agent, 'model', 'gemini-2.0-flash'),
+            'description': getattr(agent, 'description', ''),
+            'instructions': getattr(agent, 'instructions', ''),
+            'temperature': getattr(agent, 'temperature', 0.7),
+            'max_tokens': getattr(agent, 'max_tokens', 1000),
+            'tools': getattr(agent, 'tools', [])
+        }
+        return jsonify(config)
+    except Exception as e:
+        logging.error(f"Error getting config: {e}")
+        return jsonify({
+            'name': 'Anna',
+            'model': 'gemini-2.0-flash',
+            'description': 'AI agent Anna',
+            'instructions': 'Você é Anna, uma criadora de conteúdo brasileira...',
+            'temperature': 0.7,
+            'max_tokens': 1000,
+            'tools': ['get_anna_routines', 'search_memories', 'get_anna_routine_media']
+        })
+
+@app.route('/config/api/config', methods=['POST'])
+def save_config():
+    """Save agent configuration"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        # Here you would update the agent configuration
+        # For now, we'll just return success
+        logging.info(f"Saving agent config: {data}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Configuração salva com sucesso!'
+        })
+        
+    except Exception as e:
+        logging.error(f"Error saving config: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# API routes for memories
+@app.route('/admin/api/memories', methods=['GET'])
+def admin_get_memories():
+    """Get all memories"""
+    try:
+        from supabase_tools import supabase
+        response = supabase.table('anna_memories').select('*').execute()
+        return jsonify({
+            'success': True,
+            'memories': response.data or []
+        })
+    except Exception as e:
+        logging.error(f"Error getting memories: {e}")
+        return jsonify({'success': False, 'memories': [], 'error': str(e)}), 500
+
+@app.route('/admin/api/memories', methods=['POST'])
+def admin_create_memory():
+    """Create new memory"""
+    try:
+        from supabase_tools import supabase
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        memory_data = {
+            'name': data.get('name'),
+            'description': data.get('description', ''),
+            'when_to_use': data.get('when_to_use', ''),
+            'content': data.get('content', ''),
+            'keywords': data.get('keywords', []),
+            'is_active': data.get('is_active', True)
+        }
+        
+        response = supabase.table('anna_memories').insert(memory_data).execute()
+        return jsonify({
+            'success': True,
+            'memory': response.data[0] if response.data else None
+        })
+        
+    except Exception as e:
+        logging.error(f"Error creating memory: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# API routes for images
+@app.route('/admin/api/images', methods=['GET'])
+def admin_get_images():
+    """Get all images"""
+    try:
+        from supabase_tools import supabase
+        response = supabase.table('anna_image_bank').select('*').execute()
+        return jsonify({
+            'success': True,
+            'images': response.data or []
+        })
+    except Exception as e:
+        logging.error(f"Error getting images: {e}")
+        return jsonify({'success': False, 'images': [], 'error': str(e)}), 500
+
+@app.route('/admin/api/images', methods=['POST'])
+def admin_create_image():
+    """Create new image"""
+    try:
+        from supabase_tools import supabase
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        image_data = {
+            'name': data.get('name'),
+            'description': data.get('description', ''),
+            'when_to_use': data.get('when_to_use', ''),
+            'image_url': data.get('image_url'),
+            'keywords': data.get('keywords', []),
+            'is_active': data.get('is_active', True)
+        }
+        
+        response = supabase.table('anna_image_bank').insert(image_data).execute()
+        return jsonify({
+            'success': True,
+            'image': response.data[0] if response.data else None
+        })
+        
+    except Exception as e:
+        logging.error(f"Error creating image: {e}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)

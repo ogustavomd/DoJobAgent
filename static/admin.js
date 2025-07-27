@@ -1079,6 +1079,13 @@ class AdminApp {
         }, 500);
     }
 
+    // Add saveActivity method to AdminApp as well for compatibility
+    async saveActivity() {
+        if (window.adminManager) {
+            return window.adminManager.saveActivity();
+        }
+    }
+
     // Agent configuration methods
     async loadAgentConfig() {
         try {
