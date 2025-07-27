@@ -60,6 +60,8 @@ Preferred communication style: Simple, everyday language.
   - `/chat`: POST endpoint for message processing
   - `/admin`: Calendar-based admin interface for routine management
   - `/admin/api/*`: RESTful API endpoints for CRUD operations
+  - `/config`: Agent configuration interface
+  - `/config/api/*`: Configuration management endpoints
 - **Session Management**: Maintains conversation continuity
 
 ### 4. Chat Interface (`static/chat.js`, `templates/index.html`)
@@ -134,6 +136,7 @@ The application is designed to be a conversational AI that maintains character c
 - **Fixed Layout Issues**: Chat interface now has proper fixed input field and scrollable conversation area
 - **Better Error Handling**: Enhanced media display with fallback error handling
 - **Admin Interface**: Complete calendar-based management system for routines with media upload capabilities
+- **Configuration Interface**: Dynamic agent configuration system for instructions, tools, and settings
 
 ### Current Database State
 - **Sample Data**: Populated with realistic routine activities, media files, and conversation history
@@ -141,5 +144,6 @@ The application is designed to be a conversational AI that maintains character c
 - **Media Library**: Contains images and videos linked to specific activities using Unsplash and sample video URLs
 - **Status Management**: Activities automatically update their status (upcoming/current/completed) based on current time
 - **Admin Features**: Full CRUD operations with calendar view, media uploads to Supabase storage, and activity ratings
+- **Configuration System**: Real-time agent reconfiguration with instructions, tools, and model settings
 
 The architecture supports easy extension of Anna's capabilities through additional Supabase tools and can accommodate new database tables for expanded functionality.

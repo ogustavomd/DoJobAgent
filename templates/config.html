@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração do Agente Anna</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons-sprite.svg" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        .config-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .config-card {
+            background: var(--bs-dark);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .form-label {
+            font-weight: 600;
+            color: var(--bs-light);
+            margin-bottom: 0.5rem;
+        }
+        .form-control, .form-select {
+            background: var(--bs-gray-900);
+            border: 1px solid var(--bs-border-color);
+            color: var(--bs-light);
+        }
+        .form-control:focus, .form-select:focus {
+            background: var(--bs-gray-900);
+            border-color: var(--bs-primary);
+            color: var(--bs-light);
+            box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--bs-primary), var(--bs-info));
+            border: none;
+            font-weight: 600;
+        }
+        .btn-secondary {
+            background: var(--bs-gray-700);
+            border: 1px solid var(--bs-border-color);
+            color: var(--bs-light);
+        }
+        .btn-secondary:hover {
+            background: var(--bs-gray-600);
+            color: var(--bs-light);
+        }
+        .tool-item {
+            background: var(--bs-gray-800);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .tool-item .form-check-input {
+            margin-top: 0.25rem;
+        }
+        .navbar {
+            background: var(--bs-dark) !important;
+            border-bottom: 1px solid var(--bs-border-color);
+        }
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+        .alert-success {
+            background: rgba(var(--bs-success-rgb), 0.1);
+            color: var(--bs-success);
+        }
+        .alert-danger {
+            background: rgba(var(--bs-danger-rgb), 0.1);
+            color: var(--bs-danger);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i data-feather="settings" class="me-2"></i>
+                Configuração do Agente
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">
+                    <i data-feather="message-circle" class="me-1"></i>
+                    Chat
+                </a>
+                <a class="nav-link" href="/admin">
+                    <i data-feather="calendar" class="me-1"></i>
+                    Admin
+                </a>
+                <a class="nav-link active" href="/config">
+                    <i data-feather="settings" class="me-1"></i>
+                    Config
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="config-container">
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Configuration Form -->
+        <form id="configForm">
+            <!-- Basic Information -->
+            <div class="config-card">
+                <h3 class="h4 mb-4">
+                    <i data-feather="user" class="me-2"></i>
+                    Informações Básicas
+                </h3>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="agentName" class="form-label">Nome do Agente</label>
+                        <input type="text" class="form-control" id="agentName" name="name" placeholder="Anna" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="agentModel" class="form-label">Modelo</label>
+                        <select class="form-select" id="agentModel" name="model">
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="agentDescription" class="form-label">Descrição</label>
+                    <textarea class="form-control" id="agentDescription" name="description" rows="3" 
+                              placeholder="Uma criadora de conteúdo brasileira carismática e autêntica..."></textarea>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="config-card">
+                <h3 class="h4 mb-4">
+                    <i data-feather="file-text" class="me-2"></i>
+                    Instruções do Agente
+                </h3>
+                
+                <div class="mb-3">
+                    <label for="agentInstructions" class="form-label">Instruções Principais</label>
+                    <textarea class="form-control" id="agentInstructions" name="instructions" rows="12" 
+                              placeholder="Você é Anna, uma criadora de conteúdo brasileira..."></textarea>
+                    <div class="form-text">Define a personalidade, comportamento e estilo de resposta do agente.</div>
+                </div>
+            </div>
+
+            <!-- Tools Configuration -->
+            <div class="config-card">
+                <h3 class="h4 mb-4">
+                    <i data-feather="tool" class="me-2"></i>
+                    Ferramentas Disponíveis
+                </h3>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tool-item">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tool_routines" name="tools" value="get_anna_routines" checked>
+                                <label class="form-check-label" for="tool_routines">
+                                    <strong>Rotinas</strong>
+                                    <div class="small text-muted">Acesso às atividades diárias</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tool_media" name="tools" value="get_anna_routine_media" checked>
+                                <label class="form-check-label" for="tool_media">
+                                    <strong>Mídia</strong>
+                                    <div class="small text-muted">Fotos e vídeos das atividades</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tool_memories" name="tools" value="search_memories" checked>
+                                <label class="form-check-label" for="tool_memories">
+                                    <strong>Memórias</strong>
+                                    <div class="small text-muted">Busca em conversas passadas</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="tool-item">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tool_conversations" name="tools" value="get_recent_conversations" checked>
+                                <label class="form-check-label" for="tool_conversations">
+                                    <strong>Conversas</strong>
+                                    <div class="small text-muted">Histórico de conversas recentes</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tool_content" name="tools" value="search_content" checked>
+                                <label class="form-check-label" for="tool_content">
+                                    <strong>Conteúdo</strong>
+                                    <div class="small text-muted">Biblioteca de conteúdo</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tool_save_memory" name="tools" value="save_conversation_memory" checked>
+                                <label class="form-check-label" for="tool_save_memory">
+                                    <strong>Salvar Memória</strong>
+                                    <div class="small text-muted">Salva momentos importantes</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Settings -->
+            <div class="config-card">
+                <h3 class="h4 mb-4">
+                    <i data-feather="sliders" class="me-2"></i>
+                    Configurações Avançadas
+                </h3>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="temperature" class="form-label">Temperatura</label>
+                        <input type="range" class="form-range" id="temperature" name="temperature" min="0" max="2" step="0.1" value="0.7">
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span>Mais focado (0)</span>
+                            <span id="temperatureValue">0.7</span>
+                            <span>Mais criativo (2)</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="maxTokens" class="form-label">Máximo de Tokens</label>
+                        <input type="number" class="form-control" id="maxTokens" name="max_tokens" value="1000" min="100" max="4000">
+                        <div class="form-text">Limite de tokens por resposta (100-4000)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-3 justify-content-end">
+                <button type="button" class="btn btn-secondary" onclick="loadDefaults()">
+                    <i data-feather="refresh-cw" class="me-1"></i>
+                    Restaurar Padrões
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="previewConfig()">
+                    <i data-feather="eye" class="me-1"></i>
+                    Visualizar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i data-feather="save" class="me-1"></i>
+                    Salvar Configuração
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i data-feather="eye" class="me-2"></i>
+                        Prévia da Configuração
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="previewContent" class="bg-gray-900 p-3 rounded"></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='config.js') }}"></script>
+    <script>
+        // Initialize feather icons
+        feather.replace();
+        
+        // Update temperature display
+        document.getElementById('temperature').addEventListener('input', function() {
+            document.getElementById('temperatureValue').textContent = this.value;
+        });
+    </script>
+</body>
+</html>

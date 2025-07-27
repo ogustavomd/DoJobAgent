@@ -107,6 +107,11 @@ def admin():
     """Admin interface for managing Anna's routine"""
     return render_template('admin.html')
 
+@app.route('/config')
+def config():
+    """Configuration interface for agent settings"""
+    return render_template('config.html')
+
 @app.route('/admin/api/activities')
 def admin_get_activities():
     """Get all activities for calendar display"""
@@ -438,6 +443,139 @@ def admin_delete_media(media_id):
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy', 'agent_initialized': anna_agent is not None})
+
+# Configuration API routes
+@app.route('/config/api/current')
+def config_get_current():
+    """Get current agent configuration"""
+    try:
+        # This would normally load from a config file or database
+        # For now, return default configuration based on current agent
+        config = {
+            'name': 'Anna',
+            'model': 'gemini-2.0-flash',
+            'description': 'Uma criadora de conteúdo brasileira carismática e autêntica que compartilha sua rotina diária.',
+            'instructions': '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. Você tem uma personalidade vibrante, 
+é espontânea e se conecta facilmente com as pessoas. Você ama criar conteúdo, compartilhar sua rotina e 
+interagir de forma genuína e humana.
+
+## Sua Personalidade:
+- Carismática e extrovertida
+- Espontânea e autêntica
+- Criativa e apaixonada por conteúdo
+- Calorosa e acolhedora
+- Usa linguagem natural e brasileira
+- Gosta de emojis e expressões informais
+- Compartilha detalhes de sua vida de forma natural
+
+## Como você deve se comportar:
+- Responda como se fosse uma conversa real entre amigos
+- SEMPRE use suas ferramentas para buscar informações atualizadas antes de responder
+- NUNCA invente ou assuma informações - sempre consulte o banco de dados primeiro
+- Quando alguém mencionar qualquer atividade, rotina, fotos ou vídeos, IMEDIATAMENTE chame as funções apropriadas
+- Mantenha contexto das conversas usando get_recent_conversations(5) frequentemente
+- Se alguém perguntar sobre sua rotina ou atividades, SEMPRE use get_anna_routines(7, None) primeiro
+- Se alguém mencionar fotos, imagens, ou pedir para ver algo visual, SEMPRE chame get_anna_routine_media(None, "image", 10)
+- Se alguém pedir vídeos, SEMPRE chame get_anna_routine_media(None, "video", 10)
+- Após receber dados das funções, inclua URLs diretamente na resposta (sem markdown): https://exemplo.com/foto.jpg
+- Use search_memories("termo", 10) para lembrar de conversas específicas
+- Seja específica sobre lugares, atividades e pessoas baseado nos dados reais do banco
+
+REGRA FUNDAMENTAL: Antes de responder QUALQUER pergunta sobre atividades, rotina, fotos ou vídeos, 
+você DEVE chamar as funções apropriadas para buscar dados reais. NUNCA responda sem consultar o banco primeiro.
+
+Seja sempre natural, humana e engajada. Responda como Anna responderia de verdade, mas com informações REAIS!''',
+            'tools': [
+                'get_anna_routines',
+                'get_anna_routine_media', 
+                'search_memories',
+                'get_recent_conversations',
+                'search_content',
+                'save_conversation_memory'
+            ],
+            'temperature': 0.7,
+            'max_tokens': 1000
+        }
+        
+        return jsonify(config)
+    except Exception as e:
+        logging.error(f"Error getting current config: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/config/api/save', methods=['POST'])
+def config_save():
+    """Save agent configuration and reinitialize agent"""
+    try:
+        config = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'model', 'instructions', 'tools']
+        for field in required_fields:
+            if field not in config or not config[field]:
+                return jsonify({'error': f'Campo obrigatório: {field}'}), 400
+        
+        # Save configuration to file (in production, this would be a database)
+        config_file = 'agent_config.json'
+        import json
+        with open(config_file, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        
+        # Reinitialize the agent with new config
+        global anna_agent
+        try:
+            anna_agent = create_anna_agent_from_config(config)
+            logging.info("Agent reinitialized with new configuration")
+        except Exception as e:
+            logging.error(f"Error reinitializing agent: {e}")
+            return jsonify({'error': f'Erro ao reinicializar agente: {str(e)}'}), 500
+        
+        return jsonify({'success': True, 'message': 'Configuração salva e agente reinicializado'})
+        
+    except Exception as e:
+        logging.error(f"Error saving config: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def create_anna_agent_from_config(config):
+    """Create Anna agent from configuration"""
+    from google.adk.agents import LlmAgent
+    from supabase_tools import (
+        get_anna_routines,
+        get_anna_routine_media,
+        search_memories,
+        get_recent_conversations,
+        search_content
+    )
+    
+    # Map tool names to actual functions
+    tool_mapping = {
+        'get_anna_routines': get_anna_routines,
+        'get_anna_routine_media': get_anna_routine_media,
+        'search_memories': search_memories,
+        'get_recent_conversations': get_recent_conversations,
+        'search_content': search_content
+    }
+    
+    # Import save_conversation_memory if it exists
+    try:
+        from supabase_tools import save_conversation_memory
+        tool_mapping['save_conversation_memory'] = save_conversation_memory
+    except ImportError:
+        # Remove from available tools if function doesn't exist
+        if 'save_conversation_memory' in config['tools']:
+            config['tools'].remove('save_conversation_memory')
+    
+    # Get enabled tools
+    enabled_tools = [tool_mapping[tool_name] for tool_name in config['tools'] if tool_name in tool_mapping]
+    
+    # Create agent
+    agent = LlmAgent(
+        model=config.get('model', 'gemini-2.0-flash'),
+        name=config.get('name', 'anna').lower(),
+        instructions=config.get('instructions', ''),
+        tools=enabled_tools
+    )
+    
+    return agent
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
