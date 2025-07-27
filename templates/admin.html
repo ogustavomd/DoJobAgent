@@ -34,14 +34,14 @@
         }
 
         .admin-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: 80px 1fr 300px;
             min-height: 100vh;
             gap: 24px;
             padding: 24px;
         }
 
         .sidebar {
-            width: 80px;
             background: var(--bg-secondary);
             border-radius: 16px;
             padding: 24px 16px;
@@ -75,21 +75,21 @@
         .nav-item {
             width: 48px;
             height: 48px;
+            border-radius: 12px;
             background: transparent;
             border: none;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: var(--text-secondary);
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .nav-item:hover {
             background: var(--bg-tertiary);
             color: var(--text-primary);
+            transform: translateY(-2px);
         }
 
         .nav-item.active {
@@ -99,29 +99,27 @@
         }
 
         .main-content {
-            flex: 1;
             background: var(--bg-secondary);
             border-radius: 16px;
             box-shadow: var(--shadow-subtle);
             overflow: hidden;
+            position: relative;
         }
 
         .content-header {
             padding: 32px;
             border-bottom: 1px solid var(--border-color);
-            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple-hover) 100%);
         }
 
         .content-header h1 {
-            font-size: 32px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 600;
             margin: 0 0 8px 0;
-            color: white;
         }
 
         .content-header p {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            color: var(--text-secondary);
             margin: 0;
         }
 
@@ -129,27 +127,38 @@
             padding: 32px;
         }
 
-        .tab-content-area {
-            background: var(--bg-tertiary);
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: var(--shadow-subtle);
+        .text-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
         }
 
-        .sidebar-right {
-            width: 320px;
-            background: rgba(26, 26, 29, 0.8);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: var(--shadow-subtle);
-            backdrop-filter: blur(10px);
+        .text-body {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .btn-modern {
             background: var(--accent-purple);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 12px 20px;
             font-weight: 500;
             font-size: 14px;
@@ -163,17 +172,17 @@
 
         .btn-modern:hover {
             background: var(--accent-purple-hover);
-            box-shadow: var(--shadow-accent);
             transform: translateY(-2px);
+            box-shadow: var(--shadow-accent);
             color: white;
         }
 
         .btn-outline-modern {
             background: transparent;
             color: var(--accent-purple);
-            border: 2px solid var(--accent-purple);
-            border-radius: 12px;
-            padding: 10px 18px;
+            border: 1px solid var(--accent-purple);
+            border-radius: 8px;
+            padding: 12px 20px;
             font-weight: 500;
             font-size: 14px;
             cursor: pointer;
@@ -187,69 +196,46 @@
         .btn-outline-modern:hover {
             background: var(--accent-purple);
             color: white;
-            box-shadow: var(--shadow-accent);
             transform: translateY(-2px);
-        }
-
-        .card-modern {
-            background: var(--bg-tertiary);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: var(--shadow-subtle);
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-
-        .card-modern:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--shadow-accent);
         }
 
         .form-control-modern {
             background: var(--bg-tertiary);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             padding: 12px 16px;
             color: var(--text-primary);
             font-size: 14px;
             transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .form-control-modern:focus {
             outline: none;
             border-color: var(--accent-purple);
-            box-shadow: 0 0 0 4px rgba(143, 92, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(143, 92, 255, 0.1);
         }
 
-        .form-control-modern::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .text-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
+        .sidebar-right {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-subtle);
         }
 
         .text-subtitle {
-            font-size: 18px;
-            font-weight: 500;
+            font-size: 16px;
+            font-weight: 600;
             color: var(--text-primary);
             margin-bottom: 16px;
         }
 
-        .text-body {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
         .images-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 24px;
-            margin-top: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
         }
 
         .image-card {
@@ -267,173 +253,30 @@
 
         .image-card img {
             width: 100%;
-            height: 200px;
+            height: 150px;
             object-fit: cover;
         }
 
         .image-card-body {
-            padding: 20px;
+            padding: 16px;
         }
 
         .image-card-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--text-primary);
             margin-bottom: 8px;
         }
 
         .image-card-text {
-            font-size: 14px;
+            font-size: 12px;
             color: var(--text-secondary);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .image-card-actions {
             display: flex;
-            gap: 12px;
-        }
-
-        .btn-sm-modern {
-            padding: 8px 12px;
-            font-size: 12px;
-            border-radius: 8px;
-        }
-
-        .modal-content {
-            background: var(--bg-secondary);
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-header {
-            border-bottom: 1px solid var(--border-color);
-            padding: 24px;
-        }
-
-        .modal-title {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .modal-body {
-            padding: 24px;
-        }
-
-        .modal-footer {
-            border-top: 1px solid var(--border-color);
-            padding: 24px;
-        }
-
-        .btn-close {
-            filter: invert(1);
-        }
-
-        .alert-modern {
-            background: rgba(143, 92, 255, 0.1);
-            border: 1px solid rgba(143, 92, 255, 0.3);
-            border-radius: 12px;
-            padding: 16px;
-            color: var(--text-primary);
-        }
-
-        .calendar-container {
-            background: var(--bg-tertiary);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: var(--shadow-subtle);
-        }
-
-        /* FullCalendar customization */
-        .fc {
-            background: transparent;
-        }
-
-        .fc-theme-standard .fc-scrollgrid {
-            border: 1px solid var(--border-color);
-        }
-
-        .fc-theme-standard td, .fc-theme-standard th {
-            border-color: var(--border-color);
-        }
-
-        .fc-col-header-cell {
-            background: var(--bg-secondary);
-        }
-
-        .fc-daygrid-day {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .fc-button {
-            background: var(--accent-purple) !important;
-            border-color: var(--accent-purple) !important;
-            border-radius: 8px !important;
-        }
-
-        .fc-button:hover {
-            background: var(--accent-purple-hover) !important;
-        }
-
-        .fc-event {
-            background: var(--accent-purple);
-            border-color: var(--accent-purple);
-            border-radius: 6px;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-tertiary);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent-purple);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-purple-hover);
-        }
-
-        /* Animation for particles background */
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .floating-particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: var(--accent-purple);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-            opacity: 0.3;
-        }
-
-        .tab-panel {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            gap: 8px;
         }
 
         .memory-card {
@@ -489,6 +332,45 @@
             transform: translateY(-2px);
         }
 
+        .btn-sm-modern {
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+
+        .alert-modern {
+            background: rgba(143, 92, 255, 0.1);
+            border: 1px solid rgba(143, 92, 255, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            color: var(--text-primary);
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
         select.form-control-modern {
             appearance: none;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
@@ -504,41 +386,28 @@
             accent-color: var(--accent-purple);
         }
 
-        .form-grid {
-            display: grid;
-            gap: 20px;
+        /* Modal Overrides */
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-row-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-        }
-
-        .today-activity {
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            border-left: 4px solid var(--accent-purple);
-        }
-
-        .today-activity-title {
-            font-size: 14px;
-            font-weight: 600;
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
             color: var(--text-primary);
-            margin-bottom: 4px;
         }
 
-        .today-activity-time {
-            font-size: 12px;
-            color: var(--text-secondary);
+        .modal-body {
+            color: var(--text-primary);
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-close {
+            filter: invert(1);
         }
     </style>
 </head>
@@ -589,203 +458,143 @@
             </div>
             
             <div class="content-body">
-                <div class="tab-content-area">
-
-                    <!-- Tab Content -->
-                    <div class="tab-content" id="tabContent">
-                        <!-- Chat Tab -->
-                        <div class="tab-panel active" id="chat-panel">
-                            <div class="text-title">Interface de Chat</div>
-                            <div class="text-body">Converse diretamente com a Anna através do chat principal.</div>
-                            <div style="margin-top: 24px; text-align: center;">
-                                <a href="/" class="btn-modern" target="_blank">
-                                    <i data-lucide="external-link" width="16" height="16"></i>
-                                    Abrir Chat Principal
-                                </a>
-                            </div>
-                        </div>
-
-
-
-                    <!-- Activities Tab -->
-                    <div class="tab-pane fade" id="activities" role="tabpanel" aria-labelledby="activities-tab">
-                        <div class="calendar-container p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5>Gerenciar Atividades</h5>
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#activityModal">
-                                    <i data-feather="plus" class="me-1"></i>
-                                    Nova Atividade
-                                </button>
-                            </div>
-                            <div id="calendar"></div>
-                        </div>
-                    </div>
-
-                    <!-- Knowledge Tab -->
-                    <div class="tab-pane fade" id="knowledge" role="tabpanel" aria-labelledby="knowledge-tab">
-                        <div class="p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5>Banco de Conhecimento</h5>
-                                <button class="btn btn-primary" onclick="openKnowledgeModal()">
-                                    <i data-feather="plus" class="me-1"></i>
-                                    Novo Conhecimento
-                                </button>
-                            </div>
-                            <div id="knowledge-list">
-                                <div class="alert alert-info">
-                                    <h6>Banco de Conhecimento</h6>
-                                    <p>Aqui serão armazenados artigos, documentos e conteúdo educacional da Anna.</p>
-                                    <p class="mb-0"><em>Funcionalidade em desenvolvimento...</em></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                        <!-- Agent Tab -->
-                        <div class="tab-panel" id="agent-panel" style="display: none;">
-                            <div class="text-title">Configuração do Agente</div>
-                            <div class="text-body" style="margin-bottom: 24px;">Configure a personalidade e comportamento da Anna</div>
-                            
-                            <form id="agentConfigForm" style="display: grid; gap: 24px;">
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                                    <div>
-                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Nome do Agente</label>
-                                        <input type="text" class="form-control-modern" id="agentName" value="Anna">
-                                    </div>
-                                    <div>
-                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Modelo</label>
-                                        <select class="form-control-modern" id="agentModel">
-                                            <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Descrição</label>
-                                    <textarea class="form-control-modern" id="agentDescription" rows="2" 
-                                        placeholder="Uma criadora de conteúdo brasileira carismática..."></textarea>
-                                </div>
-                                
-                                <div>
-                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Instruções de Personalidade</label>
-                                    <textarea class="form-control-modern" id="agentInstructions" rows="8" 
-                                        placeholder="Digite as instruções de personalidade da Anna..."></textarea>
-                                </div>
-                                
-                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-                                    <div>
-                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Temperatura (0-1)</label>
-                                        <input type="number" class="form-control-modern" id="agentTemperature" 
-                                            min="0" max="1" step="0.1" value="0.7">
-                                    </div>
-                                    <div>
-                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Max Tokens</label>
-                                        <input type="number" class="form-control-modern" id="agentMaxTokens" value="1000">
-                                    </div>
-                                    <div>
-                                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Ferramentas Ativas</label>
-                                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                                            <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 14px;">
-                                                <input type="checkbox" id="toolRoutines" checked>
-                                                Rotinas
-                                            </label>
-                                            <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 14px;">
-                                                <input type="checkbox" id="toolMemories" checked>
-                                                Memórias
-                                            </label>
-                                            <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 14px;">
-                                                <input type="checkbox" id="toolMedia" checked>
-                                                Mídia
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div style="text-align: right;">
-                                    <button type="button" class="btn-modern" onclick="saveAgentConfig()">
-                                        <i data-lucide="save" width="16" height="16"></i>
-                                        Salvar Configuração
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Activities Tab -->
-                        <div class="tab-panel" id="activities-panel" style="display: none;">
-                            <div class="text-title">Gerenciar Atividades</div>
-                            <div class="text-body" style="margin-bottom: 24px;">Visualize e gerencie as atividades da Anna</div>
-                            
-                            <div class="calendar-container">
-                                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 24px;">
-                                    <button class="btn-modern" data-bs-toggle="modal" data-bs-target="#activityModal">
-                                        <i data-lucide="plus" width="16" height="16"></i>
-                                        Nova Atividade
-                                    </button>
-                                </div>
-                                <div id="calendar"></div>
-                            </div>
-                        </div>
-
-                        <!-- Knowledge Tab -->
-                        <div class="tab-panel" id="knowledge-panel" style="display: none;">
-                            <div class="text-title">Banco de Conhecimento</div>
-                            <div class="text-body" style="margin-bottom: 24px;">Gerencie o conhecimento e conteúdo da Anna</div>
-                            
-                            <div class="alert-modern">
-                                <h6 style="color: var(--text-primary); margin-bottom: 8px;">Banco de Conhecimento</h6>
-                                <p style="margin-bottom: 8px;">Aqui serão armazenados artigos, documentos e conteúdo educacional da Anna.</p>
-                                <p style="margin: 0;"><em>Funcionalidade em desenvolvimento...</em></p>
-                            </div>
-                        </div>
-
-                        <!-- Images Tab -->
-                        <div class="tab-panel" id="images-panel" style="display: none;">
-                            <div class="text-title">Banco de Imagens</div>
-                            <div class="text-body" style="margin-bottom: 24px;">Gerencie as imagens e mídia da Anna</div>
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-                                <button class="btn-modern" onclick="openImageModal()">
-                                    <i data-lucide="plus" width="16" height="16"></i>
-                                    Nova Imagem
-                                </button>
-                            </div>
-                            
-                            <div id="images-list" class="images-grid"></div>
-                        </div>
-
-                        <!-- Memories Tab -->
-                        <div class="tab-panel" id="memories-panel" style="display: none;">
-                            <div class="text-title">Banco de Memória</div>
-                            <div class="text-body" style="margin-bottom: 24px;">Gerencie as memórias e experiências da Anna</div>
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-                                <button class="btn-modern" onclick="openMemoryModal()">
-                                    <i data-lucide="plus" width="16" height="16"></i>
-                                    Nova Memória
-                                </button>
-                            </div>
-                            
-                            <div id="memories-list"></div>
-                        </div>
-                    </div>
-
-                    <!-- Memories Tab -->
-                    <div class="tab-pane fade" id="memories" role="tabpanel" aria-labelledby="memories-tab">
-                        <div class="p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5>Banco de Memória</h5>
-                                <button class="btn btn-primary" onclick="openMemoryModal()">
-                                    <i data-feather="plus" class="me-1"></i>Nova Memória
-                                </button>
-                            </div>
-                            <div id="memories-list"></div>
-                        </div>
+                <!-- Chat Tab -->
+                <div class="tab-panel active" id="chat-panel">
+                    <div class="text-title">Interface de Chat</div>
+                    <div class="text-body">Converse diretamente com a Anna através do chat principal.</div>
+                    <div style="margin-top: 24px; text-align: center;">
+                        <a href="/" class="btn-modern" target="_blank">
+                            <i data-lucide="external-link" width="16" height="16"></i>
+                            Abrir Chat Principal
+                        </a>
                     </div>
                 </div>
-            </div>
 
+                <!-- Agent Tab -->
+                <div class="tab-panel" id="agent-panel">
+                    <div class="text-title">Configuração do Agente</div>
+                    <div class="text-body">Configure a personalidade e comportamento da Anna</div>
+                    
+                    <form id="agentConfigForm" style="display: grid; gap: 24px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Nome do Agente</label>
+                                <input type="text" class="form-control-modern" id="agentName" value="Anna">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Modelo</label>
+                                <select class="form-control-modern" id="agentModel">
+                                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                                    <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Descrição</label>
+                            <textarea class="form-control-modern" id="agentDescription" rows="2" 
+                                placeholder="Uma criadora de conteúdo brasileira carismática..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Instruções de Personalidade</label>
+                            <textarea class="form-control-modern" id="agentInstructions" rows="8" 
+                                placeholder="Digite as instruções de personalidade da Anna..."></textarea>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Temperatura (0-1)</label>
+                                <input type="number" class="form-control-modern" id="agentTemperature" 
+                                    min="0" max="1" step="0.1" value="0.7">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Max Tokens</label>
+                                <input type="number" class="form-control-modern" id="agentMaxTokens" value="1000">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Ferramentas Ativas</label>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 14px;">
+                                        <input type="checkbox" id="toolRoutines" checked>
+                                        Rotinas
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 14px;">
+                                        <input type="checkbox" id="toolMemories" checked>
+                                        Memórias
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 14px;">
+                                        <input type="checkbox" id="toolMedia" checked>
+                                        Mídia
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: right;">
+                            <button type="button" class="btn-modern" onclick="saveAgentConfig()">
+                                <i data-lucide="save" width="16" height="16"></i>
+                                Salvar Configuração
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Activities Tab -->
+                <div class="tab-panel" id="activities-panel">
+                    <div class="text-title">Gerenciar Atividades</div>
+                    <div class="text-body">Visualize e gerencie as atividades da Anna</div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <button class="btn-modern" data-bs-toggle="modal" data-bs-target="#activityModal">
+                            <i data-lucide="plus" width="16" height="16"></i>
+                            Nova Atividade
+                        </button>
+                    </div>
+                    <div id="calendar"></div>
+                </div>
+
+                <!-- Knowledge Tab -->
+                <div class="tab-panel" id="knowledge-panel">
+                    <div class="text-title">Banco de Conhecimento</div>
+                    <div class="text-body">Gerencie o conhecimento e conteúdo da Anna</div>
+                    
+                    <div class="alert-modern">
+                        <h6 style="color: var(--text-primary); margin-bottom: 8px;">Banco de Conhecimento</h6>
+                        <p style="margin-bottom: 8px;">Aqui serão armazenados artigos, documentos e conteúdo educacional da Anna.</p>
+                        <p style="margin: 0;"><em>Funcionalidade em desenvolvimento...</em></p>
+                    </div>
+                </div>
+
+                <!-- Images Tab -->
+                <div class="tab-panel" id="images-panel">
+                    <div class="text-title">Banco de Imagens</div>
+                    <div class="text-body">Gerencie as imagens e mídia da Anna</div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                        <button class="btn-modern" onclick="openImageModal()">
+                            <i data-lucide="plus" width="16" height="16"></i>
+                            Nova Imagem
+                        </button>
+                    </div>
+                    
+                    <div id="images-list" class="images-grid"></div>
+                </div>
+
+                <!-- Memories Tab -->
+                <div class="tab-panel" id="memories-panel">
+                    <div class="text-title">Banco de Memória</div>
+                    <div class="text-body">Gerencie as memórias e experiências da Anna</div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                        <button class="btn-modern" onclick="openMemoryModal()">
+                            <i data-lucide="plus" width="16" height="16"></i>
+                            Nova Memória
+                        </button>
+                    </div>
+                    
+                    <div id="memories-list"></div>
                 </div>
             </div>
         </div>
@@ -799,191 +608,185 @@
         </div>
     </div>
 
-        <!-- Activity Modal -->
-        <div class="modal fade" id="activityModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="activityModalLabel">Nova Atividade</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="activityForm">
-                            <input type="hidden" id="activityId">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="activityName" class="form-label">Nome da Atividade</label>
-                                        <input type="text" class="form-control" id="activityName" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="activityDate" class="form-label">Data</label>
-                                        <input type="date" class="form-control" id="activityDate" required>
-                                    </div>
-                                </div>
+    <!-- Activity Modal -->
+    <div class="modal fade" id="activityModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="activityModalLabel">Nova Atividade</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="activityForm" style="display: grid; gap: 20px;">
+                        <input type="hidden" id="activityId">
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Nome da Atividade</label>
+                            <input type="text" class="form-control-modern" id="activityName" required>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Data</label>
+                                <input type="date" class="form-control-modern" id="activityDate" required>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="activityTimeStart" class="form-label">Hora de Início</label>
-                                        <input type="time" class="form-control" id="activityTimeStart" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="activityTimeEnd" class="form-label">Hora de Fim</label>
-                                        <input type="time" class="form-control" id="activityTimeEnd" required>
-                                    </div>
-                                </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Hora de Início</label>
+                                <input type="time" class="form-control-modern" id="activityStartTime">
                             </div>
-                            <div class="mb-3">
-                                <label for="activityDescription" class="form-label">Descrição</label>
-                                <textarea class="form-control" id="activityDescription" rows="3"></textarea>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Hora de Fim</label>
+                                <input type="time" class="form-control-modern" id="activityEndTime">
                             </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="activityLocation" class="form-label">Local</label>
-                                        <input type="text" class="form-control" id="activityLocation">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="activityRating" class="form-label">Avaliação (1-5)</label>
-                                        <select class="form-control" id="activityRating">
-                                            <option value="">Selecione...</option>
-                                            <option value="1">⭐ (1)</option>
-                                            <option value="2">⭐⭐ (2)</option>
-                                            <option value="3">⭐⭐⭐ (3)</option>
-                                            <option value="4">⭐⭐⭐⭐ (4)</option>
-                                            <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                                        </select>
-                                    </div>
-                                </div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Descrição</label>
+                            <textarea class="form-control-modern" id="activityDescription" rows="3"></textarea>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Local</label>
+                                <input type="text" class="form-control-modern" id="activityLocation">
                             </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" onclick="saveActivity()">Salvar</button>
-                    </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Categoria</label>
+                                <select class="form-control-modern" id="activityCategory">
+                                    <option value="treino">Treino</option>
+                                    <option value="trabalho">Trabalho</option>
+                                    <option value="social">Social</option>
+                                    <option value="pessoal">Pessoal</option>
+                                    <option value="conteudo">Conteúdo</option>
+                                    <option value="outros">Outros</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline-modern" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-modern" onclick="saveActivity()">Salvar</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Memory Modal -->
-        <div class="modal fade" id="memoryModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="memoryModalLabel">Nova Memória</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="memoryForm">
-                            <input type="hidden" id="memoryId">
-                            <div class="mb-3">
-                                <label for="memoryName" class="form-label">Nome da Memória</label>
-                                <input type="text" class="form-control" id="memoryName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="memoryDescription" class="form-label">Descrição</label>
-                                <textarea class="form-control" id="memoryDescription" rows="2"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="memoryWhenToUse" class="form-label">Quando Usar</label>
-                                <textarea class="form-control" id="memoryWhenToUse" rows="2" 
-                                    placeholder="Ex: Quando perguntarem sobre treino, academia..."></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="memoryContent" class="form-label">Conteúdo</label>
-                                <textarea class="form-control" id="memoryContent" rows="4" required></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="memoryKeywords" class="form-label">Palavras-chave (separadas por vírgula)</label>
-                                <input type="text" class="form-control" id="memoryKeywords" 
-                                    placeholder="treino, academia, manhã, exercícios">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" onclick="saveMemory()">Salvar</button>
-                    </div>
+    <!-- Memory Modal -->
+    <div class="modal fade" id="memoryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="memoryModalLabel">Nova Memória</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="memoryForm" style="display: grid; gap: 20px;">
+                        <input type="hidden" id="memoryId">
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Nome da Memória</label>
+                            <input type="text" class="form-control-modern" id="memoryName" required>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Descrição</label>
+                            <textarea class="form-control-modern" id="memoryDescription" rows="3"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Quando Usar</label>
+                            <textarea class="form-control-modern" id="memoryWhenToUse" rows="2" 
+                                placeholder="Ex: Quando falarem sobre relacionamentos..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Conteúdo da Memória</label>
+                            <textarea class="form-control-modern" id="memoryContent" rows="4" 
+                                placeholder="Conteúdo detalhado da memória..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Palavras-chave (separadas por vírgula)</label>
+                            <input type="text" class="form-control-modern" id="memoryKeywords" 
+                                placeholder="amor, relacionamento, experiência">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline-modern" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-modern" onclick="saveMemory()">Salvar</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Image Modal -->
-        <div class="modal fade" id="imageModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="imageModalLabel">Nova Imagem</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="imageForm" style="display: grid; gap: 20px;">
-                            <input type="hidden" id="imageId">
-                            
-                            <div>
-                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Nome da Imagem</label>
-                                <input type="text" class="form-control-modern" id="imageName" required>
-                            </div>
-                            
-                            <div>
-                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Descrição</label>
-                                <textarea class="form-control-modern" id="imageDescription" rows="2"></textarea>
-                            </div>
-                            
-                            <div>
-                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Quando Usar</label>
-                                <textarea class="form-control-modern" id="imageWhenToUse" rows="2" 
-                                    placeholder="Ex: Para mostrar onde treino ou equipamentos..."></textarea>
-                            </div>
-                            
-                            <!-- Upload Options -->
-                            <div>
-                                <label style="display: block; margin-bottom: 12px; color: var(--text-primary); font-weight: 500;">Adicionar Mídia</label>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                    <div>
-                                        <input type="file" id="imageUpload" accept="image/*,video/*" style="display: none;" onchange="handleFileUpload()">
-                                        <button type="button" class="btn-outline-modern" onclick="document.getElementById('imageUpload').click()" style="width: 100%; justify-content: center;">
-                                            <i data-lucide="upload" width="16" height="16"></i>
-                                            Upload Arquivo
-                                        </button>
-                                    </div>
-                                    <div>
-                                        <button type="button" class="btn-outline-modern" onclick="toggleUrlInput()" style="width: 100%; justify-content: center;">
-                                            <i data-lucide="link" width="16" height="16"></i>
-                                            Inserir URL
-                                        </button>
-                                    </div>
+    <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Nova Imagem</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="imageForm" style="display: grid; gap: 20px;">
+                        <input type="hidden" id="imageId">
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Nome da Imagem</label>
+                            <input type="text" class="form-control-modern" id="imageName" required>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Descrição</label>
+                            <textarea class="form-control-modern" id="imageDescription" rows="2"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Quando Usar</label>
+                            <textarea class="form-control-modern" id="imageWhenToUse" rows="2" 
+                                placeholder="Ex: Para mostrar onde treino ou equipamentos..."></textarea>
+                        </div>
+                        
+                        <!-- Upload Options -->
+                        <div>
+                            <label style="display: block; margin-bottom: 12px; color: var(--text-primary); font-weight: 500;">Adicionar Mídia</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div>
+                                    <input type="file" id="imageUpload" accept="image/*,video/*" style="display: none;" onchange="handleFileUpload()">
+                                    <button type="button" class="btn-outline-modern" onclick="document.getElementById('imageUpload').click()" style="width: 100%; justify-content: center;">
+                                        <i data-lucide="upload" width="16" height="16"></i>
+                                        Upload Arquivo
+                                    </button>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn-outline-modern" onclick="toggleUrlInput()" style="width: 100%; justify-content: center;">
+                                        <i data-lucide="link" width="16" height="16"></i>
+                                        Inserir URL
+                                    </button>
                                 </div>
                             </div>
-                            
-                            <div id="urlInputDiv" style="display: none;">
-                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">URL da Imagem/Vídeo</label>
-                                <input type="url" class="form-control-modern" id="imageUrl" placeholder="https://exemplo.com/imagem.jpg">
-                            </div>
-                            
-                            <div>
-                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Palavras-chave (separadas por vírgula)</label>
-                                <input type="text" class="form-control-modern" id="imageKeywords" 
-                                    placeholder="academia, treino, equipamentos">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-outline-modern" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn-modern" onclick="saveImage()">Salvar</button>
-                    </div>
+                        </div>
+                        
+                        <div id="urlInputDiv" style="display: none;">
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">URL da Imagem/Vídeo</label>
+                            <input type="url" class="form-control-modern" id="imageUrl" placeholder="https://exemplo.com/imagem.jpg">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Palavras-chave (separadas por vírgula)</label>
+                            <input type="text" class="form-control-modern" id="imageKeywords" 
+                                placeholder="academia, treino, equipamentos">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline-modern" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-modern" onclick="saveImage()">Salvar</button>
                 </div>
             </div>
         </div>
-
     </div>
 
     <script src="{{ url_for('static', filename='admin.js') }}"></script>
@@ -1001,18 +804,27 @@
                 navItems.forEach(item => item.classList.remove('active'));
                 
                 // Hide all tab panels
-                tabPanels.forEach(panel => panel.style.display = 'none');
+                tabPanels.forEach(panel => panel.classList.remove('active'));
                 
                 // Show selected tab panel
                 const targetPanel = document.getElementById(tabName + '-panel');
                 if (targetPanel) {
-                    targetPanel.style.display = 'block';
+                    targetPanel.classList.add('active');
                 }
                 
                 // Add active class to clicked nav item
                 const clickedNav = document.querySelector(`[data-tab="${tabName}"]`);
                 if (clickedNav) {
                     clickedNav.classList.add('active');
+                }
+
+                // Load content for specific tabs
+                if (tabName === 'images') {
+                    adminApp.loadImages();
+                } else if (tabName === 'memories') {
+                    adminApp.loadMemories();
+                } else if (tabName === 'activities') {
+                    adminApp.loadCalendar();
                 }
             }
             
@@ -1051,48 +863,40 @@
                 }
             }
         }
-        
-        // Initialize the admin app
-        window.adminApp = new AdminApp();
-        
-        // Global functions for modals
-        function openMemoryModal(memoryId = null) {
-            const modal = new bootstrap.Modal(document.getElementById('memoryModal'));
-            
-            if (memoryId) {
-                document.getElementById('memoryModalLabel').textContent = 'Editar Memória';
-                document.getElementById('memoryId').value = memoryId;
-                // Load existing memory data here
-            } else {
-                document.getElementById('memoryModalLabel').textContent = 'Nova Memória';
-                document.getElementById('memoryForm').reset();
-                document.getElementById('memoryId').value = '';
-            }
-            
-            modal.show();
-        }
 
         function openImageModal(imageId = null) {
-            const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+            document.getElementById('imageModalLabel').textContent = imageId ? 'Editar Imagem' : 'Nova Imagem';
+            document.getElementById('imageId').value = imageId || '';
             
             if (imageId) {
-                document.getElementById('imageModalLabel').textContent = 'Editar Imagem';
-                document.getElementById('imageId').value = imageId;
-                // Load existing image data here
+                // Load existing image data (implement this function in admin.js)
+                adminApp.loadImageForEdit(imageId);
             } else {
-                document.getElementById('imageModalLabel').textContent = 'Nova Imagem';
+                // Clear form for new image
                 document.getElementById('imageForm').reset();
-                document.getElementById('imageId').value = '';
+                document.getElementById('urlInputDiv').style.display = 'none';
             }
             
+            const modal = new bootstrap.Modal(document.getElementById('imageModal'));
             modal.show();
         }
 
-        function openKnowledgeModal() {
-            alert('Funcionalidade do Banco de Conhecimento em desenvolvimento');
+        function openMemoryModal(memoryId = null) {
+            document.getElementById('memoryModalLabel').textContent = memoryId ? 'Editar Memória' : 'Nova Memória';
+            document.getElementById('memoryId').value = memoryId || '';
+            
+            if (memoryId) {
+                // Load existing memory data
+                adminApp.loadMemoryForEdit(memoryId);
+            } else {
+                // Clear form for new memory
+                document.getElementById('memoryForm').reset();
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('memoryModal'));
+            modal.show();
         }
 
-        // Save functions
         function saveActivity() {
             adminApp.saveActivity();
         }
@@ -1104,6 +908,13 @@
         function saveImage() {
             adminApp.saveImage();
         }
+
+        function saveAgentConfig() {
+            adminApp.saveAgentConfig();
+        }
+        
+        // Initialize the admin app
+        window.adminApp = new AdminApp();
     </script>
 </body>
 </html>
