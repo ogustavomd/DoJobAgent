@@ -59,12 +59,18 @@ header {
 /* Chat Container */
 .chat-container {
     height: calc(100vh - 70px);
+    display: flex;
+    flex-direction: column;
 }
 
 .messages-container {
+    flex: 1;
     overflow-y: auto;
     scroll-behavior: smooth;
     background: var(--bs-body-bg);
+    padding: 16px;
+    margin-bottom: 0;
+    max-height: calc(100vh - 140px);
 }
 
 /* Message Bubbles */
@@ -112,8 +118,14 @@ header {
 .message-media img,
 .message-media video {
     max-width: 100%;
+    max-height: 300px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    object-fit: cover;
+}
+
+.message-media video {
+    width: 100%;
 }
 
 /* Typing Indicator */
@@ -152,6 +164,10 @@ header {
 .message-input-container {
     background: var(--bs-dark);
     border-top: 1px solid var(--bs-border-color);
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
 }
 
 .message-input {

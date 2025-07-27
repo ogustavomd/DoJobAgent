@@ -140,27 +140,35 @@ class AnnaChat {
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         
         return content.replace(urlRegex, (url) => {
+            // Clean URL (remove trailing punctuation)
+            const cleanUrl = url.replace(/[.,;:!?]$/, '');
+            
             // Check if it's an image URL
-            if (this.isImageUrl(url)) {
-                return `<div class="message-media"><img src="${url}" alt="Imagem" loading="lazy" /></div>`;
+            if (this.isImageUrl(cleanUrl)) {
+                return `<div class="message-media"><img src="${cleanUrl}" alt="Imagem compartilhada" loading="lazy" onerror="this.style.display='none'" /></div>`;
             }
             // Check if it's a video URL
-            else if (this.isVideoUrl(url)) {
-                return `<div class="message-media"><video src="${url}" controls></video></div>`;
+            else if (this.isVideoUrl(cleanUrl)) {
+                return `<div class="message-media"><video src="${cleanUrl}" controls preload="metadata" onerror="this.style.display='none'">Seu navegador não suporta vídeos.</video></div>`;
             }
             // Regular link
             else {
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>`;
             }
         }).replace(/\n/g, '<br>'); // Convert line breaks to <br>
     }
 
     isImageUrl(url) {
-        return /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(url);
+        return /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(url) || 
+               url.includes('unsplash.com') || 
+               url.includes('images.') ||
+               url.includes('/image/');
     }
 
     isVideoUrl(url) {
-        return /\.(mp4|webm|ogg|mov|avi)(\?.*)?$/i.test(url);
+        return /\.(mp4|webm|ogg|mov|avi)(\?.*)?$/i.test(url) ||
+               url.includes('/video/') ||
+               url.includes('sample-videos.com');
     }
 
     addErrorMessage(message) {
@@ -189,7 +197,7 @@ class AnnaChat {
     scrollToBottom() {
         setTimeout(() => {
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-        }, 100);
+        }, 300); // Increased delay to allow for media loading
     }
 
     getCurrentTime() {
