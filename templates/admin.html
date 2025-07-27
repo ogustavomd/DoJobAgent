@@ -741,7 +741,7 @@
                             <textarea class="form-control-modern" id="activityDescription" rows="3"></textarea>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
                             <div>
                                 <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Local</label>
                                 <input type="text" class="form-control-modern" id="activityLocation">
@@ -757,6 +757,45 @@
                                     <option value="outros">Outros</option>
                                 </select>
                             </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Tipo de Atividade</label>
+                                <select class="form-control-modern" id="activityType">
+                                    <option value="consulta">Consulta (Buscar informações)</option>
+                                    <option value="envio">Envio (Compartilhar conteúdo)</option>
+                                    <option value="ambos">Ambos</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Media Upload Section -->
+                        <div>
+                            <label style="display: block; margin-bottom: 12px; color: var(--text-primary); font-weight: 500;">Mídia da Atividade</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div>
+                                    <input type="file" id="activityMediaUpload" accept="image/*,video/*" style="display: none;" multiple onchange="handleActivityMediaUpload()">
+                                    <button type="button" class="btn-outline-modern" onclick="document.getElementById('activityMediaUpload').click()" style="width: 100%; justify-content: center;">
+                                        <i data-lucide="upload" width="16" height="16"></i>
+                                        Upload Arquivos
+                                    </button>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn-outline-modern" onclick="toggleActivityUrlInput()" style="width: 100%; justify-content: center;">
+                                        <i data-lucide="link" width="16" height="16"></i>
+                                        Inserir URLs
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="activityUrlInputDiv" style="display: none;">
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">URLs de Mídia (uma por linha)</label>
+                            <textarea class="form-control-modern" id="activityMediaUrls" rows="3" 
+                                placeholder="https://exemplo.com/imagem1.jpg&#10;https://exemplo.com/video1.mp4"></textarea>
+                        </div>
+                        
+                        <div id="activityMediaPreview" style="display: none;">
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Arquivos Selecionados</label>
+                            <div id="activityMediaList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;"></div>
                         </div>
                     </form>
                 </div>
@@ -960,6 +999,35 @@
             }
         }
 
+        // Helper functions for activity modal
+        function toggleActivityUrlInput() {
+            const urlDiv = document.getElementById('activityUrlInputDiv');
+            urlDiv.style.display = urlDiv.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function handleActivityMediaUpload() {
+            const fileInput = document.getElementById('activityMediaUpload');
+            const files = Array.from(fileInput.files);
+            const previewDiv = document.getElementById('activityMediaPreview');
+            const mediaList = document.getElementById('activityMediaList');
+            
+            if (files.length > 0) {
+                previewDiv.style.display = 'block';
+                mediaList.innerHTML = files.map(file => `
+                    <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid var(--border-color);">
+                        <i data-lucide="${file.type.startsWith('image/') ? 'image' : 'video'}" width="24" height="24" style="color: var(--accent-purple); margin-bottom: 8px;"></i>
+                        <div style="font-size: 12px; color: var(--text-primary); word-break: break-word;">${file.name}</div>
+                        <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;">${(file.size / 1024 / 1024).toFixed(1)} MB</div>
+                    </div>
+                `).join('');
+                
+                // Re-initialize Lucide icons
+                lucide.createIcons();
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        }
+
         function openImageModal(imageId = null) {
             // Ensure modal is properly hidden first
             const existingModal = bootstrap.Modal.getInstance(document.getElementById('imageModal'));
@@ -1053,6 +1121,9 @@
                 } else {
                     // Clear form for new activity
                     document.getElementById('activityForm').reset();
+                    // Clear media preview
+                    document.getElementById('activityMediaPreview').style.display = 'none';
+                    document.getElementById('activityUrlInputDiv').style.display = 'none';
                     // Set today's date as default
                     document.getElementById('activityDate').value = new Date().toISOString().split('T')[0];
                 }

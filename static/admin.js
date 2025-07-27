@@ -231,46 +231,110 @@ class AdminManager {
     }
 
     async saveActivity() {
-        const form = document.getElementById('activityForm');
-        const formData = new FormData(form);
-        
-        // Add media files
-        console.log('Media files to upload:', this.mediaFiles.length);
-        this.mediaFiles.forEach((file, index) => {
-            console.log(`Adding file ${index}:`, file.name, file.type, file.size);
-            formData.append('media_files', file);
-        });
-        
-        const isEdit = document.getElementById('activityId').value !== '';
-        const url = isEdit ? '/admin/api/activities/update' : '/admin/api/activities/create';
-        
-        console.log('Submitting to:', url);
-        console.log('Form data entries:');
-        for (let [key, value] of formData.entries()) {
-            console.log(key, ':', value);
-        }
-        
         try {
+            if (!document.getElementById('activityName').value) {
+                alert('Nome da atividade é obrigatório');
+                return;
+            }
+
+            if (!document.getElementById('activityDate').value) {
+                alert('Data é obrigatória');
+                return;
+            }
+
+            // Handle file uploads first if any
+            const fileInput = document.getElementById('activityMediaUpload');
+            const mediaUrls = [];
+            
+            // Process uploaded files from new input
+            if (fileInput && fileInput.files.length > 0) {
+                for (const file of fileInput.files) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const uploadResponse = await fetch('/admin/api/upload-media', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (uploadResponse.ok) {
+                        const uploadResult = await uploadResponse.json();
+                        mediaUrls.push(uploadResult.url);
+                    } else {
+                        console.error('Failed to upload file:', file.name);
+                    }
+                }
+            }
+            
+            // Also process existing media files from old system
+            if (this.mediaFiles && this.mediaFiles.length > 0) {
+                for (const file of this.mediaFiles) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const uploadResponse = await fetch('/admin/api/upload-media', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (uploadResponse.ok) {
+                        const uploadResult = await uploadResponse.json();
+                        mediaUrls.push(uploadResult.url);
+                    } else {
+                        console.error('Failed to upload file:', file.name);
+                    }
+                }
+            }
+            
+            // Process URLs from textarea
+            const urlInputElement = document.getElementById('activityMediaUrls');
+            if (urlInputElement) {
+                const urlsText = urlInputElement.value.trim();
+                if (urlsText) {
+                    const urls = urlsText.split('\n').map(url => url.trim()).filter(url => url);
+                    mediaUrls.push(...urls);
+                }
+            }
+
+            const activityData = {
+                name: document.getElementById('activityName').value,
+                date: document.getElementById('activityDate').value,
+                time_start: document.getElementById('activityStartTime').value || null,
+                time_end: document.getElementById('activityEndTime').value || null,
+                description: document.getElementById('activityDescription').value,
+                location: document.getElementById('activityLocation').value,
+                category: document.getElementById('activityCategory').value,
+                activity_type: document.getElementById('activityType') ? document.getElementById('activityType').value : 'consulta',
+                media_urls: mediaUrls,
+                status: 'upcoming',
+                rating: null,
+                created_at: new Date().toISOString()
+            };
+
+            const isEdit = document.getElementById('activityId').value !== '';
+            const url = isEdit ? '/admin/api/activities/update' : '/admin/api/activities/create';
+
             const response = await fetch(url, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(activityData)
             });
-            
-            console.log('Response status:', response.status);
+
             const result = await response.json();
-            console.log('Response data:', result);
             
             if (response.ok) {
-                this.showAlert(isEdit ? 'Atividade atualizada com sucesso' : 'Atividade criada com sucesso', 'success');
+                this.showAlert ? this.showAlert(isEdit ? 'Atividade atualizada com sucesso' : 'Atividade criada com sucesso', 'success') : alert('Atividade salva com sucesso!');
                 bootstrap.Modal.getInstance(document.getElementById('activityModal')).hide();
-                this.calendar.refetchEvents();
+                if (this.calendar) this.calendar.refetchEvents();
                 this.loadTodayActivities();
             } else {
-                this.showAlert(result.error || 'Erro ao salvar atividade', 'danger');
+                this.showAlert ? this.showAlert(result.error || 'Erro ao salvar atividade', 'danger') : alert('Erro ao salvar atividade');
             }
         } catch (error) {
             console.error('Error saving activity:', error);
-            this.showAlert('Erro ao salvar atividade: ' + error.message, 'danger');
+            this.showAlert ? this.showAlert('Erro ao salvar atividade: ' + error.message, 'danger') : alert('Erro ao salvar atividade: ' + error.message);
         }
     }
 
