@@ -87,6 +87,9 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str):
             session_id=session_id
         )
         
+        # Load conversation history from database
+        await load_conversation_history(session_obj, user_id, session_id)
+        
         # Create runner
         if anna_agent:
             runner = Runner(agent=anna_agent, app_name="anna_chat", session_service=session_service)
@@ -106,11 +109,67 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str):
                     final_response = event.content.parts[0].text
                 break
         
+        # Save conversation to database
+        if final_response:
+            await save_conversation_turn(user_id, session_id, user_message, final_response)
+        
         return final_response or "Desculpe, não consegui processar sua mensagem no momento."
         
     except Exception as e:
         logging.error(f"Error running Anna agent: {e}")
         return "Desculpe, ocorreu um erro interno. Tente novamente em alguns instantes."
+
+async def load_conversation_history(session_obj, user_id: str, session_id: str):
+    """Load conversation history from database and populate session"""
+    try:
+        from supabase_tools import supabase
+        from google import genai
+        from google.genai import types
+        
+        # Get recent messages for this session
+        response = supabase.table('messages')\
+            .select('*')\
+            .eq('session_id', session_id)\
+            .order('created_at', desc=False)\
+            .limit(50)\
+            .execute()
+        
+        if response.data:
+            # Add conversation history to session
+            for message in response.data:
+                # Add user message
+                user_content = types.Content(role='user', parts=[types.Part(text=message['user_message'])])
+                session_obj.add_turn(user_content)
+                
+                # Add assistant response
+                if message['assistant_response']:
+                    assistant_content = types.Content(role='model', parts=[types.Part(text=message['assistant_response'])])
+                    session_obj.add_turn(assistant_content)
+                    
+        logging.info(f"Loaded {len(response.data) if response.data else 0} conversation turns for session {session_id}")
+        
+    except Exception as e:
+        logging.error(f"Error loading conversation history: {e}")
+
+async def save_conversation_turn(user_id: str, session_id: str, user_message: str, assistant_response: str):
+    """Save a conversation turn to the database"""
+    try:
+        from supabase_tools import supabase
+        
+        # Save to messages table
+        message_data = {
+            'user_id': user_id,
+            'session_id': session_id,
+            'user_message': user_message,
+            'assistant_response': assistant_response,
+            'created_at': 'now()'
+        }
+        
+        result = supabase.table('messages').insert(message_data).execute()
+        logging.info(f"Saved conversation turn for session {session_id}")
+        
+    except Exception as e:
+        logging.error(f"Error saving conversation turn: {e}")
 
 # Admin routes
 @app.route('/admin')
@@ -347,7 +406,7 @@ def admin_update_activity():
                     file_url = supabase.storage.from_('conteudo').get_public_url(file_name)
                     
                     # Determine media type
-                    media_type = 'video' if file.content_type.startswith('video/') else 'image'
+                    media_type = 'video' if file.content_type and file.content_type.startswith('video/') else 'image'
                     
                     # Save media record
                     media_data = {

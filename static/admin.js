@@ -392,29 +392,44 @@ class AdminManager {
 
     // Tab handling methods
     initializeTabHandlers() {
-        document.getElementById('memories-tab').addEventListener('click', () => {
-            this.loadMemories();
-        });
+        const memoriesTab = document.getElementById('memories-tab');
+        const imagesTab = document.getElementById('images-tab');
+        const actionType = document.getElementById('actionType');
+        const imageUrl = document.getElementById('imageUrl');
         
-        document.getElementById('images-tab').addEventListener('click', () => {
-            this.loadImages();
-        });
+        if (memoriesTab) {
+            memoriesTab.addEventListener('click', () => {
+                this.loadMemories();
+            });
+        }
+        
+        if (imagesTab) {
+            imagesTab.addEventListener('click', () => {
+                this.loadImages();
+            });
+        }
         
         // Action type handler for routines
-        document.getElementById('actionType').addEventListener('change', (e) => {
-            const envioFields = document.getElementById('envioFields');
-            if (e.target.value === 'envio') {
-                envioFields.style.display = 'block';
-                this.loadImagesForSelect();
-            } else {
-                envioFields.style.display = 'none';
-            }
-        });
+        if (actionType) {
+            actionType.addEventListener('change', (e) => {
+                const envioFields = document.getElementById('envioFields');
+                if (envioFields) {
+                    if (e.target.value === 'envio') {
+                        envioFields.style.display = 'block';
+                        this.loadImagesForSelect();
+                    } else {
+                        envioFields.style.display = 'none';
+                    }
+                }
+            });
+        }
         
         // Image URL preview
-        document.getElementById('imageUrl').addEventListener('input', (e) => {
-            this.updateImagePreview(e.target.value);
-        });
+        if (imageUrl) {
+            imageUrl.addEventListener('input', (e) => {
+                this.updateImagePreview(e.target.value);
+            });
+        }
     }
 
     // Memory management methods
