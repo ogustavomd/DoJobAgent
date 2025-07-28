@@ -308,6 +308,101 @@ def admin_get_activities_by_date(date):
         logging.error(f"Error getting activities by date: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/admin/api/activities/list')
+def admin_get_activities_list():
+    """Get all activities for list view with filtering support"""
+    try:
+        from models import AnnaRoutine
+        from datetime import datetime
+        from sqlalchemy import func
+        
+        # Get filter parameters
+        category_filter = request.args.get('category')
+        status_filter = request.args.get('status')
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        search_term = request.args.get('search')
+        
+        # Start with base query
+        query = db.session.query(AnnaRoutine)
+        
+        # Apply filters
+        if category_filter:
+            query = query.filter(AnnaRoutine.category == category_filter)
+        
+        if status_filter:
+            query = query.filter(AnnaRoutine.status == status_filter)
+            
+        if date_from:
+            date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+            query = query.filter(AnnaRoutine.date >= date_from_obj)
+            
+        if date_to:
+            date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+            query = query.filter(AnnaRoutine.date <= date_to_obj)
+            
+        if search_term:
+            query = query.filter(
+                func.lower(AnnaRoutine.activity).contains(search_term.lower()) |
+                func.lower(AnnaRoutine.description).contains(search_term.lower()) |
+                func.lower(AnnaRoutine.location).contains(search_term.lower())
+            )
+        
+        # Order by date and time
+        routines = query.order_by(AnnaRoutine.date.desc(), AnnaRoutine.time_start.asc()).all()
+        
+        # Group by date
+        activities_by_date = {}
+        for routine in routines:
+            date_str = routine.date.isoformat() if routine.date else 'sem-data'
+            
+            if date_str not in activities_by_date:
+                activities_by_date[date_str] = []
+            
+            activity_data = {
+                'id': str(routine.id),
+                'date': routine.date.isoformat() if routine.date else None,
+                'time_start': routine.time_start.strftime('%H:%M') if routine.time_start else None,
+                'time_end': routine.time_end.strftime('%H:%M') if routine.time_end else None,
+                'activity': routine.activity,
+                'category': routine.category,
+                'location': routine.location,
+                'description': routine.description,
+                'status': routine.status,
+                'has_images': routine.has_images or False,
+                'has_videos': routine.has_videos or False,
+                'created_at': routine.created_at.isoformat() if routine.created_at else None
+            }
+            activities_by_date[date_str].append(activity_data)
+        
+        return jsonify(activities_by_date)
+    except Exception as e:
+        logging.error(f"Error getting activities list: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/activities/filters')
+def admin_get_filter_options():
+    """Get available filter options for list view"""
+    try:
+        from models import AnnaRoutine
+        from sqlalchemy import distinct
+        
+        categories = db.session.query(distinct(AnnaRoutine.category)).filter(
+            AnnaRoutine.category.isnot(None)
+        ).all()
+        
+        statuses = db.session.query(distinct(AnnaRoutine.status)).filter(
+            AnnaRoutine.status.isnot(None)
+        ).all()
+        
+        return jsonify({
+            'categories': [cat[0] for cat in categories if cat[0]],
+            'statuses': [status[0] for status in statuses if status[0]]
+        })
+    except Exception as e:
+        logging.error(f"Error getting filter options: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/admin/api/activities/<activity_id>/media')
 def admin_get_activity_media(activity_id):
     """Get media for specific activity"""

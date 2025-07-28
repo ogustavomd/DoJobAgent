@@ -6,11 +6,16 @@ class AdminManager {
         this.existingMedia = [];
         this.currentMemory = null;
         this.currentImage = null;
+        this.currentActivityView = 'calendario';
+        this.filterOptions = { categories: [], statuses: [] };
+        this.currentFilters = {};
         
         this.initializeCalendar();
         this.initializeEventListeners();
         this.loadTodayActivities();
         setTimeout(() => this.initializeTabHandlers(), 100);
+        this.initializeActivityTabHandlers();
+        this.loadFilterOptions();
     }
 
     initializeCalendar() {
@@ -2037,5 +2042,314 @@ class AdminApp {
                 alert('Erro ao excluir memória: ' + error.message);
             }
         }
+    }
+
+    // Activity sub-tab handling
+    initializeActivityTabHandlers() {
+        const activityTabBtns = document.querySelectorAll('.activity-tab-btn');
+        activityTabBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabName = e.target.closest('button').getAttribute('data-activity-tab');
+                this.switchActivityTab(tabName);
+            });
+        });
+
+        // Initialize period filter handler
+        const periodFilter = document.getElementById('periodFilter');
+        if (periodFilter) {
+            periodFilter.addEventListener('change', (e) => {
+                const customRange = document.getElementById('customDateRange');
+                if (e.target.value === 'custom') {
+                    customRange.style.display = 'grid';
+                } else {
+                    customRange.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    switchActivityTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.activity-tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-activity-tab="${tabName}"]`).classList.add('active');
+
+        // Update panels
+        document.querySelectorAll('.activity-sub-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-view`).classList.add('active');
+
+        this.currentActivityView = tabName;
+
+        // Load appropriate content
+        if (tabName === 'lista') {
+            this.loadActivitiesList();
+        } else if (tabName === 'calendario') {
+            if (this.calendar) {
+                this.calendar.render();
+            }
+        }
+    }
+
+    async loadFilterOptions() {
+        try {
+            const response = await fetch('/admin/api/activities/filters');
+            const data = await response.json();
+            
+            this.filterOptions = data;
+
+            // Populate category filter
+            const categoryFilter = document.getElementById('categoryFilter');
+            if (categoryFilter && data.categories) {
+                categoryFilter.innerHTML = '<option value="">Todas as categorias</option>' +
+                    data.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            }
+
+            // Populate status filter
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter && data.statuses) {
+                statusFilter.innerHTML = '<option value="">Todos os status</option>' +
+                    data.statuses.map(status => `<option value="${status}">${status}</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Error loading filter options:', error);
+        }
+    }
+
+    async loadActivitiesList() {
+        try {
+            const params = new URLSearchParams(this.currentFilters);
+            const response = await fetch(`/admin/api/activities/list?${params}`);
+            const data = await response.json();
+
+            if (data.error) {
+                document.getElementById('activitiesList').innerHTML = `
+                    <div style="color: #dc3545; font-size: 14px; text-align: center; padding: 20px;">
+                        Erro: ${data.error}
+                    </div>
+                `;
+                return;
+            }
+
+            const activitiesListContainer = document.getElementById('activitiesList');
+            
+            if (Object.keys(data).length === 0) {
+                activitiesListContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <i data-lucide="calendar-x" width="48" height="48" style="margin-bottom: 16px;"></i>
+                        <div>Nenhuma atividade encontrada</div>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            let html = '';
+            
+            // Sort dates in descending order
+            const sortedDates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+            
+            for (const date of sortedDates) {
+                const activities = data[date];
+                const formattedDate = this.formatDateForDisplay(date);
+                
+                html += `
+                    <div class="activity-date-section">
+                        <div class="activity-date-title">
+                            <i data-lucide="calendar" width="20" height="20"></i>
+                            ${formattedDate}
+                        </div>
+                        ${activities.map(activity => this.renderActivityItem(activity)).join('')}
+                    </div>
+                `;
+            }
+
+            activitiesListContainer.innerHTML = html;
+            lucide.createIcons();
+
+        } catch (error) {
+            console.error('Error loading activities list:', error);
+            document.getElementById('activitiesList').innerHTML = `
+                <div style="color: #dc3545; font-size: 14px; text-align: center; padding: 20px;">
+                    Erro ao carregar atividades: ${error.message}
+                </div>
+            `;
+        }
+    }
+
+    renderActivityItem(activity) {
+        const statusClass = `status-${activity.status || 'upcoming'}`;
+        const statusText = this.getStatusText(activity.status);
+        
+        return `
+            <div class="activity-item">
+                <div class="activity-item-header">
+                    <div>
+                        <div class="activity-item-title">${activity.activity}</div>
+                        <div class="activity-item-time">
+                            ${activity.time_start || '00:00'} - ${activity.time_end || '23:59'}
+                        </div>
+                    </div>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                
+                <div class="activity-item-details">
+                    <div class="activity-item-detail">
+                        <i data-lucide="tag" width="14" height="14"></i>
+                        ${activity.category || 'Sem categoria'}
+                    </div>
+                    ${activity.location ? `
+                        <div class="activity-item-detail">
+                            <i data-lucide="map-pin" width="14" height="14"></i>
+                            ${activity.location}
+                        </div>
+                    ` : ''}
+                    ${activity.has_images ? `
+                        <div class="activity-item-detail">
+                            <i data-lucide="image" width="14" height="14"></i>
+                            Com imagens
+                        </div>
+                    ` : ''}
+                    ${activity.has_videos ? `
+                        <div class="activity-item-detail">
+                            <i data-lucide="video" width="14" height="14"></i>
+                            Com vídeos
+                        </div>
+                    ` : ''}
+                </div>
+                
+                ${activity.description ? `
+                    <div style="margin-bottom: 12px; font-size: 14px; color: var(--text-secondary);">
+                        ${activity.description}
+                    </div>
+                ` : ''}
+                
+                <div class="activity-item-actions">
+                    <button class="btn-outline-modern" onclick="adminManager.openActivityModal('${activity.id}')" style="font-size: 12px; padding: 6px 12px;">
+                        <i data-lucide="edit" width="14" height="14"></i>
+                        Editar
+                    </button>
+                    <button class="btn-danger-modern" onclick="adminManager.deleteActivity('${activity.id}')" style="font-size: 12px; padding: 6px 12px;">
+                        <i data-lucide="trash-2" width="14" height="14"></i>
+                        Excluir
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    formatDateForDisplay(dateStr) {
+        if (dateStr === 'sem-data') return 'Sem data definida';
+        
+        const date = new Date(dateStr + 'T00:00:00');
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const isToday = date.toDateString() === today.toDateString();
+        const isYesterday = date.toDateString() === yesterday.toDateString();
+        const isTomorrow = date.toDateString() === tomorrow.toDateString();
+
+        if (isToday) return 'Hoje';
+        if (isYesterday) return 'Ontem';
+        if (isTomorrow) return 'Amanhã';
+
+        return date.toLocaleDateString('pt-BR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    getStatusText(status) {
+        const statusMap = {
+            'upcoming': 'Próxima',
+            'current': 'Atual',
+            'completed': 'Concluída'
+        };
+        return statusMap[status] || 'Próxima';
+    }
+
+    applyFilters() {
+        const filters = {};
+        
+        const search = document.getElementById('searchFilter').value.trim();
+        if (search) filters.search = search;
+        
+        const category = document.getElementById('categoryFilter').value;
+        if (category) filters.category = category;
+        
+        const status = document.getElementById('statusFilter').value;
+        if (status) filters.status = status;
+        
+        const period = document.getElementById('periodFilter').value;
+        if (period) {
+            const today = new Date();
+            let dateFrom, dateTo;
+            
+            if (period === 'today') {
+                dateFrom = today.toISOString().split('T')[0];
+                dateTo = dateFrom;
+            } else if (period === 'week') {
+                const startOfWeek = new Date(today);
+                startOfWeek.setDate(today.getDate() - today.getDay());
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                dateFrom = startOfWeek.toISOString().split('T')[0];
+                dateTo = endOfWeek.toISOString().split('T')[0];
+            } else if (period === 'month') {
+                dateFrom = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                dateTo = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+            } else if (period === 'custom') {
+                dateFrom = document.getElementById('dateFromFilter').value;
+                dateTo = document.getElementById('dateToFilter').value;
+            }
+            
+            if (dateFrom) filters.date_from = dateFrom;
+            if (dateTo) filters.date_to = dateTo;
+        }
+        
+        this.currentFilters = filters;
+        this.loadActivitiesList();
+    }
+
+    clearFilters() {
+        document.getElementById('searchFilter').value = '';
+        document.getElementById('categoryFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('periodFilter').value = '';
+        document.getElementById('dateFromFilter').value = '';
+        document.getElementById('dateToFilter').value = '';
+        document.getElementById('customDateRange').style.display = 'none';
+        
+        this.currentFilters = {};
+        this.loadActivitiesList();
+    }
+}
+
+// Global functions for HTML template
+let adminManager;
+
+// Initialize admin manager when document loads
+document.addEventListener('DOMContentLoaded', function() {
+    adminManager = new AdminManager();
+    console.log('Admin systems initialized successfully');
+});
+
+// Global functions called by HTML elements
+function applyFilters() {
+    if (adminManager) {
+        adminManager.applyFilters();
+    }
+}
+
+function clearFilters() {
+    if (adminManager) {
+        adminManager.clearFilters();
     }
 }
