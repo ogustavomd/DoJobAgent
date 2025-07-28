@@ -8,6 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 from anna_agent import create_anna_agent
 from google.genai import types
+from ai_routine_engine import RoutineSuggestionEngine
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -855,6 +856,105 @@ def upload_image():
             
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# AI Suggestion Engine API Routes
+@app.route('/admin/api/ai/routine-analysis')
+def ai_routine_analysis():
+    """Analyze current routine patterns and provide insights"""
+    try:
+        ai_engine = RoutineSuggestionEngine(db.session)
+        analysis = ai_engine.analyze_current_routines()
+        return jsonify(analysis)
+    except Exception as e:
+        logging.error(f"Error analyzing routines: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/ai/suggestion-metrics')
+def ai_suggestion_metrics():
+    """Get AI suggestion performance metrics"""
+    try:
+        ai_engine = RoutineSuggestionEngine(db.session)
+        metrics = ai_engine.get_suggestion_metrics()
+        return jsonify(metrics)
+    except Exception as e:
+        logging.error(f"Error getting AI metrics: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/ai/suggest-weekly')
+def ai_suggest_weekly():
+    """Generate weekly routine suggestions based on preferences"""
+    try:
+        # Get parameters from request
+        start_date = request.args.get('start_date')
+        fitness_goals = int(request.args.get('fitness_goals', 4))
+        social_priority = request.args.get('social_priority', 'medium')
+        preferred_times = request.args.get('preferred_times', 'morning,afternoon').split(',')
+        
+        if not start_date:
+            return jsonify({'error': 'Data de início é obrigatória'}), 400
+        
+        ai_engine = RoutineSuggestionEngine(db.session)
+        suggestions = ai_engine.generate_weekly_suggestions(
+            start_date=start_date,
+            fitness_goals_per_week=fitness_goals,
+            social_priority=social_priority,
+            preferred_times=preferred_times
+        )
+        
+        return jsonify({'suggestions': suggestions})
+    except Exception as e:
+        logging.error(f"Error generating weekly suggestions: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/ai/optimize-routine/<routine_id>')
+def ai_optimize_routine(routine_id):
+    """Optimize a specific routine activity"""
+    try:
+        ai_engine = RoutineSuggestionEngine(db.session)
+        optimizations = ai_engine.optimize_activity(routine_id)
+        return jsonify(optimizations)
+    except Exception as e:
+        logging.error(f"Error optimizing routine {routine_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/ai/create-suggested-activity', methods=['POST'])
+def ai_create_suggested_activity():
+    """Create a new activity from AI suggestion"""
+    try:
+        suggestion = request.get_json()
+        
+        # Create activity using database tools
+        from models import AnnaRoutine
+        from datetime import datetime
+        import uuid
+        
+        # Convert suggestion to activity format
+        new_activity = AnnaRoutine(
+            id=str(uuid.uuid4()),
+            name=suggestion['activity'],
+            category=suggestion['category'],
+            date=datetime.strptime(suggestion['date'], '%Y-%m-%d').date(),
+            time_start=datetime.strptime(suggestion['time_start'], '%H:%M').time(),
+            time_end=datetime.strptime(suggestion['time_end'], '%H:%M').time(),
+            location=suggestion['location'],
+            description=suggestion['description'],
+            status='upcoming',
+            intensity=suggestion.get('intensity', 'medium'),
+            rating=None,
+            has_images=False,
+            has_videos=False,
+            is_active=True,
+            created_at=datetime.utcnow()
+        )
+        
+        db.session.add(new_activity)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'activity_id': new_activity.id})
+    except Exception as e:
+        logging.error(f"Error creating suggested activity: {e}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 # Configuration API routes
 @app.route('/config/api/config', methods=['GET'])

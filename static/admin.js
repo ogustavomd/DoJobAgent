@@ -972,6 +972,352 @@ class AdminManager {
         }
     }
 
+    // AI Suggestions functionality
+    async loadRoutineAnalysis() {
+        try {
+            const response = await fetch('/admin/api/ai/routine-analysis');
+            const data = await response.json();
+            
+            if (data.error) {
+                document.getElementById('routine-analysis').innerHTML = `
+                    <div style="color: #dc3545; font-size: 14px;">Erro: ${data.error}</div>
+                `;
+                return;
+            }
+            
+            const analysisHtml = `
+                <div style="display: grid; gap: 16px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: 600; color: var(--accent-purple);">${data.total_activities}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Total de Atividades</div>
+                        </div>
+                        <div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: 600; color: var(--accent-purple);">${data.categories_covered}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Categorias Ativas</div>
+                        </div>
+                    </div>
+                    
+                    ${data.gaps_identified.length > 0 ? `
+                        <div>
+                            <h6 style="color: var(--text-primary); margin-bottom: 8px;">Oportunidades de Melhoria:</h6>
+                            ${data.gaps_identified.map(gap => `
+                                <div style="background: rgba(255, 193, 7, 0.1); color: #ffc107; padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 4px;">
+                                    • ${gap}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    ${data.optimization_opportunities.length > 0 ? `
+                        <div>
+                            <h6 style="color: var(--text-primary); margin-bottom: 8px;">Otimizações Sugeridas:</h6>
+                            ${data.optimization_opportunities.map(opp => `
+                                <div style="background: rgba(40, 167, 69, 0.1); color: #28a745; padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 4px;">
+                                    • ${opp}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <button class="btn-outline-modern" onclick="adminManager.loadRoutineAnalysis()" style="margin-top: 8px;">
+                        <i data-lucide="refresh-cw" width="14" height="14"></i>
+                        Atualizar Análise
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('routine-analysis').innerHTML = analysisHtml;
+            lucide.createIcons();
+        } catch (error) {
+            console.error('Error loading routine analysis:', error);
+            document.getElementById('routine-analysis').innerHTML = `
+                <div style="color: #dc3545; font-size: 14px;">Erro ao carregar análise: ${error.message}</div>
+            `;
+        }
+    }
+
+    async loadAIMetrics() {
+        try {
+            const response = await fetch('/admin/api/ai/suggestion-metrics');
+            const data = await response.json();
+            
+            if (data.error) {
+                document.getElementById('ai-metrics').innerHTML = `
+                    <div style="color: #dc3545; font-size: 14px;">Erro: ${data.error}</div>
+                `;
+                return;
+            }
+            
+            const metricsHtml = `
+                <div style="display: grid; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 20px; font-weight: 600; color: var(--accent-purple);">${data.routine_balance_score || 0}</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Score de Equilíbrio</div>
+                        </div>
+                        <div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 20px; font-weight: 600; color: var(--accent-purple);">${data.optimization_potential || 0}</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Potencial de Otimização</div>
+                        </div>
+                    </div>
+                    
+                    ${data.most_common_category ? `
+                        <div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 14px; color: var(--text-primary);">Categoria Dominante:</div>
+                            <div style="font-size: 12px; color: var(--accent-purple); text-transform: capitalize;">${data.most_common_category[0]} (${data.most_common_category[1]} atividades)</div>
+                        </div>
+                    ` : ''}
+                    
+                    <button class="btn-outline-modern" onclick="adminManager.loadAIMetrics()" style="margin-top: 8px;">
+                        <i data-lucide="bar-chart-3" width="14" height="14"></i>
+                        Atualizar Métricas
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('ai-metrics').innerHTML = metricsHtml;
+            lucide.createIcons();
+        } catch (error) {
+            console.error('Error loading AI metrics:', error);
+            document.getElementById('ai-metrics').innerHTML = `
+                <div style="color: #dc3545; font-size: 14px;">Erro ao carregar métricas: ${error.message}</div>
+            `;
+        }
+    }
+
+    async generateWeeklySuggestions() {
+        const startDate = document.getElementById('suggestion-start-date').value;
+        const fitnessGoals = document.getElementById('fitness-goals').value;
+        const socialPriority = document.getElementById('social-priority').value;
+        
+        if (!startDate) {
+            alert('Por favor, selecione uma data de início');
+            return;
+        }
+        
+        try {
+            // Show loading state
+            document.getElementById('weekly-suggestions').style.display = 'block';
+            document.getElementById('weekly-suggestions').innerHTML = `
+                <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                    <i data-lucide="loader-2" width="24" height="24" style="animation: spin 1s linear infinite;"></i>
+                    <div style="margin-top: 8px;">Gerando sugestões inteligentes...</div>
+                </div>
+            `;
+            lucide.createIcons();
+            
+            const params = new URLSearchParams({
+                start_date: startDate,
+                fitness_goals: fitnessGoals,
+                social_priority: socialPriority,
+                preferred_times: 'morning,afternoon'
+            });
+            
+            const response = await fetch(`/admin/api/ai/suggest-weekly?${params}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                document.getElementById('weekly-suggestions').innerHTML = `
+                    <div style="color: #dc3545; font-size: 14px;">Erro: ${data.error}</div>
+                `;
+                return;
+            }
+            
+            this.renderWeeklySuggestions(data.suggestions);
+        } catch (error) {
+            console.error('Error generating suggestions:', error);
+            document.getElementById('weekly-suggestions').innerHTML = `
+                <div style="color: #dc3545; font-size: 14px;">Erro ao gerar sugestões: ${error.message}</div>
+            `;
+        }
+    }
+
+    renderWeeklySuggestions(suggestions) {
+        if (!suggestions || suggestions.length === 0) {
+            document.getElementById('weekly-suggestions').innerHTML = `
+                <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                    Nenhuma sugestão gerada
+                </div>
+            `;
+            return;
+        }
+        
+        // Group suggestions by date
+        const groupedSuggestions = suggestions.reduce((acc, suggestion) => {
+            const date = suggestion.date;
+            if (!acc[date]) acc[date] = [];
+            acc[date].push(suggestion);
+            return acc;
+        }, {});
+        
+        const suggestionsHtml = `
+            <div style="margin-bottom: 16px;">
+                <h6 style="color: var(--text-primary); margin-bottom: 12px;">
+                    ${suggestions.length} sugestões geradas para a semana
+                </h6>
+            </div>
+            
+            <div style="display: grid; gap: 16px;">
+                ${Object.entries(groupedSuggestions).map(([date, daySuggestions]) => `
+                    <div style="background: var(--bg-primary); border-radius: 8px; padding: 16px;">
+                        <h6 style="color: var(--accent-purple); margin-bottom: 12px;">
+                            ${new Date(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                        </h6>
+                        
+                        <div style="display: grid; gap: 12px;">
+                            ${daySuggestions.map(suggestion => `
+                                <div style="background: var(--bg-secondary); border-radius: 6px; padding: 12px; border: 1px solid var(--border-color);">
+                                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 8px;">
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: 500; color: var(--text-primary); margin-bottom: 4px;">
+                                                ${suggestion.activity}
+                                            </div>
+                                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">
+                                                ${suggestion.time_start} - ${suggestion.time_end} • ${suggestion.location}
+                                            </div>
+                                            <div style="font-size: 11px; color: var(--text-secondary);">
+                                                ${suggestion.description}
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; gap: 8px; margin-left: 12px;">
+                                            <span style="background: var(--accent-purple); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase;">
+                                                ${suggestion.category}
+                                            </span>
+                                            <span style="background: rgba(40, 167, 69, 0.2); color: #28a745; padding: 2px 8px; border-radius: 4px; font-size: 10px;">
+                                                ${Math.round(suggestion.confidence_score * 100)}% confiança
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; justify-content: between; align-items: center;">
+                                        <div style="font-size: 11px; color: var(--text-secondary); font-style: italic;">
+                                            ${suggestion.reasoning}
+                                        </div>
+                                        <button class="btn-outline-modern" onclick="adminManager.createSuggestedActivity(${JSON.stringify(suggestion).replace(/"/g, '&quot;')})" 
+                                                style="padding: 4px 8px; font-size: 11px; margin-left: 8px;">
+                                            <i data-lucide="plus" width="12" height="12"></i>
+                                            Criar
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        document.getElementById('weekly-suggestions').innerHTML = suggestionsHtml;
+        lucide.createIcons();
+    }
+
+    async createSuggestedActivity(suggestion) {
+        try {
+            const response = await fetch('/admin/api/ai/create-suggested-activity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(suggestion)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Atividade criada com sucesso!');
+                // Refresh calendar if we're on activities tab
+                if (this.calendar) {
+                    this.calendar.refetchEvents();
+                }
+            } else {
+                alert('Erro ao criar atividade: ' + result.error);
+            }
+        } catch (error) {
+            alert('Erro ao criar atividade: ' + error.message);
+        }
+    }
+
+    clearSuggestions() {
+        document.getElementById('weekly-suggestions').style.display = 'none';
+        document.getElementById('weekly-suggestions').innerHTML = '';
+    }
+
+    async optimizeActivity() {
+        const activityId = document.getElementById('activity-id-input').value.trim();
+        
+        if (!activityId) {
+            alert('Por favor, insira o ID da atividade');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/admin/api/ai/optimize-routine/${activityId}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                document.getElementById('activity-optimization').innerHTML = `
+                    <div style="color: #dc3545; font-size: 14px; padding: 12px; background: rgba(220, 53, 69, 0.1); border-radius: 6px;">
+                        ${data.error}
+                    </div>
+                `;
+                document.getElementById('activity-optimization').style.display = 'block';
+                return;
+            }
+            
+            const optimizationHtml = `
+                <div style="background: var(--bg-primary); border-radius: 8px; padding: 16px;">
+                    <h6 style="color: var(--text-primary); margin-bottom: 12px;">
+                        Otimizações para Atividade ${activityId}
+                    </h6>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <span style="background: var(--accent-purple); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                            Score Geral: ${Math.round(data.overall_score * 100)}%
+                        </span>
+                    </div>
+                    
+                    ${data.optimizations.length > 0 ? `
+                        <div style="display: grid; gap: 8px;">
+                            ${data.optimizations.map(opt => `
+                                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+                                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 4px;">
+                                        <span style="font-weight: 500; color: var(--text-primary); text-transform: capitalize;">
+                                            ${opt.type}
+                                        </span>
+                                        <span style="background: rgba(40, 167, 69, 0.2); color: #28a745; padding: 2px 6px; border-radius: 3px; font-size: 10px;">
+                                            ${Math.round(opt.confidence * 100)}% confiança
+                                        </span>
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">
+                                        ${opt.suggestion}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                            <i data-lucide="check-circle" width="24" height="24" style="color: #28a745; margin-bottom: 8px;"></i>
+                            <div>Esta atividade já está bem otimizada!</div>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            document.getElementById('activity-optimization').innerHTML = optimizationHtml;
+            document.getElementById('activity-optimization').style.display = 'block';
+            lucide.createIcons();
+        } catch (error) {
+            console.error('Error optimizing activity:', error);
+            document.getElementById('activity-optimization').innerHTML = `
+                <div style="color: #dc3545; font-size: 14px; padding: 12px; background: rgba(220, 53, 69, 0.1); border-radius: 6px;">
+                    Erro ao otimizar atividade: ${error.message}
+                </div>
+            `;
+            document.getElementById('activity-optimization').style.display = 'block';
+        }
+    }
+
     // Agent configuration methods
     async loadAgentConfig() {
         try {
@@ -1185,6 +1531,37 @@ function openMemoryModal() {
 
 function openImageModal() {
     window.adminManager.openImageModal();
+}
+
+// Global functions for AI suggestions
+function loadRoutineAnalysis() {
+    if (window.adminManager) {
+        window.adminManager.loadRoutineAnalysis();
+    }
+}
+
+function loadAIMetrics() {
+    if (window.adminManager) {
+        window.adminManager.loadAIMetrics();
+    }
+}
+
+function generateWeeklySuggestions() {
+    if (window.adminManager) {
+        window.adminManager.generateWeeklySuggestions();
+    }
+}
+
+function clearSuggestions() {
+    if (window.adminManager) {
+        window.adminManager.clearSuggestions();
+    }
+}
+
+function optimizeActivity() {
+    if (window.adminManager) {
+        window.adminManager.optimizeActivity();
+    }
 }
 
 // Add event listeners for save buttons when DOM loads

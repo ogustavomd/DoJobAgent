@@ -542,6 +542,9 @@
                 <button class="nav-item" data-tab="memories" title="Memórias">
                     <i data-lucide="database" width="20" height="20"></i>
                 </button>
+                <button class="nav-item" data-tab="ai-suggestions" title="IA Sugestões">
+                    <i data-lucide="brain" width="20" height="20"></i>
+                </button>
             </nav>
         </div>
 
@@ -690,6 +693,103 @@
                     </div>
                     
                     <div id="memories-list"></div>
+                </div>
+
+                <!-- AI Suggestions Tab -->
+                <div class="tab-panel" id="ai-suggestions-panel">
+                    <div class="text-title">IA - Sugestões de Rotina</div>
+                    <div class="text-body">Sistema inteligente de otimização e sugestão de atividades</div>
+                    
+                    <!-- AI Analysis Section -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+                        <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 24px; border: 1px solid var(--border-color);">
+                            <h6 style="color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="activity" width="20" height="20"></i>
+                                Análise da Rotina
+                            </h6>
+                            <div id="routine-analysis">
+                                <button class="btn-outline-modern" onclick="loadRoutineAnalysis()">
+                                    <i data-lucide="refresh-cw" width="16" height="16"></i>
+                                    Analisar Rotina
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 24px; border: 1px solid var(--border-color);">
+                            <h6 style="color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="trending-up" width="20" height="20"></i>
+                                Métricas de IA
+                            </h6>
+                            <div id="ai-metrics">
+                                <button class="btn-outline-modern" onclick="loadAIMetrics()">
+                                    <i data-lucide="bar-chart-3" width="16" height="16"></i>
+                                    Ver Métricas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weekly Suggestions Section -->
+                    <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 24px; border: 1px solid var(--border-color); margin-bottom: 24px;">
+                        <h6 style="color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="calendar-days" width="20" height="20"></i>
+                            Sugestões de Rotina Semanal
+                        </h6>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Data Início</label>
+                                <input type="date" class="form-control-modern" id="suggestion-start-date">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Metas de Fitness/Semana</label>
+                                <input type="number" class="form-control-modern" id="fitness-goals" min="1" max="7" value="4">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Prioridade Social</label>
+                                <select class="form-control-modern" id="social-priority">
+                                    <option value="low">Baixa</option>
+                                    <option value="medium" selected>Média</option>
+                                    <option value="high">Alta</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+                            <button class="btn-modern" onclick="generateWeeklySuggestions()">
+                                <i data-lucide="magic-wand" width="16" height="16"></i>
+                                Gerar Sugestões
+                            </button>
+                            <button class="btn-outline-modern" onclick="clearSuggestions()">
+                                <i data-lucide="x" width="16" height="16"></i>
+                                Limpar
+                            </button>
+                        </div>
+                        
+                        <div id="weekly-suggestions" style="display: none;">
+                            <!-- Weekly suggestions will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Individual Activity Optimization -->
+                    <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 24px; border: 1px solid var(--border-color);">
+                        <h6 style="color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="zap" width="20" height="20"></i>
+                            Otimizar Atividade Específica
+                        </h6>
+                        
+                        <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                            <input type="text" class="form-control-modern" id="activity-id-input" placeholder="ID da atividade" style="flex: 1;">
+                            <button class="btn-outline-modern" onclick="optimizeActivity()">
+                                <i data-lucide="settings" width="16" height="16"></i>
+                                Otimizar
+                            </button>
+                        </div>
+                        
+                        <div id="activity-optimization" style="display: none;">
+                            <!-- Activity optimization results will be shown here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
