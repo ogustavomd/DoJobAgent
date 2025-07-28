@@ -214,11 +214,16 @@ def admin_get_activities():
         # Format for FullCalendar
         events = []
         for activity in routines:
+            # Format date and time properly for FullCalendar
+            date_str = activity.date.isoformat() if activity.date else ''
+            time_start_str = activity.time_start.strftime('%H:%M:%S') if activity.time_start else '00:00:00'
+            time_end_str = activity.time_end.strftime('%H:%M:%S') if activity.time_end else '23:59:59'
+            
             events.append({
-                'id': activity.id,
+                'id': str(activity.id),  # Convert UUID to string
                 'title': activity.activity,
-                'start': f"{activity.date}T{activity.time_start or '00:00'}",
-                'end': f"{activity.date}T{activity.time_end or '23:59'}",
+                'start': f"{date_str}T{time_start_str}",
+                'end': f"{date_str}T{time_end_str}",
                 'className': f"fc-event-{activity.category}",
                 'extendedProps': {
                     'category': activity.category,
@@ -247,10 +252,10 @@ def admin_get_activity(activity_id):
             return jsonify({'error': 'Activity not found'}), 404
             
         activity_data = {
-            'id': routine.id,
+            'id': str(routine.id),  # Convert UUID to string
             'date': routine.date.isoformat() if routine.date else None,
-            'time_start': routine.time_start,
-            'time_end': routine.time_end,
+            'time_start': routine.time_start.strftime('%H:%M') if routine.time_start else None,
+            'time_end': routine.time_end.strftime('%H:%M') if routine.time_end else None,
             'activity': routine.activity,
             'category': routine.category,
             'location': routine.location,
@@ -271,20 +276,22 @@ def admin_get_activities_by_date(date):
     """Get activities for specific date from PostgreSQL"""
     try:
         from models import AnnaRoutine
-        from sqlalchemy import cast, Date
+        from datetime import datetime
         
-        # Use date string directly since the database stores dates as strings
+        # Convert date string to date object for database query
+        date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+        
         routines = db.session.query(AnnaRoutine).filter(
-            AnnaRoutine.date == date
+            AnnaRoutine.date == date_obj
         ).order_by(AnnaRoutine.time_start.asc()).all()
         
         activities = []
         for routine in routines:
             activity_data = {
-                'id': routine.id,
-                'date': routine.date,  # Already a string in the database
-                'time_start': routine.time_start,
-                'time_end': routine.time_end,
+                'id': str(routine.id),  # Convert UUID to string
+                'date': routine.date.isoformat() if routine.date else None,
+                'time_start': routine.time_start.strftime('%H:%M') if routine.time_start else None,
+                'time_end': routine.time_end.strftime('%H:%M') if routine.time_end else None,
                 'activity': routine.activity,
                 'category': routine.category,
                 'location': routine.location,
@@ -331,11 +338,18 @@ def admin_create_activity():
             if not data.get(field):
                 return jsonify({'error': f'Campo obrigatório: {field}'}), 400
         
-        # Create new routine using date string directly
+        # Convert date string to date object
+        date_obj = datetime.strptime(data['date'], '%Y-%m-%d').date()
+        
+        # Convert time strings to time objects
+        time_start_obj = datetime.strptime(data.get('time_start', '00:00'), '%H:%M').time() if data.get('time_start') else None
+        time_end_obj = datetime.strptime(data.get('time_end', '23:59'), '%H:%M').time() if data.get('time_end') else None
+        
+        # Create new routine with proper data types
         routine = AnnaRoutine(
-            date=data['date'],
-            time_start=data.get('time_start'),
-            time_end=data.get('time_end'),
+            date=date_obj,
+            time_start=time_start_obj,
+            time_end=time_end_obj,
             activity=data['activity'],
             category=data['category'],
             location=data.get('location', ''),
@@ -354,7 +368,7 @@ def admin_create_activity():
         # Return success response (media upload can be implemented later if needed)
         return jsonify({
             'success': True, 
-            'activity_id': activity_id,
+            'activity_id': str(activity_id),  # Convert UUID to string
             'message': 'Atividade criada com sucesso!'
         })
         
@@ -383,14 +397,14 @@ def admin_update_activity(activity_id):
         if not routine:
             return jsonify({'error': 'Activity not found'}), 404
         
-        # Update fields
+        # Update fields with proper data type conversions
         if 'date' in data:
-            routine.date = data['date']
+            routine.date = datetime.strptime(data['date'], '%Y-%m-%d').date()
         
         if 'time_start' in data:
-            routine.time_start = data['time_start']
+            routine.time_start = datetime.strptime(data['time_start'], '%H:%M').time() if data['time_start'] else None
         if 'time_end' in data:
-            routine.time_end = data['time_end']
+            routine.time_end = datetime.strptime(data['time_end'], '%H:%M').time() if data['time_end'] else None
         if 'activity' in data:
             routine.activity = data['activity']
         if 'category' in data:

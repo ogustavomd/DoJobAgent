@@ -1,24 +1,26 @@
 from app import db
 from datetime import datetime
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 class AnnaRoutine(db.Model):
     """Anna's routine/activity data"""
     __tablename__ = 'anna_routine'
     
-    id = db.Column(db.Integer, primary_key=True)
-    activity = db.Column(db.String(255), nullable=False)
-    category = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(50), nullable=False)
-    time_start = db.Column(db.String(20))
-    time_end = db.Column(db.String(20))
-    status = db.Column(db.String(50), default='upcoming')
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity = db.Column(db.Text, nullable=False)
+    category = db.Column(db.Text, nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    time_start = db.Column(db.Time, nullable=False)
+    time_end = db.Column(db.Time, nullable=False)
+    status = db.Column(db.Text, default='upcoming', nullable=False)
     description = db.Column(db.Text)
-    location = db.Column(db.String(255))
+    location = db.Column(db.Text)
     has_images = db.Column(db.Boolean, default=False)
     has_videos = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationship with media
     media = relationship('AnnaRoutineMedia', back_populates='routine', cascade='all, delete-orphan')
