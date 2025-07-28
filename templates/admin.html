@@ -723,6 +723,228 @@
             background: rgba(107, 114, 128, 0.1);
             color: #6b7280;
         }
+
+        /* Enhanced Activity Card Styles */
+        .activity-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .activity-card:hover {
+            border-color: var(--accent-purple);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+        }
+
+        .activity-card-header {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            gap: 12px;
+        }
+
+        .activity-priority-indicator {
+            width: 4px;
+            height: 100%;
+            min-height: 60px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .activity-card-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-card-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .activity-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .activity-card-location {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .activity-card-actions {
+            flex-shrink: 0;
+        }
+
+        .activity-menu-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .activity-menu-btn:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .activity-card-description {
+            padding: 0 16px 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .activity-card-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .activity-category-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent-purple);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .media-indicator {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* Dropdown Menu Enhancements */
+        .dropdown-menu-dark {
+            background: var(--bg-primary) !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .dropdown-menu-dark .dropdown-item {
+            color: var(--text-primary) !important;
+            padding: 8px 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            font-size: 14px !important;
+        }
+
+        .dropdown-menu-dark .dropdown-item:hover {
+            background: var(--bg-tertiary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .dropdown-menu-dark .dropdown-item.text-danger:hover {
+            background: rgba(239, 68, 68, 0.1) !important;
+            color: #ef4444 !important;
+        }
+
+        /* Filter Improvements */
+        .filter-section {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-control {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .filter-control:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-filter {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-filter-primary {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-filter-primary:hover {
+            background: var(--accent-purple-hover);
+        }
+
+        .btn-filter-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-filter-secondary:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
     </style>
 </head>
 <body>
@@ -887,28 +1109,37 @@
                     
                     <!-- List View -->
                     <div id="lista-view" class="activity-sub-panel">
-                        <!-- Filters -->
-                        <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
-                                <div>
-                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Pesquisar:</label>
-                                    <input type="text" id="searchFilter" class="form-control-modern" placeholder="Buscar atividades...">
+                        <!-- Enhanced Filters Section -->
+                        <div class="filter-section">
+                            <div class="filter-row">
+                                <div class="filter-group">
+                                    <label class="filter-label">Pesquisar</label>
+                                    <input type="text" id="searchFilter" class="filter-control" placeholder="Buscar atividades...">
                                 </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Categoria:</label>
-                                    <select id="categoryFilter" class="form-control-modern">
+                                <div class="filter-group">
+                                    <label class="filter-label">Categoria</label>
+                                    <select id="categoryFilter" class="filter-control">
                                         <option value="">Todas as categorias</option>
+                                        <option value="trabalho">Trabalho</option>
+                                        <option value="fitness">Fitness</option>
+                                        <option value="pessoal">Pessoal</option>
+                                        <option value="social">Social</option>
+                                        <option value="saude">Saúde</option>
+                                        <option value="educacao">Educação</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Status:</label>
-                                    <select id="statusFilter" class="form-control-modern">
+                                <div class="filter-group">
+                                    <label class="filter-label">Status</label>
+                                    <select id="statusFilter" class="filter-control">
                                         <option value="">Todos os status</option>
+                                        <option value="upcoming">Próxima</option>
+                                        <option value="current">Em andamento</option>
+                                        <option value="completed">Concluída</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Período:</label>
-                                    <select id="periodFilter" class="form-control-modern">
+                                <div class="filter-group">
+                                    <label class="filter-label">Período</label>
+                                    <select id="periodFilter" class="filter-control">
                                         <option value="">Todos os períodos</option>
                                         <option value="today">Hoje</option>
                                         <option value="week">Esta semana</option>
@@ -916,26 +1147,28 @@
                                         <option value="custom">Personalizado</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div id="customDateRange" style="display: none; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                <div>
-                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Data de início:</label>
-                                    <input type="date" id="dateFromFilter" class="form-control-modern">
+                                <div class="filter-actions">
+                                    <button class="btn-filter btn-filter-secondary" onclick="window.adminManager.clearFilters()">
+                                        <i data-lucide="x" width="16" height="16"></i>
+                                        Limpar
+                                    </button>
+                                    <button class="btn-filter btn-filter-primary" onclick="window.adminManager.applyFilters()">
+                                        <i data-lucide="filter" width="16" height="16"></i>
+                                        Filtrar
+                                    </button>
                                 </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Data final:</label>
-                                    <input type="date" id="dateToFilter" class="form-control-modern">
-                                </div>
                             </div>
-                            <div style="text-align: right; margin-top: 16px;">
-                                <button class="btn-outline-modern" onclick="clearFilters()">
-                                    <i data-lucide="x" width="16" height="16"></i>
-                                    Limpar Filtros
-                                </button>
-                                <button class="btn-modern" onclick="applyFilters()" style="margin-left: 8px;">
-                                    <i data-lucide="filter" width="16" height="16"></i>
-                                    Aplicar Filtros
-                                </button>
+                            <div id="customDateRange" style="display: none; margin-top: 16px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                    <div class="filter-group">
+                                        <label class="filter-label">Data de início</label>
+                                        <input type="date" id="dateFromFilter" class="filter-control">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label class="filter-label">Data final</label>
+                                        <input type="date" id="dateToFilter" class="filter-control">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         

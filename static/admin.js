@@ -86,17 +86,28 @@ class AdminManager {
         }
     }
 
-    // Missing method: loadFilterOptions
+    // Load filter options from activities data
     loadFilterOptions() {
         console.log('Loading filter options');
-        fetch('/admin/api/activities/filters')
+        
+        // Get current activities to extract filter options
+        fetch('/admin/api/activities')
             .then(response => response.json())
             .then(data => {
-                this.filterOptions = data;
+                const categories = [...new Set(data.map(activity => activity.category))].filter(Boolean);
+                const statuses = [...new Set(data.map(activity => activity.status))].filter(Boolean);
+                
+                this.filterOptions = { categories, statuses };
                 this.populateFilterDropdowns();
             })
             .catch(error => {
                 console.error('Error loading filter options:', error);
+                // Set default options
+                this.filterOptions = {
+                    categories: ['trabalho', 'fitness', 'pessoal', 'social', 'saude', 'educacao'],
+                    statuses: ['upcoming', 'current', 'completed']
+                };
+                this.populateFilterDropdowns();
             });
     }
 
@@ -108,7 +119,7 @@ class AdminManager {
             this.filterOptions.categories.forEach(category => {
                 const option = document.createElement('option');
                 option.value = category;
-                option.textContent = category;
+                option.textContent = this.formatCategoryName(category);
                 categoryFilter.appendChild(option);
             });
         }
@@ -120,9 +131,75 @@ class AdminManager {
             this.filterOptions.statuses.forEach(status => {
                 const option = document.createElement('option');
                 option.value = status;
-                option.textContent = status;
+                option.textContent = this.formatStatusName(status);
                 statusFilter.appendChild(option);
             });
+        }
+
+        // Add event listeners for real-time filtering
+        this.setupFilterEventListeners();
+    }
+
+    formatCategoryName(category) {
+        const names = {
+            'trabalho': 'Trabalho',
+            'fitness': 'Fitness',
+            'pessoal': 'Pessoal',
+            'social': 'Social',
+            'saude': 'Saúde',
+            'educacao': 'Educação'
+        };
+        return names[category] || category;
+    }
+
+    formatStatusName(status) {
+        const names = {
+            'upcoming': 'Próxima',
+            'current': 'Em andamento',
+            'completed': 'Concluída'
+        };
+        return names[status] || status;
+    }
+
+    setupFilterEventListeners() {
+        // Search filter - real-time filtering
+        const searchFilter = document.getElementById('searchFilter');
+        if (searchFilter) {
+            searchFilter.addEventListener('input', () => {
+                clearTimeout(this.searchTimeout);
+                this.searchTimeout = setTimeout(() => {
+                    this.applyFilters();
+                }, 300);
+            });
+        }
+
+        // Other filters
+        ['categoryFilter', 'statusFilter', 'periodFilter', 'dateFromFilter', 'dateToFilter'].forEach(filterId => {
+            const filter = document.getElementById(filterId);
+            if (filter) {
+                filter.addEventListener('change', () => {
+                    if (filterId === 'periodFilter') {
+                        this.handlePeriodFilterChange();
+                    }
+                    this.applyFilters();
+                });
+            }
+        });
+    }
+
+    handlePeriodFilterChange() {
+        const periodFilter = document.getElementById('periodFilter');
+        const customRange = document.getElementById('customDateRange');
+        
+        if (periodFilter && customRange) {
+            if (periodFilter.value === 'custom') {
+                customRange.style.display = 'grid';
+            } else {
+                customRange.style.display = 'none';
+                // Clear custom date fields
+                document.getElementById('dateFromFilter').value = '';
+                document.getElementById('dateToFilter').value = '';
+            }
         }
     }
 
@@ -258,31 +335,15 @@ class AdminManager {
             dateSection.innerHTML = `
                 <h5 class="date-header">${this.formatDateForDisplay(date)}</h5>
                 <div class="activities-for-date">
-                    ${activities.map(activity => `
-                        <div class="activity-item card mb-2" onclick="openActivityModal('${activity.id}')" style="cursor: pointer;">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="card-title">${activity.activity}</h6>
-                                        <p class="card-text text-muted">${activity.time_start} - ${activity.time_end}</p>
-                                        ${activity.description ? `<p class="card-text">${activity.description}</p>` : ''}
-                                    </div>
-                                    <div>
-                                        <span class="badge bg-primary">${activity.category}</span>
-                                        <span class="badge bg-success">${activity.status}</span>
-                                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="event.stopPropagation(); deleteActivityFromList('${activity.id}')">
-                                            <i data-lucide="trash-2" width="14" height="14"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
+                    ${activities.map(activity => this.createActivityCardHTML(activity)).join('')}
                 </div>
             `;
             
             container.appendChild(dateSection);
         });
+        
+        // Initialize activity card interactions
+        this.initializeActivityCards();
         
         // Re-initialize Lucide icons for new content
         if (typeof lucide !== 'undefined') {
@@ -290,6 +351,137 @@ class AdminManager {
         }
         
         console.log('Activities list rendered successfully');
+    }
+
+    createActivityCardHTML(activity) {
+        const priorityColor = this.getPriorityColor(activity.category);
+        const statusBadge = this.getStatusBadge(activity.status);
+        
+        return `
+            <div class="activity-card" data-activity-id="${activity.id}">
+                <div class="activity-card-header">
+                    <div class="activity-priority-indicator" style="background-color: ${priorityColor}"></div>
+                    <div class="activity-card-main">
+                        <div class="activity-card-time">
+                            <i data-lucide="clock" width="16" height="16"></i>
+                            ${activity.time_start.substring(0, 5)}
+                        </div>
+                        <div class="activity-card-title">${activity.activity}</div>
+                        ${activity.location ? `<div class="activity-card-location">${activity.location}</div>` : ''}
+                    </div>
+                    <div class="activity-card-actions">
+                        <div class="dropdown">
+                            <button class="activity-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation();">
+                                <i data-lucide="more-vertical" width="16" height="16"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li><a class="dropdown-item" href="#" onclick="event.stopPropagation(); adminManager.openActivityModal('${activity.id}')">
+                                    <i data-lucide="edit" width="16" height="16"></i> Editar
+                                </a></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="event.stopPropagation(); adminManager.deleteActivity('${activity.id}')">
+                                    <i data-lucide="trash-2" width="16" height="16"></i> Excluir
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                ${activity.description ? `<div class="activity-card-description">${activity.description}</div>` : ''}
+                <div class="activity-card-footer">
+                    <span class="activity-category-badge">${activity.category}</span>
+                    ${statusBadge}
+                    ${activity.has_images ? '<i data-lucide="image" width="14" height="14" class="media-indicator"></i>' : ''}
+                    ${activity.has_videos ? '<i data-lucide="video" width="14" height="14" class="media-indicator"></i>' : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    getPriorityColor(category) {
+        const colors = {
+            'trabalho': '#8F5CFF',
+            'fitness': '#10B981', 
+            'pessoal': '#F59E0B',
+            'social': '#EF4444',
+            'saude': '#06B6D4',
+            'educacao': '#8B5CF6'
+        };
+        return colors[category] || '#6B7280';
+    }
+
+    getStatusBadge(status) {
+        const badges = {
+            'upcoming': '<span class="status-badge status-upcoming">Próxima</span>',
+            'current': '<span class="status-badge status-current">Em andamento</span>',
+            'completed': '<span class="status-badge status-completed">Concluída</span>'
+        };
+        return badges[status] || '<span class="status-badge">' + status + '</span>';
+    }
+
+    initializeActivityCards() {
+        // Add click handlers to activity cards
+        document.querySelectorAll('.activity-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Don't trigger if clicked on dropdown or its children
+                if (!e.target.closest('.dropdown') && !e.target.closest('.activity-menu-btn')) {
+                    const activityId = card.dataset.activityId;
+                    this.openActivityModal(activityId);
+                }
+            });
+        });
+    }
+
+    async deleteActivity(activityId) {
+        if (!confirm('Tem certeza que deseja excluir esta atividade? Esta ação não pode ser desfeita.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/api/activities/${activityId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                this.showAlert('Atividade excluída com sucesso', 'success');
+                
+                // Reload the activities list to reflect the changes
+                this.loadActivitiesList();
+                
+                // Also reload today's activities if visible
+                this.loadTodayActivities();
+                
+                // Refresh calendar if it's in calendar view
+                if (this.currentActivityView === 'calendario' && this.calendar) {
+                    this.calendar.refetchEvents();
+                }
+            } else {
+                const error = await response.json();
+                this.showAlert(error.error || 'Erro ao excluir atividade', 'danger');
+            }
+        } catch (error) {
+            console.error('Error deleting activity:', error);
+            this.showAlert('Erro ao excluir atividade', 'danger');
+        }
+    }
+
+    showAlert(message, type = 'info') {
+        // Create alert element
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Add to page
+        document.body.appendChild(alert);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 5000);
     }
 
     formatDateForDisplay(dateString) {
