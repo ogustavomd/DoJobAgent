@@ -342,7 +342,7 @@ def search_content(search_term: str, content_type: Optional[str], limit: int) ->
 
 def save_agent_configuration(config: dict) -> dict:
     """
-    Save agent configuration to file (temporary until database table is created)
+    Save agent configuration to file
     
     Args:
         config: Dictionary with agent configuration
@@ -363,12 +363,13 @@ def save_agent_configuration(config: dict) -> dict:
         return {'success': True, 'file': config_file}
         
     except Exception as e:
+        logging.error(f"Error saving agent configuration: {e}")
         return {'success': False, 'error': str(e)}
 
 
 def get_active_agent_configuration() -> dict:
     """
-    Get the active agent configuration from file (temporary until database table is created)
+    Get the active agent configuration from database
     
     Returns:
         Dictionary with active configuration or default config
@@ -381,14 +382,13 @@ def get_active_agent_configuration() -> dict:
         
         if os.path.exists(config_file):
             with open(config_file, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                return config
+                return json.load(f)
         else:
-            # Return default configuration if file doesn't exist
-            default_config = {
+            # Return default configuration
+            return {
                 'name': 'Anna',
                 'model': 'gemini-2.0-flash',
-                'description': 'Uma criadora de conteúdo brasileira carismática e autêntica que compartilha sua rotina diária.',
+                'description': 'AI agent Anna',
                 'instructions': '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. Você tem uma personalidade vibrante, 
 é espontânea e se conecta facilmente com as pessoas. Você ama criar conteúdo, compartilhar sua rotina e 
 interagir de forma genuína e humana.
@@ -429,21 +429,16 @@ Seja sempre natural, humana e engajada. Responda como Anna responderia de verdad
                 'temperature': 0.7,
                 'max_tokens': 1000
             }
-            
-            # Save default config to file
-            with open(config_file, 'w', encoding='utf-8') as f:
-                json.dump(default_config, f, indent=2, ensure_ascii=False)
-            
-            return default_config
         
     except Exception as e:
-        # Return basic default on error
+        logging.error(f"Error loading agent configuration: {e}")
+        # Return default on error
         return {
             'name': 'Anna',
             'model': 'gemini-2.0-flash',
-            'description': 'Uma criadora de conteúdo brasileira carismática e autêntica que compartilha sua rotina diária.',
-            'instructions': 'Você é Anna, uma criadora de conteúdo brasileira.',
-            'tools': ['get_anna_routines', 'get_anna_routine_media'],
+            'description': 'AI agent Anna',
+            'instructions': 'Você é Anna, uma criadora de conteúdo brasileira carismática e autêntica...',
+            'tools': ['get_anna_routines', 'get_anna_routine_media', 'search_memories', 'get_recent_conversations', 'search_content'],
             'temperature': 0.7,
             'max_tokens': 1000
         }

@@ -243,14 +243,26 @@ class AdminManager {
     }
 
     async saveActivity() {
+        const saveBtn = document.getElementById('saveActivityBtn');
+        const originalText = saveBtn.innerHTML;
+        
         try {
+            // Show loading state
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Salvando...';
+            
             if (!document.getElementById('activityName').value) {
-                alert('Nome da atividade é obrigatório');
+                this.showErrorMessage('Nome da atividade é obrigatório');
                 return;
             }
 
             if (!document.getElementById('activityDate').value) {
-                alert('Data é obrigatória');
+                this.showErrorMessage('Data é obrigatória');
+                return;
+            }
+            
+            if (!document.getElementById('activityCategory').value) {
+                this.showErrorMessage('Categoria é obrigatória');
                 return;
             }
 
@@ -333,18 +345,72 @@ class AdminManager {
             const result = await response.json();
             
             if (response.ok) {
-                alert('Atividade criada com sucesso!');
+                this.showSuccessMessage('Atividade criada com sucesso!');
                 bootstrap.Modal.getInstance(document.getElementById('activityModal')).hide();
                 if (this.calendar) this.calendar.refetchEvents();
                 if (this.loadTodayActivities) this.loadTodayActivities();
             } else {
                 console.error('Server response:', response.status, result);
-                alert('Erro ao salvar atividade: ' + (result.error || 'Erro desconhecido'));
+                this.showErrorMessage(this.getErrorMessage(result.error || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('Error saving activity:', error);
-            this.showAlert ? this.showAlert('Erro ao salvar atividade: ' + error.message, 'danger') : alert('Erro ao salvar atividade: ' + error.message);
+            this.showErrorMessage('Erro ao salvar atividade: ' + error.message);
+        } finally {
+            // Reset button state
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
         }
+    }
+    
+    showErrorMessage(message) {
+        // Create or update error alert
+        let alertDiv = document.getElementById('errorAlert');
+        if (!alertDiv) {
+            alertDiv = document.createElement('div');
+            alertDiv.id = 'errorAlert';
+            alertDiv.className = 'alert alert-danger';
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            document.body.appendChild(alertDiv);
+        }
+        alertDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+        alertDiv.style.display = 'block';
+        setTimeout(() => alertDiv.style.display = 'none', 5000);
+    }
+    
+    showSuccessMessage(message) {
+        // Create or update success alert
+        let alertDiv = document.getElementById('successAlert');
+        if (!alertDiv) {
+            alertDiv = document.createElement('div');
+            alertDiv.id = 'successAlert';
+            alertDiv.className = 'alert alert-success';
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            document.body.appendChild(alertDiv);
+        }
+        alertDiv.innerHTML = `<strong>Sucesso:</strong> ${message}`;
+        alertDiv.style.display = 'block';
+        setTimeout(() => alertDiv.style.display = 'none', 3000);
+    }
+    
+    getErrorMessage(error) {
+        if (typeof error === 'string') {
+            if (error.includes('category_check')) {
+                return 'Categoria inválida. Use: trabalho, social, pessoal, conteudo ou outros';
+            }
+            if (error.includes('Campo obrigatório')) {
+                return error;
+            }
+        }
+        return 'Erro desconhecido ao salvar atividade';
     }
 
     async deleteActivity() {
@@ -910,7 +976,14 @@ class AdminManager {
     }
 
     async saveAgentConfig() {
+        const saveBtn = document.getElementById('saveAgentConfigBtn');
+        const originalText = saveBtn.innerHTML;
+        
         try {
+            // Show loading state
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Salvando...';
+            
             const tools = [];
             if (document.getElementById('toolRoutines').checked) tools.push('get_anna_routines');
             if (document.getElementById('toolMemories').checked) tools.push('search_memories');
@@ -927,6 +1000,8 @@ class AdminManager {
                 tools: tools
             };
 
+            console.log('Salvando configuração:', config);
+
             const response = await fetch('/config/api/config', {
                 method: 'POST',
                 headers: {
@@ -935,14 +1010,59 @@ class AdminManager {
                 body: JSON.stringify(config)
             });
 
+            const result = await response.json();
+
             if (response.ok) {
-                alert('Configuração salva com sucesso!');
+                this.showGlobalSuccessMessage('Configuração salva com sucesso!');
             } else {
-                throw new Error('Erro ao salvar configuração');
+                this.showGlobalErrorMessage('Erro ao salvar: ' + (result.error || 'Erro desconhecido'));
             }
         } catch (error) {
-            alert('Erro ao salvar configuração: ' + error.message);
+            console.error('Error saving config:', error);
+            this.showGlobalErrorMessage('Erro ao salvar configuração: ' + error.message);
+        } finally {
+            // Reset button state
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
         }
+    }
+    
+    showGlobalErrorMessage(message) {
+        // Create or update error alert
+        let alertDiv = document.getElementById('globalErrorAlert');
+        if (!alertDiv) {
+            alertDiv = document.createElement('div');
+            alertDiv.id = 'globalErrorAlert';
+            alertDiv.className = 'alert alert-danger';
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            document.body.appendChild(alertDiv);
+        }
+        alertDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+        alertDiv.style.display = 'block';
+        setTimeout(() => alertDiv.style.display = 'none', 5000);
+    }
+
+    showGlobalSuccessMessage(message) {
+        // Create or update success alert
+        let alertDiv = document.getElementById('globalSuccessAlert');
+        if (!alertDiv) {
+            alertDiv = document.createElement('div');
+            alertDiv.id = 'globalSuccessAlert';
+            alertDiv.className = 'alert alert-success';
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            document.body.appendChild(alertDiv);
+        }
+        alertDiv.innerHTML = `<strong>Sucesso:</strong> ${message}`;
+        alertDiv.style.display = 'block';
+        setTimeout(() => alertDiv.style.display = 'none', 3000);
     }
 
     // Image upload functionality

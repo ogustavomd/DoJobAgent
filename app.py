@@ -22,8 +22,10 @@ def init_agent():
     """Initialize Anna agent with configuration from persistent storage"""
     global anna_agent
     try:
+        from supabase_tools import get_active_agent_configuration
+        config = get_active_agent_configuration()
         anna_agent = create_anna_agent()
-        logging.info("Anna agent created successfully")
+        logging.info("Anna agent created successfully with configuration")
     except Exception as e:
         logging.error(f"Failed to initialize Anna agent: {e}")
         # Fallback to default agent
