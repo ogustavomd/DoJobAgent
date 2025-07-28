@@ -167,7 +167,18 @@ class AdminManager {
 
     loadActivitiesList() {
         console.log('Loading activities list');
-        fetch('/admin/api/activities/list')
+        
+        // Build query parameters from current filters
+        let queryParams = new URLSearchParams();
+        if (this.currentFilters.category) queryParams.append('category', this.currentFilters.category);
+        if (this.currentFilters.status) queryParams.append('status', this.currentFilters.status);
+        if (this.currentFilters.dateFrom) queryParams.append('date_from', this.currentFilters.dateFrom);
+        if (this.currentFilters.dateTo) queryParams.append('date_to', this.currentFilters.dateTo);
+        if (this.currentFilters.search) queryParams.append('search', this.currentFilters.search);
+        
+        const url = '/admin/api/activities/list' + (queryParams.toString() ? '?' + queryParams.toString() : '');
+        
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 this.renderActivitiesList(data);
@@ -175,6 +186,52 @@ class AdminManager {
             .catch(error => {
                 console.error('Error loading activities list:', error);
             });
+    }
+
+    applyFilters() {
+        console.log('Applying filters');
+        
+        // Get filter values from form
+        const categoryFilter = document.getElementById('categoryFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const dateFromFilter = document.getElementById('dateFromFilter');
+        const dateToFilter = document.getElementById('dateToFilter');
+        const searchFilter = document.getElementById('searchFilter');
+        
+        // Update current filters
+        this.currentFilters = {
+            category: categoryFilter?.value || '',
+            status: statusFilter?.value || '',
+            dateFrom: dateFromFilter?.value || '',
+            dateTo: dateToFilter?.value || '',
+            search: searchFilter?.value || ''
+        };
+        
+        // Reload activities list with filters
+        this.loadActivitiesList();
+    }
+
+    clearFilters() {
+        console.log('Clearing filters');
+        
+        // Clear current filters
+        this.currentFilters = {};
+        
+        // Clear form values
+        const categoryFilter = document.getElementById('categoryFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const dateFromFilter = document.getElementById('dateFromFilter');
+        const dateToFilter = document.getElementById('dateToFilter');
+        const searchFilter = document.getElementById('searchFilter');
+        
+        if (categoryFilter) categoryFilter.value = '';
+        if (statusFilter) statusFilter.value = '';
+        if (dateFromFilter) dateFromFilter.value = '';
+        if (dateToFilter) dateToFilter.value = '';
+        if (searchFilter) searchFilter.value = '';
+        
+        // Reload activities list without filters
+        this.loadActivitiesList();
     }
 
     renderActivitiesList(activitiesByDate) {
@@ -656,6 +713,28 @@ class AdminManager {
         } catch (error) {
             console.error('Error deleting activity:', error);
             this.showAlert('Erro ao excluir atividade', 'danger');
+        }
+    }
+
+    async deleteActivityById(activityId) {
+        try {
+            const response = await fetch(`/admin/api/activities/${activityId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                this.showAlert('Atividade excluída com sucesso!', 'success');
+                if (this.calendar) this.calendar.refetchEvents();
+                this.loadTodayActivities();
+                this.loadActivitiesList();
+            } else {
+                this.showAlert('Erro ao excluir atividade: ' + (result.error || 'Erro desconhecido'), 'danger');
+            }
+        } catch (error) {
+            console.error('Error deleting activity:', error);
+            this.showAlert('Erro ao excluir atividade: ' + error.message, 'danger');
         }
     }
 
@@ -1221,10 +1300,30 @@ document.addEventListener('DOMContentLoaded', () => {
     window.adminApp = window.adminManager; // Create alias for backward compatibility
 });
 
-// Global function for HTML onclick handlers
+// Global functions for HTML onclick handlers
 function openActivityModal(activityId = null, selectedDate = null) {
     if (window.adminManager) {
         return window.adminManager.openActivityModal(activityId, selectedDate);
     }
     console.error('AdminManager not initialized');
+}
+
+function applyFilters() {
+    if (window.adminManager) {
+        return window.adminManager.applyFilters();
+    }
+    console.error('AdminManager not initialized');
+}
+
+function clearFilters() {
+    if (window.adminManager) {
+        return window.adminManager.clearFilters();
+    }
+    console.error('AdminManager not initialized');
+}
+
+function deleteActivityFromList(activityId) {
+    if (window.adminManager && confirm('Tem certeza que deseja excluir esta atividade?')) {
+        return window.adminManager.deleteActivityById(activityId);
+    }
 }

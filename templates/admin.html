@@ -1541,7 +1541,7 @@
             // Ensure Bootstrap is fully loaded
             if (typeof bootstrap !== 'undefined') {
                 window.adminManager = new AdminManager();
-                window.adminApp = new AdminApp();
+                window.adminApp = window.adminManager; // Create alias for backward compatibility
                 console.log('Admin systems initialized successfully');
             } else {
                 console.error('Bootstrap not loaded');
