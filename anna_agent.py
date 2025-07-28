@@ -8,7 +8,8 @@ from supabase_tools import (
     search_memories,
     get_recent_conversations,
     get_profile_info,
-    search_content
+    search_content,
+    save_conversation_memory
 )
 
 def create_anna_agent():
@@ -31,7 +32,8 @@ def create_anna_agent():
             search_memories,
             get_recent_conversations,
             get_profile_info,
-            search_content
+            search_content,
+            save_conversation_memory
         ],
         generate_content_config=types.GenerateContentConfig(
             temperature=0.8,  # More creative and spontaneous

@@ -534,3 +534,24 @@ def schedule_routine_action(routine_id: int, action_type: str, message: str = No
         return {'success': True, 'action': response.data[0]}
     except Exception as e:
         return {'success': False, 'error': str(e)}
+
+
+
+def save_conversation_memory(session_id: str, user_message: str, assistant_response: str):
+    """Save conversation to memory for Anna to recall later"""
+    try:
+        from datetime import datetime
+        memory_data = {
+            "name": f"Conversa {datetime.now().strftime('%d/%m %H:%M')}",
+            "description": f"Conversa com usuário: {user_message[:100]}...",
+            "content": f"Usuário: {user_message}\nAnna: {assistant_response}",
+            "when_to_use": "Quando usuário se referir a conversas anteriores",
+            "keywords": [session_id, "conversa", "chat"],
+            "is_active": True,
+            "created_at": datetime.now().isoformat()
+        }
+        response = supabase.table("anna_memories").insert(memory_data).execute()
+        return True
+    except Exception as e:
+        logging.error(f"Error saving memory: {e}")
+        return False
