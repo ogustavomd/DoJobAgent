@@ -1681,6 +1681,7 @@ dependencies = [
     { name = "gunicorn" },
     { name = "psycopg2-binary" },
     { name = "sift-stack-py" },
+    { name = "sqlalchemy" },
     { name = "supabase" },
     { name = "werkzeug" },
 ]
@@ -1695,6 +1696,7 @@ requires-dist = [
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "sift-stack-py", specifier = ">=0.7.0" },
+    { name = "sqlalchemy", specifier = ">=2.0.41" },
     { name = "supabase", specifier = ">=2.17.0" },
     { name = "werkzeug", specifier = ">=3.1.3" },
 ]
