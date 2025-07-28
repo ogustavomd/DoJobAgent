@@ -143,56 +143,54 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str):
         return "Desculpe, ocorreu um erro interno. Tente novamente em alguns instantes."
 
 async def load_conversation_history(session_obj, user_id: str, session_id: str):
-    """Load conversation history from database and populate session"""
+    """Load conversation history from PostgreSQL database and populate session"""
     try:
-        from supabase_tools import supabase
-        from google import genai
+        from models import Message
         from google.genai import types
         
         # Get recent messages for this session
-        response = supabase.table('messages')\
-            .select('*')\
-            .eq('session_id', session_id)\
-            .order('created_at', desc=False)\
-            .limit(50)\
-            .execute()
+        messages = db.session.query(Message).filter(
+            Message.session_id == session_id
+        ).order_by(Message.created_at.asc()).limit(50).all()
         
-        if response.data:
+        if messages:
             # Add conversation history to session
-            for message in response.data:
+            for message in messages:
                 # Add user message
-                user_content = types.Content(role='user', parts=[types.Part(text=message['user_message'])])
-                session_obj.add_turn(user_content)
+                if message.user_message:
+                    user_content = types.Content(role='user', parts=[types.Part(text=message.user_message)])
+                    session_obj.add_turn(user_content)
                 
                 # Add assistant response
-                if message['assistant_response']:
-                    assistant_content = types.Content(role='model', parts=[types.Part(text=message['assistant_response'])])
+                if message.assistant_response:
+                    assistant_content = types.Content(role='model', parts=[types.Part(text=message.assistant_response)])
                     session_obj.add_turn(assistant_content)
                     
-        logging.info(f"Loaded {len(response.data) if response.data else 0} conversation turns for session {session_id}")
+        logging.info(f"Loaded {len(messages)} conversation turns for session {session_id}")
         
     except Exception as e:
         logging.error(f"Error loading conversation history: {e}")
 
 async def save_conversation_turn(user_id: str, session_id: str, user_message: str, assistant_response: str):
-    """Save a conversation turn to the database"""
+    """Save a conversation turn to PostgreSQL database"""
     try:
-        from supabase_tools import supabase
+        from models import Message
         
-        # Save to messages table
-        message_data = {
-            'user_id': user_id,
-            'session_id': session_id,
-            'user_message': user_message,
-            'assistant_response': assistant_response,
-            'created_at': 'now()'
-        }
+        # Create new message record
+        message = Message(
+            user_id=user_id,
+            session_id=session_id,
+            user_message=user_message,
+            assistant_response=assistant_response
+        )
         
-        result = supabase.table('messages').insert(message_data).execute()
+        db.session.add(message)
+        db.session.commit()
         logging.info(f"Saved conversation turn for session {session_id}")
         
     except Exception as e:
         logging.error(f"Error saving conversation turn: {e}")
+        db.session.rollback()
 
 # Admin routes
 @app.route('/admin')
@@ -207,27 +205,28 @@ def config():
 
 @app.route('/admin/api/activities')
 def admin_get_activities():
-    """Get all activities for calendar display"""
+    """Get all activities for calendar display from PostgreSQL"""
     try:
-        from supabase_tools import supabase
-        response = supabase.table('anna_routine').select('*').order('date', desc=False).execute()
+        from models import AnnaRoutine
+        
+        routines = db.session.query(AnnaRoutine).order_by(AnnaRoutine.date.asc()).all()
         
         # Format for FullCalendar
         events = []
-        for activity in response.data:
+        for activity in routines:
             events.append({
-                'id': activity['id'],
-                'title': activity['activity'],
-                'start': f"{activity['date']}T{activity['time_start']}",
-                'end': f"{activity['date']}T{activity['time_end']}",
-                'className': f"fc-event-{activity['category']}",
+                'id': activity.id,
+                'title': activity.activity,
+                'start': f"{activity.date}T{activity.time_start or '00:00'}",
+                'end': f"{activity.date}T{activity.time_end or '23:59'}",
+                'className': f"fc-event-{activity.category}",
                 'extendedProps': {
-                    'category': activity['category'],
-                    'status': activity['status'],
-                    'location': activity.get('location'),
-                    'description': activity.get('description'),
-                    'has_images': activity.get('has_images', False),
-                    'has_videos': activity.get('has_videos', False)
+                    'category': activity.category,
+                    'status': activity.status,
+                    'location': activity.location,
+                    'description': activity.description,
+                    'has_images': activity.has_images or False,
+                    'has_videos': activity.has_videos or False
                 }
             })
         
@@ -569,10 +568,27 @@ def health():
 # Configuration API routes
 @app.route('/config/api/current')
 def config_get_current():
-    """Get current agent configuration"""
+    """Get current agent configuration from PostgreSQL"""
     try:
-        from supabase_tools import get_active_agent_configuration
-        config = get_active_agent_configuration()
+        from models import Agent
+        
+        # Get the most recent active agent configuration
+        agent = db.session.query(Agent).order_by(Agent.atualizado_em.desc()).first()
+        
+        if not agent:
+            return jsonify({'error': 'No agent configuration found'}), 404
+        
+        config = {
+            'id': agent.id,
+            'name': agent.nome,
+            'model': agent.modelo,
+            'description': agent.descricao,
+            'instructions': agent.instrucoes_personalidade,
+            'temperature': float(agent.temperatura or 0.7),
+            'max_tokens': agent.max_tokens,
+            'tools': ['get_anna_routines', 'search_memories', 'get_anna_routine_media', 'get_recent_conversations', 'search_content']
+        }
+        
         return jsonify(config)
     except Exception as e:
         logging.error(f"Error getting current config: {e}")
@@ -580,25 +596,39 @@ def config_get_current():
 
 @app.route('/config/api/save', methods=['POST'])
 def config_save():
-    """Save agent configuration and reinitialize agent"""
+    """Save agent configuration to PostgreSQL and reinitialize agent"""
     try:
         config = request.get_json()
-        logging.info(f"Received config save request: {config}")
+        logging.info(f"Saving agent config: {config}")
         
         # Validate required fields
-        required_fields = ['name', 'model', 'instructions', 'tools']
+        required_fields = ['name', 'model', 'instructions']
         for field in required_fields:
             if field not in config or not config[field]:
                 logging.error(f"Missing required field: {field}")
                 return jsonify({'error': f'Campo obrigatório: {field}'}), 400
         
-        # Save configuration to database
-        from supabase_tools import save_agent_configuration
-        save_result = save_agent_configuration(config)
+        # Save configuration to PostgreSQL database
+        from models import Agent
+        from datetime import datetime
         
-        if not save_result.get('success'):
-            logging.error(f"Failed to save config to database: {save_result.get('error')}")
-            return jsonify({'error': f'Erro ao salvar no banco: {save_result.get("error")}'}), 500
+        # Create new agent record
+        agent = Agent(
+            nome=config['name'],
+            modelo=config['model'],
+            descricao=config.get('description', 'Agent configuration'),
+            instrucoes_personalidade=config['instructions'],
+            temperatura=config.get('temperature', 0.7),
+            max_tokens=config.get('max_tokens', 1000),
+            rotinas_ativas=True,
+            memorias_ativas=True,
+            midia_ativa=True,
+            atualizado_em=datetime.utcnow()
+        )
+        
+        db.session.add(agent)
+        db.session.commit()
+        logging.info(f"Agent configuration updated: {config}")
         
         # Reinitialize the agent with new config
         global anna_agent
@@ -613,12 +643,13 @@ def config_save():
         
     except Exception as e:
         logging.error(f"Error saving config: {e}")
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 def create_anna_agent_from_config(config):
     """Create Anna agent from configuration"""
     from google.adk.agents import LlmAgent
-    from supabase_tools import (
+    from database_tools_simple import (
         get_anna_routines,
         get_anna_routine_media,
         search_memories,
