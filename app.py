@@ -312,40 +312,20 @@ def admin_get_activities_list():
     """Get all activities for list view with filtering support"""
     try:
         from models import AnnaRoutine
-        from datetime import datetime, timedelta
-        from sqlalchemy import func, and_, or_
+        from datetime import datetime
+        from sqlalchemy import func
         
         # Get filter parameters
-        category_filter = request.args.get('category', '').strip()
-        status_filter = request.args.get('status', '').strip()
-        date_from = request.args.get('dateFrom', '').strip()
-        date_to = request.args.get('dateTo', '').strip()
-        search_term = request.args.get('search', '').strip()
-        period = request.args.get('period', '').strip()
-        
-        logging.info(f"Filtering activities: category={category_filter}, status={status_filter}, period={period}, search={search_term}")
+        category_filter = request.args.get('category')
+        status_filter = request.args.get('status')
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        search_term = request.args.get('search')
         
         # Start with base query
         query = db.session.query(AnnaRoutine)
         
-        # Apply period filter first
-        if period:
-            today = datetime.now().date()
-            if period == 'today':
-                query = query.filter(AnnaRoutine.date == today)
-            elif period == 'week':
-                week_start = today - timedelta(days=today.weekday())
-                week_end = week_start + timedelta(days=6)
-                query = query.filter(and_(AnnaRoutine.date >= week_start, AnnaRoutine.date <= week_end))
-            elif period == 'month':
-                month_start = today.replace(day=1)
-                if today.month == 12:
-                    month_end = today.replace(year=today.year + 1, month=1, day=1) - timedelta(days=1)
-                else:
-                    month_end = today.replace(month=today.month + 1, day=1) - timedelta(days=1)
-                query = query.filter(and_(AnnaRoutine.date >= month_start, AnnaRoutine.date <= month_end))
-        
-        # Apply other filters
+        # Apply filters
         if category_filter:
             query = query.filter(AnnaRoutine.category == category_filter)
         
@@ -361,17 +341,14 @@ def admin_get_activities_list():
             query = query.filter(AnnaRoutine.date <= date_to_obj)
             
         if search_term:
-            search_filter = or_(
-                func.lower(AnnaRoutine.activity).contains(search_term.lower()),
-                func.lower(AnnaRoutine.description).contains(search_term.lower()),
+            query = query.filter(
+                func.lower(AnnaRoutine.activity).contains(search_term.lower()) |
+                func.lower(AnnaRoutine.description).contains(search_term.lower()) |
                 func.lower(AnnaRoutine.location).contains(search_term.lower())
             )
-            query = query.filter(search_filter)
         
         # Order by date and time
         routines = query.order_by(AnnaRoutine.date.desc(), AnnaRoutine.time_start.asc()).all()
-        
-        logging.info(f"Found {len(routines)} activities after filtering")
         
         # Group by date
         activities_by_date = {}

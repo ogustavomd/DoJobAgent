@@ -139,10 +139,6 @@ The application is designed to be a conversational AI that maintains character c
 - **Clean Agent Architecture**: Rebuilt anna_agent.py with proper dynamic configuration loading and error handling
 - **Tool Integration Stable**: All 7 database tools properly registered and available to Anna
 - **Gemini Integration Active**: Agent connecting successfully to Gemini 2.0 Flash model
-- **Enhanced Activity List View**: Implemented modern card design with priority indicators and working three-dot dropdown menus
-- **Fixed Activity Filtering**: Updated filter parameters to properly handle category, status, period, and search functionality
-- **Agent Configuration Database**: Created agent_config table in Supabase for persistent configuration storage and management
-- **Dropdown UI Improvements**: Fixed dropdown positioning to appear over cards instead of below, with proper show/hide states
 
 ### Current Database State
 - **Sample Data**: Populated with realistic routine activities, media files, and conversation history
