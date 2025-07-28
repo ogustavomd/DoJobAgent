@@ -271,20 +271,18 @@ def admin_get_activities_by_date(date):
     """Get activities for specific date from PostgreSQL"""
     try:
         from models import AnnaRoutine
-        from datetime import datetime
+        from sqlalchemy import cast, Date
         
-        # Convert date string to date object
-        date_obj = datetime.strptime(date, '%Y-%m-%d').date()
-        
+        # Use date string directly since the database stores dates as strings
         routines = db.session.query(AnnaRoutine).filter(
-            AnnaRoutine.date == date_obj
+            AnnaRoutine.date == date
         ).order_by(AnnaRoutine.time_start.asc()).all()
         
         activities = []
         for routine in routines:
             activity_data = {
                 'id': routine.id,
-                'date': routine.date.isoformat() if routine.date else None,
+                'date': routine.date,  # Already a string in the database
                 'time_start': routine.time_start,
                 'time_end': routine.time_end,
                 'activity': routine.activity,
@@ -333,15 +331,9 @@ def admin_create_activity():
             if not data.get(field):
                 return jsonify({'error': f'Campo obrigatório: {field}'}), 400
         
-        # Convert date string to date object
-        try:
-            date_obj = datetime.strptime(data['date'], '%Y-%m-%d').date()
-        except ValueError:
-            return jsonify({'error': 'Invalid date format'}), 400
-        
-        # Create new routine
+        # Create new routine using date string directly
         routine = AnnaRoutine(
-            date=date_obj,
+            date=data['date'],
             time_start=data.get('time_start'),
             time_end=data.get('time_end'),
             activity=data['activity'],
@@ -393,10 +385,7 @@ def admin_update_activity(activity_id):
         
         # Update fields
         if 'date' in data:
-            try:
-                routine.date = datetime.strptime(data['date'], '%Y-%m-%d').date()
-            except ValueError:
-                return jsonify({'error': 'Invalid date format'}), 400
+            routine.date = data['date']
         
         if 'time_start' in data:
             routine.time_start = data['time_start']
