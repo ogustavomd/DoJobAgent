@@ -548,6 +548,15 @@ def admin_delete_activity(activity_id):
         logging.error(f"Error deleting activity: {e}")
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/activities/<activity_id>', methods=['PUT'])
+def admin_update_activity_supabase(activity_id):
+    """Update an existing activity with Supabase storage"""
+    from supabase_tools import supabase
+    import uuid
+    
+    try:
+        # Parse the multipart data
         activity_data = {
             'date': request.form.get('date'),
             'time_start': request.form.get('time_start'),
@@ -568,13 +577,13 @@ def admin_delete_activity(activity_id):
         
         for file in media_files:
             if file and file.filename:
-                # Upload to Supabase storage
-                file_extension = file.filename.split('.')[-1]
-                file_name = f"{uuid.uuid4()}.{file_extension}"
-                
-                # Upload file
-                file.seek(0)  # Reset file pointer
                 try:
+                    # Upload to Supabase storage
+                    file_extension = file.filename.split('.')[-1]
+                    file_name = f"{uuid.uuid4()}.{file_extension}"
+                    
+                    # Upload file
+                    file.seek(0)  # Reset file pointer
                     storage_response = supabase.storage.from_('conteudo').upload(file_name, file.read())
                     
                     # Get public URL
@@ -594,8 +603,8 @@ def admin_delete_activity(activity_id):
                     supabase.table('anna_routine_media').insert(media_data).execute()
                     has_new_media = True
                     
-                except Exception as e:
-                    logging.error(f"Error uploading file {file.filename}: {e}")
+                except Exception as file_error:
+                    logging.error(f"Error uploading file {file.filename}: {file_error}")
                     continue
         
         # Update media flags if new media was added
@@ -616,8 +625,6 @@ def admin_delete_activity(activity_id):
     except Exception as e:
         logging.error(f"Error updating activity: {e}")
         return jsonify({'error': str(e)}), 500
-
-
 
 @app.route('/admin/api/media/<media_id>', methods=['DELETE'])
 def admin_delete_media(media_id):
@@ -923,7 +930,7 @@ def upload_image():
         if file.filename == '':
             return jsonify({'success': False, 'error': 'Nenhum arquivo selecionado'}), 400
         
-        if file and file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+        if file and file.filename and file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
             from supabase_tools import create_anna_image
             
             # For now, we'll use a placeholder URL since we don't have actual file storage
@@ -986,12 +993,14 @@ def ai_suggest_weekly():
             return jsonify({'error': 'Data de início é obrigatória'}), 400
         
         ai_engine = RoutineSuggestionEngine(db.session)
-        suggestions = ai_engine.generate_weekly_suggestions(
-            start_date=start_date,
-            fitness_goals_per_week=fitness_goals,
-            social_priority=social_priority,
-            preferred_times=preferred_times
-        )
+        from datetime import datetime as dt
+        target_date = dt.strptime(start_date, '%Y-%m-%d').date()
+        preferences = {
+            'fitness_goals': fitness_goals,
+            'social_priority': social_priority,
+            'preferred_times': preferred_times
+        }
+        suggestions = ai_engine.suggest_weekly_routine(target_date, preferences)
         
         return jsonify({'suggestions': suggestions})
     except Exception as e:
@@ -1003,7 +1012,7 @@ def ai_optimize_routine(routine_id):
     """Optimize a specific routine activity"""
     try:
         ai_engine = RoutineSuggestionEngine(db.session)
-        optimizations = ai_engine.optimize_activity(routine_id)
+        optimizations = ai_engine.analyze_single_activity(routine_id)
         return jsonify(optimizations)
     except Exception as e:
         logging.error(f"Error optimizing routine {routine_id}: {e}")
@@ -1047,15 +1056,15 @@ def ai_create_suggested_activity():
 def get_config():
     """Get current agent configuration"""
     try:
-        # from anna_agent import agent  # Remove this problematic import
+        # Use global anna_agent instance instead of undefined agent
         config = {
-            'name': getattr(agent, 'name', 'Anna'),
-            'model': getattr(agent, 'model', 'gemini-2.0-flash'),
-            'description': getattr(agent, 'description', ''),
-            'instructions': getattr(agent, 'instructions', ''),
-            'temperature': getattr(agent, 'temperature', 0.7),
-            'max_tokens': getattr(agent, 'max_tokens', 1000),
-            'tools': getattr(agent, 'tools', [])
+            'name': getattr(anna_agent, 'name', 'Anna') if anna_agent else 'Anna',
+            'model': 'gemini-2.0-flash',
+            'description': getattr(anna_agent, 'description', '') if anna_agent else '',
+            'instructions': getattr(anna_agent, 'instruction', '') if anna_agent else '',
+            'temperature': 0.7,
+            'max_tokens': 1000,
+            'tools': ['get_anna_routines', 'search_memories', 'get_anna_routine_media', 'get_recent_conversations', 'search_content', 'save_conversation_memory']
         }
         return jsonify(config)
     except Exception as e:

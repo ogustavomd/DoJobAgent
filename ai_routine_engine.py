@@ -160,7 +160,7 @@ class RoutineSuggestionEngine:
         
         return opportunities
 
-    def suggest_weekly_routine(self, target_date: date, preferences: Dict = None) -> List[Dict]:
+    def suggest_weekly_routine(self, target_date: date, preferences: Optional[Dict] = None) -> List[Dict]:
         """Generate AI-powered suggestions for a week starting from target_date"""
         suggestions = []
         analysis = self.analyze_current_routines()
@@ -411,3 +411,7 @@ class RoutineSuggestionEngine:
             score += max(0, 1 - deviation * 2)  # Max penalty of 1.0 per category
         
         return round(score / len(ideal_distribution), 2)
+
+    def analyze_single_activity(self, routine_id: str) -> Dict[str, Any]:
+        """Analyze and optimize a single activity - alias for optimize_existing_routine"""
+        return self.optimize_existing_routine(routine_id)

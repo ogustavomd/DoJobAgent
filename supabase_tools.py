@@ -694,3 +694,17 @@ def save_conversation_memory(session_id: str, user_message: str,
     except Exception as e:
         logging.error(f"Error saving memory: {e}")
         return False
+
+
+def create_anna_image(image_data: dict) -> dict:
+    """Create a new image entry in the anna_image_bank table"""
+    try:
+        response = supabase.table('anna_image_bank').insert(image_data).execute()
+        if response.data:
+            logging.info(f"Image created with ID: {response.data[0]['id']}")
+            return {'success': True, 'image_id': response.data[0]['id'], 'data': response.data[0]}
+        else:
+            return {'success': False, 'error': 'Failed to create image entry'}
+    except Exception as e:
+        logging.error(f"Error creating image: {e}")
+        return {'success': False, 'error': str(e)}
