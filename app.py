@@ -178,12 +178,11 @@ async def save_conversation_turn(user_id: str, session_id: str, user_message: st
         from models import Message
         
         # Create new message record
-        message = Message(
-            user_id=user_id,
-            session_id=session_id,
-            user_message=user_message,
-            assistant_response=assistant_response
-        )
+        message = Message()
+        message.user_id = user_id
+        message.session_id = session_id
+        message.user_message = user_message
+        message.assistant_response = assistant_response
         
         db.session.add(message)
         db.session.commit()
@@ -442,18 +441,17 @@ def admin_create_activity():
         time_end_obj = datetime.strptime(data.get('time_end', '23:59'), '%H:%M').time() if data.get('time_end') else None
         
         # Create new routine with proper data types
-        routine = AnnaRoutine(
-            date=date_obj,
-            time_start=time_start_obj,
-            time_end=time_end_obj,
-            activity=data['activity'],
-            category=data['category'],
-            location=data.get('location', ''),
-            description=data.get('description', ''),
-            status='upcoming',
-            has_images=False,
-            has_videos=False
-        )
+        routine = AnnaRoutine()
+        routine.date = date_obj
+        routine.time_start = time_start_obj
+        routine.time_end = time_end_obj
+        routine.activity = data['activity']
+        routine.category = data['category']
+        routine.location = data.get('location', '')
+        routine.description = data.get('description', '')
+        routine.status = 'upcoming'
+        routine.has_images = False
+        routine.has_videos = False
         
         db.session.add(routine)
         db.session.commit()
@@ -712,18 +710,17 @@ def config_save():
         from datetime import datetime
         
         # Create new agent record
-        agent = Agent(
-            nome=config['name'],
-            modelo=config['model'],
-            descricao=config.get('description', 'Agent configuration'),
-            instrucoes_personalidade=config['instructions'],
-            temperatura=config.get('temperature', 0.7),
-            max_tokens=config.get('max_tokens', 1000),
-            rotinas_ativas=True,
-            memorias_ativas=True,
-            midia_ativa=True,
-            atualizado_em=datetime.utcnow()
-        )
+        agent = Agent()
+        agent.nome = config['name']
+        agent.modelo = config['model']
+        agent.descricao = config.get('description', 'Agent configuration')
+        agent.instrucoes_personalidade = config['instructions']
+        agent.temperatura = config.get('temperature', 0.7)
+        agent.max_tokens = config.get('max_tokens', 1000)
+        agent.rotinas_ativas = True
+        agent.memorias_ativas = True
+        agent.midia_ativa = True
+        agent.atualizado_em = datetime.utcnow()
         
         db.session.add(agent)
         db.session.commit()
@@ -931,7 +928,7 @@ def upload_image():
             
             # For now, we'll use a placeholder URL since we don't have actual file storage
             # In a real implementation, you'd upload to Supabase Storage or similar
-            filename = secure_filename(file.filename)
+            filename = secure_filename(file.filename) if file.filename else 'unnamed'
             
             # Create image record with placeholder URL
             image_data = {
@@ -1024,23 +1021,17 @@ def ai_create_suggested_activity():
         import uuid
         
         # Convert suggestion to activity format
-        new_activity = AnnaRoutine(
-            id=str(uuid.uuid4()),
-            name=suggestion['activity'],
-            category=suggestion['category'],
-            date=datetime.strptime(suggestion['date'], '%Y-%m-%d').date(),
-            time_start=datetime.strptime(suggestion['time_start'], '%H:%M').time(),
-            time_end=datetime.strptime(suggestion['time_end'], '%H:%M').time(),
-            location=suggestion['location'],
-            description=suggestion['description'],
-            status='upcoming',
-            intensity=suggestion.get('intensity', 'medium'),
-            rating=None,
-            has_images=False,
-            has_videos=False,
-            is_active=True,
-            created_at=datetime.utcnow()
-        )
+        new_activity = AnnaRoutine()
+        new_activity.activity = suggestion['activity']
+        new_activity.category = suggestion['category']
+        new_activity.date = datetime.strptime(suggestion['date'], '%Y-%m-%d').date()
+        new_activity.time_start = datetime.strptime(suggestion['time_start'], '%H:%M').time()
+        new_activity.time_end = datetime.strptime(suggestion['time_end'], '%H:%M').time()
+        new_activity.location = suggestion['location']
+        new_activity.description = suggestion['description']
+        new_activity.status = 'upcoming'
+        new_activity.has_images = False
+        new_activity.has_videos = False
         
         db.session.add(new_activity)
         db.session.commit()
@@ -1056,7 +1047,7 @@ def ai_create_suggested_activity():
 def get_config():
     """Get current agent configuration"""
     try:
-        from anna_agent import agent
+        # from anna_agent import agent  # Remove this problematic import
         config = {
             'name': getattr(agent, 'name', 'Anna'),
             'model': getattr(agent, 'model', 'gemini-2.0-flash'),

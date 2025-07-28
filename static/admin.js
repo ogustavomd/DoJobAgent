@@ -39,6 +39,191 @@ class AdminManager {
         }, 500);
     }
 
+    // Missing method: initializeActivityTabHandlers
+    initializeActivityTabHandlers() {
+        console.log('Initializing activity tab handlers');
+        
+        // Initialize activity tab buttons
+        document.querySelectorAll('.activity-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabName = e.target.getAttribute('data-activity-tab');
+                console.log('Activity tab clicked:', tabName);
+                this.switchActivityTab(tabName);
+            });
+        });
+
+        // Initialize period filter handler
+        const periodFilter = document.getElementById('periodFilter');
+        if (periodFilter) {
+            periodFilter.addEventListener('change', (e) => {
+                const customRange = document.getElementById('customDateRange');
+                if (customRange) {
+                    if (e.target.value === 'custom') {
+                        customRange.style.display = 'grid';
+                    } else {
+                        customRange.style.display = 'none';
+                    }
+                }
+            });
+        }
+    }
+
+    // Manual initialization for activity tabs
+    manualInitializeActivityTabs() {
+        console.log('Manually initializing activity tabs');
+        
+        // Find and initialize tab buttons
+        const tabButtons = document.querySelectorAll('[data-activity-tab]');
+        if (tabButtons.length > 0) {
+            tabButtons.forEach(btn => {
+                if (!btn.onclick) { // Avoid duplicate handlers
+                    btn.addEventListener('click', (e) => {
+                        const tabName = e.target.getAttribute('data-activity-tab');
+                        this.switchActivityTab(tabName);
+                    });
+                }
+            });
+        }
+    }
+
+    // Missing method: loadFilterOptions
+    loadFilterOptions() {
+        console.log('Loading filter options');
+        fetch('/admin/api/activities/filters')
+            .then(response => response.json())
+            .then(data => {
+                this.filterOptions = data;
+                this.populateFilterDropdowns();
+            })
+            .catch(error => {
+                console.error('Error loading filter options:', error);
+            });
+    }
+
+    populateFilterDropdowns() {
+        // Populate category filter
+        const categoryFilter = document.getElementById('categoryFilter');
+        if (categoryFilter && this.filterOptions.categories) {
+            categoryFilter.innerHTML = '<option value="">Todas as categorias</option>';
+            this.filterOptions.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        // Populate status filter
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter && this.filterOptions.statuses) {
+            statusFilter.innerHTML = '<option value="">Todos os status</option>';
+            this.filterOptions.statuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                statusFilter.appendChild(option);
+            });
+        }
+    }
+
+    // Missing method: switchActivityTab
+    switchActivityTab(tabName) {
+        console.log('Switching to tab:', tabName);
+        
+        // Update tab buttons
+        document.querySelectorAll('.activity-tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const activeTab = document.querySelector(`[data-activity-tab="${tabName}"]`);
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
+
+        // Update panels
+        document.querySelectorAll('.activity-sub-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
+        const activePanel = document.getElementById(`${tabName}-view`);
+        if (activePanel) {
+            activePanel.classList.add('active');
+        }
+
+        // Load content based on the tab
+        this.currentActivityView = tabName;
+        switch (tabName) {
+            case 'calendario':
+                if (this.calendar) {
+                    setTimeout(() => this.calendar.updateSize(), 100);
+                }
+                break;
+            case 'lista':
+                this.loadActivitiesList();
+                break;
+            case 'hoje':
+                this.loadTodayActivities();
+                break;
+        }
+    }
+
+    loadActivitiesList() {
+        console.log('Loading activities list');
+        fetch('/admin/api/activities/list')
+            .then(response => response.json())
+            .then(data => {
+                this.renderActivitiesList(data);
+            })
+            .catch(error => {
+                console.error('Error loading activities list:', error);
+            });
+    }
+
+    renderActivitiesList(activitiesByDate) {
+        const container = document.getElementById('listaActivities');
+        if (!container) return;
+
+        container.innerHTML = '';
+        
+        Object.entries(activitiesByDate).forEach(([date, activities]) => {
+            const dateSection = document.createElement('div');
+            dateSection.className = 'date-section mb-4';
+            
+            dateSection.innerHTML = `
+                <h5 class="date-header">${this.formatDateForDisplay(date)}</h5>
+                <div class="activities-for-date">
+                    ${activities.map(activity => `
+                        <div class="activity-item card mb-2" onclick="adminApp.openActivityModal('${activity.id}')" style="cursor: pointer;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="card-title">${activity.activity}</h6>
+                                        <p class="card-text text-muted">${activity.time_start} - ${activity.time_end}</p>
+                                        ${activity.description ? `<p class="card-text">${activity.description}</p>` : ''}
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-primary">${activity.category}</span>
+                                        <span class="badge bg-success">${activity.status}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.appendChild(dateSection);
+        });
+    }
+
+    formatDateForDisplay(dateString) {
+        if (dateString === 'sem-data') return 'Sem Data';
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        } catch (e) {
+            return dateString;
+        }
+    }
+
     initializeCalendar() {
         const calendarEl = document.getElementById('calendar');
         
@@ -593,6 +778,23 @@ class AdminManager {
         }, 5000);
     }
 
+    // Error/success message helpers
+    showErrorMessage(message) {
+        this.showAlert(message, 'danger');
+    }
+
+    showSuccessMessage(message) {
+        this.showAlert(message, 'success');
+    }
+
+    // Error message formatter
+    getErrorMessage(error) {
+        if (typeof error === 'string') return error;
+        if (error.message) return error.message;
+        if (error.error) return error.error;
+        return 'Erro desconhecido';
+    }
+
     // Tab handling methods
     initializeTabHandlers() {
         const memoriesTab = document.getElementById('memories-tab');
@@ -980,6 +1182,52 @@ class AdminManager {
             this.deleteImage(imageId);
         }
     }
+
+    async deleteImage(imageId) {
+        try {
+            const response = await fetch(`/admin/api/images/${imageId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.loadImages();
+            } else {
+                alert('Erro ao excluir imagem: ' + result.error);
+            }
+        } catch (error) {
+            alert('Erro ao excluir imagem: ' + error.message);
+        }
+    }
+
+    loadCalendar() {
+        // Switch to calendar view
+        this.switchActivityTab('calendario');
+    }
+
+    async loadKnowledge() {
+        // Knowledge tab implementation - placeholder for now
+        const container = document.getElementById('knowledge-list');
+        if (container) {
+            container.innerHTML = '<p class="text-muted">Funcionalidade em desenvolvimento</p>';
+        }
+    }
+}
+
+// Initialize admin manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.adminManager = new AdminManager();
+    window.adminApp = window.adminManager; // Create alias for backward compatibility
+});
+
+// Global function for HTML onclick handlers
+function openActivityModal(activityId = null, selectedDate = null) {
+    if (window.adminManager) {
+        return window.adminManager.openActivityModal(activityId, selectedDate);
+    }
+    console.error('AdminManager not initialized');
+}
 
     async deleteImage(imageId) {
         try {
