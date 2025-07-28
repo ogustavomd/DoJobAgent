@@ -16,16 +16,15 @@ class AdminManager {
         setTimeout(() => {
             try {
                 this.initializeTabHandlers();
-                if (typeof this.initializeActivityTabHandlers === 'function') {
-                    this.initializeActivityTabHandlers();
-                }
-                if (typeof this.loadFilterOptions === 'function') {
-                    this.loadFilterOptions();
-                }
+                this.initializeActivityTabHandlers();
+                this.loadFilterOptions();
+                
+                // Force switch to calendar view first
+                this.switchActivityTab('calendario');
             } catch (error) {
                 console.error('Error during initialization:', error);
             }
-        }, 200);
+        }, 500);
     }
 
     initializeCalendar() {
@@ -484,8 +483,12 @@ class AdminManager {
     }
 
     renderTodayActivities(activities) {
+        console.log('Rendering today activities:', activities);
         const container = document.getElementById('todayActivities');
-        if (!container) return;
+        if (!container) {
+            console.error('Today activities container not found!');
+            return;
+        }
         
         if (!activities || activities.length === 0) {
             container.innerHTML = '<p class="text-muted">Nenhuma atividade para hoje</p>';
@@ -510,6 +513,7 @@ class AdminManager {
         `).join('');
         
         lucide.createIcons();
+        console.log('Today activities rendered successfully');
     }
 
     formatTimeForDisplay(timeString) {
@@ -2077,10 +2081,17 @@ class AdminApp {
 
     // Activity sub-tab handling
     initializeActivityTabHandlers() {
+        console.log('Initializing activity tab handlers...');
         const activityTabBtns = document.querySelectorAll('.activity-tab-btn');
-        activityTabBtns.forEach(btn => {
+        console.log('Found activity tab buttons:', activityTabBtns.length);
+        
+        activityTabBtns.forEach((btn, index) => {
+            console.log(`Button ${index}:`, btn.getAttribute('data-activity-tab'));
             btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 const tabName = e.target.closest('button').getAttribute('data-activity-tab');
+                console.log('Tab clicked:', tabName);
                 this.switchActivityTab(tabName);
             });
         });
