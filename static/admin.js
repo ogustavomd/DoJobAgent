@@ -457,24 +457,35 @@ class AdminManager {
         }
         
         container.innerHTML = activities.map(activity => `
-            <div class="activity-card p-3 mb-2" onclick="adminManager.openActivityModal('${activity.id}')">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h6 class="mb-1">${activity.activity}</h6>
-                        <small class="text-muted">${activity.time_start} - ${activity.time_end}</small>
-                        <br>
-                        <span class="badge bg-${this.getCategoryColor(activity.category)} status-badge">${activity.category}</span>
-                        <span class="badge bg-${this.getStatusColor(activity.status)} status-badge">${activity.status}</span>
-                    </div>
-                    <div class="text-end">
-                        ${activity.has_images ? '<i data-feather="image" class="text-success me-1"></i>' : ''}
-                        ${activity.has_videos ? '<i data-feather="video" class="text-info"></i>' : ''}
-                    </div>
+            <div class="today-activity" onclick="adminManager.openActivityModal('${activity.id}')" style="cursor: pointer;">
+                <div class="today-activity-title" style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">
+                    ${activity.activity}
+                </div>
+                <div class="today-activity-time" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">
+                    ${this.formatTimeForDisplay(activity.time_start)} - ${this.formatTimeForDisplay(activity.time_end)}
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                    <span class="badge bg-${this.getCategoryColor(activity.category)}" style="font-size: 11px;">${activity.category}</span>
+                    <span class="badge bg-${this.getStatusColor(activity.status)}" style="font-size: 11px;">${activity.status}</span>
+                    ${activity.has_images ? '<i data-feather="image" class="text-success" style="width: 14px; height: 14px;"></i>' : ''}
+                    ${activity.has_videos ? '<i data-feather="video" class="text-info" style="width: 14px; height: 14px;"></i>' : ''}
                 </div>
             </div>
         `).join('');
         
         feather.replace();
+    }
+
+    formatTimeForDisplay(timeString) {
+        if (!timeString) return '';
+        try {
+            const [hours, minutes] = timeString.split(':');
+            const hour = parseInt(hours);
+            const min = parseInt(minutes);
+            return `${hour.toString().padStart(2, '0')}h${min.toString().padStart(2, '0')}`;
+        } catch (e) {
+            return timeString;
+        }
     }
 
     getCategoryColor(category) {
@@ -483,7 +494,8 @@ class AdminManager {
             'trabalho': 'primary',
             'reuniao': 'warning',
             'social': 'info',
-            'pessoal': 'danger'
+            'pessoal': 'danger',
+            'conteudo': 'purple'
         };
         return colors[category] || 'secondary';
     }
@@ -723,9 +735,18 @@ class AdminManager {
                 this.renderImages(data.images);
             } else {
                 console.error('Error loading images:', data.error);
+                // Show message if no images found
+                const container = document.getElementById('images-list');
+                if (container) {
+                    container.innerHTML = '<p class="text-muted">Nenhuma imagem encontrada. Adicione imagens através das atividades.</p>';
+                }
             }
         } catch (error) {
             console.error('Error loading images:', error);
+            const container = document.getElementById('images-list');
+            if (container) {
+                container.innerHTML = '<p class="text-danger">Erro ao carregar imagens.</p>';
+            }
         }
     }
 
