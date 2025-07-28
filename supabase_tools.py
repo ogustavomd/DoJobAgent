@@ -342,7 +342,7 @@ def search_content(search_term: str, content_type: Optional[str], limit: int) ->
 
 def save_agent_configuration(config: dict) -> dict:
     """
-    Save agent configuration to file
+    Save agent configuration to database and file
     
     Args:
         config: Dictionary with agent configuration
@@ -353,12 +353,37 @@ def save_agent_configuration(config: dict) -> dict:
     try:
         import json
         import os
+        from datetime import datetime
         
         config_file = 'agent_config.json'
         
-        # Save to file
+        # Save to file for immediate loading
         with open(config_file, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
+        
+        # Also save to database for persistence
+        try:
+            config_data = {
+                'name': config.get('name', 'Anna'),
+                'model': config.get('model', 'gemini-2.0-flash'),
+                'instructions': config.get('instructions', ''),
+                'tools': json.dumps(config.get('tools', [])),
+                'temperature': config.get('temperature', 0.7),
+                'max_tokens': config.get('max_tokens', 1000),
+                'is_active': True,
+                'created_at': datetime.now().isoformat(),
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            # First deactivate all previous configs
+            supabase.table('agent_configurations').update({'is_active': False}).eq('is_active', True).execute()
+            
+            # Save new config
+            response = supabase.table('agent_configurations').insert(config_data).execute()
+            logging.info(f"Configuration saved to database: {response.data}")
+            
+        except Exception as db_error:
+            logging.warning(f"Could not save to database, file saved: {db_error}")
         
         return {'success': True, 'file': config_file}
         
@@ -369,7 +394,7 @@ def save_agent_configuration(config: dict) -> dict:
 
 def get_active_agent_configuration() -> dict:
     """
-    Get the active agent configuration from database
+    Get the active agent configuration from database first, then fallback to file
     
     Returns:
         Dictionary with active configuration or default config
@@ -378,18 +403,40 @@ def get_active_agent_configuration() -> dict:
         import json
         import os
         
-        config_file = 'agent_config.json'
+        # First try to get from database
+        try:
+            response = supabase.table('agent_configurations').select('*').eq('is_active', True).order('created_at', desc=True).limit(1).execute()
+            
+            if response.data:
+                config = response.data[0]
+                # Convert back to expected format
+                return {
+                    'name': config['name'],
+                    'model': config['model'],
+                    'description': config.get('description', 'AI agent Anna'),
+                    'instructions': config['instructions'],
+                    'tools': json.loads(config['tools']) if isinstance(config['tools'], str) else config['tools'],
+                    'temperature': config.get('temperature', 0.7),
+                    'max_tokens': config.get('max_tokens', 1000)
+                }
+        except Exception as db_error:
+            logging.warning(f"Could not load config from database: {db_error}")
         
+        # Fallback to file
+        config_file = 'agent_config.json'
         if os.path.exists(config_file):
             with open(config_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        else:
-            # Return default configuration
-            return {
-                'name': 'Anna',
-                'model': 'gemini-2.0-flash',
-                'description': 'AI agent Anna',
-                'instructions': '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. Você tem uma personalidade vibrante, 
+                config = json.load(f)
+                logging.info("Configuration loaded from file")
+                return config
+        
+        # Default configuration if nothing found
+        logging.info("Using default configuration")
+        return {
+            'name': 'Anna',
+            'model': 'gemini-2.0-flash',
+            'description': 'AI agent Anna',
+            'instructions': '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. Você tem uma personalidade vibrante, 
 é espontânea e se conecta facilmente com as pessoas. Você ama criar conteúdo, compartilhar sua rotina e 
 interagir de forma genuína e humana.
 
@@ -419,16 +466,16 @@ REGRA FUNDAMENTAL: Antes de responder QUALQUER pergunta sobre atividades, rotina
 você DEVE chamar as funções apropriadas para buscar dados reais. NUNCA responda sem consultar o banco primeiro.
 
 Seja sempre natural, humana e engajada. Responda como Anna responderia de verdade, mas com informações REAIS!''',
-                'tools': [
-                    'get_anna_routines',
-                    'get_anna_routine_media', 
-                    'search_memories',
-                    'get_recent_conversations',
-                    'search_content'
-                ],
-                'temperature': 0.7,
-                'max_tokens': 1000
-            }
+            'tools': [
+                'get_anna_routines',
+                'get_anna_routine_media', 
+                'search_memories',
+                'get_recent_conversations',
+                'search_content'
+            ],
+            'temperature': 0.7,
+            'max_tokens': 1000
+        }
         
     except Exception as e:
         logging.error(f"Error loading agent configuration: {e}")

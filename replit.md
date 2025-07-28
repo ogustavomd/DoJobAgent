@@ -130,12 +130,13 @@ The application is designed to be a conversational AI that maintains character c
 - Natural language processing optimized for Brazilian Portuguese expressions
 
 ### Recent Improvements (July 28, 2025)
-- **Agent Configuration System Fixed**: Anna now loads personality and instructions from agent_config.json file correctly
-- **Database Integration Restored**: Anna properly queries Supabase database before responding, accessing real routine and media data
-- **Conversation Memory System**: Implemented save_conversation_memory function for persistent chat history
+- **Dynamic Instructions System Implemented**: Anna now loads personality and instructions dynamically from the configuration interface, not hardcoded values
+- **Activity Cards Enhanced**: Today's activities display with larger names and Brazilian time format (10h00)
+- **Database Integration Restored**: Anna properly queries Supabase database before responding, accessing real routine and media data  
+- **Configuration Priority System**: Agent loads instructions from saved config first, then falls back to file/defaults
 - **Calendar Display Corrected**: Fixed admin calendar rendering with proper height and aspect ratio
 - **Import Error Resolution**: Corrected type annotations and removed syntax errors in supabase_tools.py
-- **Clean Agent Architecture**: Rebuilt anna_agent.py with proper JSON configuration loading and error handling
+- **Clean Agent Architecture**: Rebuilt anna_agent.py with proper dynamic configuration loading and error handling
 - **Tool Integration Stable**: All 7 database tools properly registered and available to Anna
 - **Gemini Integration Active**: Agent connecting successfully to Gemini 2.0 Flash model
 

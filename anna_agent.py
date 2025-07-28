@@ -10,24 +10,36 @@ from supabase_tools import (get_anna_routines, get_anna_routine_media,
 
 
 def create_anna_agent():
-    """Create and configure Anna agent using configuration from file"""
+    """Create and configure Anna agent using configuration from database and file"""
     try:
-        # Load configuration from agent_config.json file
-        with open('agent_config.json', 'r', encoding='utf-8') as f:
-            config = json.load(f)
-        logging.info("Configuration loaded from agent_config.json")
+        # First try to load from database (latest saved from config interface)
+        from supabase_tools import get_active_agent_configuration
+        config = get_active_agent_configuration()
+        
+        if config and config.get('instructions'):
+            logging.info("Configuration loaded from database (most recent)")
+        else:
+            # Fallback to file if no database config
+            with open('agent_config.json', 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            logging.info("Configuration loaded from agent_config.json file")
+            
     except Exception as e:
         logging.error(f"Error loading config, using defaults: {e}")
         # Fallback configuration
         config = {
-            'name': 'Anna',
+            'name': 'Anna', 
             'model': 'gemini-2.0-flash',
             'instructions': 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.',
             'tools': ['get_anna_routines', 'search_memories', 'get_anna_routine_media', 'get_recent_conversations', 'search_content', 'save_conversation_memory']
         }
 
-    # Get instructions from config 
-    instructions = config.get('instructions', 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.')
+    # Get instructions from config (prioritizing database saved instructions)
+    instructions = config.get('instructions')
+    if not instructions:
+        instructions = 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.'
+    
+    logging.info(f"Using instructions (first 100 chars): {instructions[:100]}...")
     
     # Create the agent with tools from configuration
     agent = LlmAgent(
