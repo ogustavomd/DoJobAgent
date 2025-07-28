@@ -181,6 +181,7 @@ class AdminManager {
         fetch(url)
             .then(response => response.json())
             .then(data => {
+                console.log('Activities list data received:', data);
                 this.renderActivitiesList(data);
             })
             .catch(error => {
@@ -235,10 +236,20 @@ class AdminManager {
     }
 
     renderActivitiesList(activitiesByDate) {
+        console.log('Rendering activities list with data:', activitiesByDate);
         const container = document.getElementById('listaActivities');
-        if (!container) return;
+        if (!container) {
+            console.error('listaActivities container not found!');
+            return;
+        }
 
         container.innerHTML = '';
+        
+        // Check if we have data
+        if (!activitiesByDate || Object.keys(activitiesByDate).length === 0) {
+            container.innerHTML = '<p class="text-muted">Nenhuma atividade encontrada com os filtros selecionados.</p>';
+            return;
+        }
         
         Object.entries(activitiesByDate).forEach(([date, activities]) => {
             const dateSection = document.createElement('div');
@@ -248,7 +259,7 @@ class AdminManager {
                 <h5 class="date-header">${this.formatDateForDisplay(date)}</h5>
                 <div class="activities-for-date">
                     ${activities.map(activity => `
-                        <div class="activity-item card mb-2" onclick="adminApp.openActivityModal('${activity.id}')" style="cursor: pointer;">
+                        <div class="activity-item card mb-2" onclick="openActivityModal('${activity.id}')" style="cursor: pointer;">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
@@ -259,6 +270,9 @@ class AdminManager {
                                     <div>
                                         <span class="badge bg-primary">${activity.category}</span>
                                         <span class="badge bg-success">${activity.status}</span>
+                                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="event.stopPropagation(); deleteActivityFromList('${activity.id}')">
+                                            <i data-lucide="trash-2" width="14" height="14"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -269,6 +283,13 @@ class AdminManager {
             
             container.appendChild(dateSection);
         });
+        
+        // Re-initialize Lucide icons for new content
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        console.log('Activities list rendered successfully');
     }
 
     formatDateForDisplay(dateString) {
