@@ -85,16 +85,19 @@ class AnnaMemory(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-class AgentConfiguration(db.Model):
-    """Agent configuration settings"""
-    __tablename__ = 'agent_configurations'
+class Agent(db.Model):
+    """Agent configuration settings matching the PostgreSQL agents table"""
+    __tablename__ = 'agents'
     
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    model = db.Column(db.String(100), default='gemini-2.0-flash')
-    description = db.Column(db.Text)
-    instructions = db.Column(db.Text, nullable=False)
-    tools_enabled = db.Column(db.Text)  # JSON array of enabled tools
-    is_active = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    id = db.Column(db.String(36), primary_key=True)  # UUID as string
+    nome = db.Column(db.Text, nullable=False)
+    modelo = db.Column(db.Text, nullable=False)
+    descricao = db.Column(db.Text)
+    instrucoes_personalidade = db.Column(db.Text)
+    temperatura = db.Column(db.Numeric(2, 1), default=0.7)
+    max_tokens = db.Column(db.Integer, default=1000)
+    rotinas_ativas = db.Column(db.Boolean, default=True)
+    memorias_ativas = db.Column(db.Boolean, default=True)
+    midia_ativa = db.Column(db.Boolean, default=True)
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    atualizado_em = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

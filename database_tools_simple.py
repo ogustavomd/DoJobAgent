@@ -7,11 +7,48 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 def get_anna_routines(days_ahead: int = 7, status_filter: Optional[str] = None) -> Dict[str, Any]:
-    """Get Anna's routine activities"""
+    """Get Anna's routine activities from PostgreSQL"""
     try:
-        # For now, return empty data while PostgreSQL is being set up
-        logging.info(f"Getting routines for {days_ahead} days ahead")
-        return {'success': True, 'data': []}
+        from app import db
+        from models import AnnaRoutine
+        from datetime import date, timedelta
+        
+        today = date.today()
+        end_date = today + timedelta(days=days_ahead)
+        
+        # Build query
+        query = db.session.query(AnnaRoutine).filter(
+            AnnaRoutine.date >= today.strftime('%Y-%m-%d'),
+            AnnaRoutine.date <= end_date.strftime('%Y-%m-%d')
+        )
+        
+        if status_filter:
+            query = query.filter(AnnaRoutine.status == status_filter)
+        
+        routines = query.order_by(AnnaRoutine.date, AnnaRoutine.time_start).all()
+        
+        # Convert to dictionaries
+        routine_data = []
+        for routine in routines:
+            routine_dict = {
+                'id': routine.id,
+                'activity': routine.activity,
+                'category': routine.category,
+                'date': routine.date,
+                'time_start': routine.time_start,
+                'time_end': routine.time_end,
+                'status': routine.status,
+                'description': routine.description,
+                'location': routine.location,
+                'has_images': routine.has_images,
+                'has_videos': routine.has_videos,
+                'created_at': routine.created_at.isoformat() if routine.created_at else None
+            }
+            routine_data.append(routine_dict)
+        
+        logging.info(f"Retrieved {len(routine_data)} routines for {days_ahead} days ahead")
+        return {'success': True, 'data': routine_data}
+        
     except Exception as e:
         logging.error(f"Error getting routines: {e}")
         return {'success': False, 'error': str(e)}
@@ -26,10 +63,41 @@ def get_anna_routine_media(routine_id: Optional[int] = None, media_type: Optiona
         return {'success': False, 'error': str(e)}
 
 def search_memories(query_text: str, limit: int = 10) -> Dict[str, Any]:
-    """Search Anna's memories"""
+    """Search Anna's memories from PostgreSQL"""
     try:
-        logging.info(f"Searching memories for: {query_text}")
-        return {'success': True, 'data': []}
+        from app import db
+        from models import AnnaMemory
+        from sqlalchemy import or_, and_
+        
+        # Search in memory content using ILIKE for case-insensitive search
+        memories = db.session.query(AnnaMemory).filter(
+            and_(
+                AnnaMemory.is_active == True,
+                or_(
+                    AnnaMemory.content.ilike(f'%{query_text}%'),
+                    AnnaMemory.context.ilike(f'%{query_text}%'),
+                    AnnaMemory.tags.ilike(f'%{query_text}%')
+                )
+            )
+        ).order_by(AnnaMemory.importance_score.desc(), AnnaMemory.created_at.desc()).limit(limit).all()
+        
+        # Convert to dictionaries
+        memory_data = []
+        for memory in memories:
+            memory_dict = {
+                'id': memory.id,
+                'memory_type': memory.memory_type,
+                'content': memory.content,
+                'context': memory.context,
+                'importance_score': memory.importance_score,
+                'tags': memory.tags,
+                'created_at': memory.created_at.isoformat() if memory.created_at else None
+            }
+            memory_data.append(memory_dict)
+        
+        logging.info(f"Found {len(memory_data)} memories for query: {query_text}")
+        return {'success': True, 'data': memory_data}
+        
     except Exception as e:
         logging.error(f"Error searching memories: {e}")
         return {'success': False, 'error': str(e)}
@@ -78,12 +146,34 @@ def save_conversation_memory(user_id: str, session_id: str, user_message: str, a
         return {'success': False, 'error': str(e)}
 
 def get_active_agent_configuration() -> Dict[str, Any]:
-    """Get active agent configuration"""
+    """Get active agent configuration from PostgreSQL database"""
     try:
+        from app import db
+        from models import Agent
         import json
         import os
         
-        # Try to load from file first
+        # Try to get the most recent agent from database
+        agent = db.session.query(Agent).order_by(Agent.atualizado_em.desc()).first()
+        
+        if agent:
+            config_data = {
+                'name': agent.nome,
+                'model': agent.modelo,
+                'description': agent.descricao,
+                'instructions': agent.instrucoes_personalidade,
+                'temperature': float(agent.temperatura) if agent.temperatura else 0.7,
+                'max_tokens': agent.max_tokens or 1000,
+                'tools_enabled': {
+                    'rotinas_ativas': agent.rotinas_ativas,
+                    'memorias_ativas': agent.memorias_ativas,
+                    'midia_ativa': agent.midia_ativa
+                }
+            }
+            logging.info("Configuration loaded from PostgreSQL database")
+            return config_data
+        
+        # Fallback to file if no database record
         config_file = 'agent_config.json'
         if os.path.exists(config_file):
             with open(config_file, 'r', encoding='utf-8') as f:
