@@ -129,14 +129,14 @@ The application is designed to be a conversational AI that maintains character c
 - Memory of past conversations
 - Natural language processing optimized for Brazilian Portuguese expressions
 
-### Recent Improvements (July 27, 2025)
-- **Enhanced Media Integration**: Fixed URL detection for both markdown links and plain URLs
-- **Real-time Status Updates**: Routines now show current/completed/upcoming status based on actual time
-- **Improved Agent Instructions**: Anna now always calls database functions before responding
-- **Fixed Layout Issues**: Chat interface now has proper fixed input field and scrollable conversation area
-- **Better Error Handling**: Enhanced media display with fallback error handling
-- **Admin Interface**: Complete calendar-based management system for routines with media upload capabilities
-- **Configuration Interface**: Dynamic agent configuration system for instructions, tools, and settings
+### Recent Improvements (July 28, 2025)
+- **Agent Configuration System Fixed**: Anna now loads personality and instructions from agent_config.json file correctly
+- **Database Integration Restored**: Anna properly queries Supabase database before responding, accessing real routine and media data
+- **Conversation Memory System**: Implemented save_conversation_memory function for persistent chat history
+- **Calendar Display Corrected**: Fixed admin calendar rendering with proper height and aspect ratio
+- **Import Error Resolution**: Corrected type annotations and removed syntax errors in supabase_tools.py
+- **Real Data Responses**: Anna now mentions specific activities from database (e.g., "Teste Trabalho", personal activities)
+- **Prompt Loading Fixed**: Eliminated hardcoded instructions in favor of dynamic configuration loading
 
 ### Current Database State
 - **Sample Data**: Populated with realistic routine activities, media files, and conversation history

@@ -519,7 +519,7 @@ def get_scheduled_routines() -> dict:
     except Exception as e:
         return {'success': False, 'error': str(e)}
 
-def schedule_routine_action(routine_id: int, action_type: str, message: str = None, image_id: int = None) -> dict:
+def schedule_routine_action(routine_id: int, action_type: str, message: Optional[str] = None, image_id: Optional[int] = None) -> dict:
     """Schedule an automatic action for a routine"""
     try:
         action_data = {
