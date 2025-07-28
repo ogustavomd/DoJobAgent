@@ -237,9 +237,9 @@ class AdminManager {
 
     renderActivitiesList(activitiesByDate) {
         console.log('Rendering activities list with data:', activitiesByDate);
-        const container = document.getElementById('listaActivities');
+        const container = document.getElementById('activitiesList');
         if (!container) {
-            console.error('listaActivities container not found!');
+            console.error('activitiesList container not found!');
             return;
         }
 
