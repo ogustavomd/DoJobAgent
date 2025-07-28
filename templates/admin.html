@@ -615,6 +615,114 @@
             font-size: 12px;
             color: var(--text-secondary);
         }
+
+        /* Activity Sub-Panel Styles */
+        .activity-sub-panel {
+            display: none;
+        }
+
+        .activity-sub-panel.active {
+            display: block;
+        }
+
+        .activity-tab-btn.active {
+            background: var(--accent-purple) !important;
+            color: white !important;
+        }
+
+        /* Activity List Styles */
+        .activity-date-section {
+            margin-bottom: 32px;
+        }
+
+        .activity-date-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--accent-purple);
+        }
+
+        .activity-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .activity-item:hover {
+            border-color: var(--accent-purple);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+        }
+
+        .activity-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .activity-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .activity-item-time {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .activity-item-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .activity-item-detail {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .activity-item-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-upcoming {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .status-current {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .status-completed {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
     </style>
 </head>
 <body>

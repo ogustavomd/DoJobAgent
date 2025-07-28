@@ -14,10 +14,18 @@ class AdminManager {
         this.initializeEventListeners();
         this.loadTodayActivities();
         setTimeout(() => {
-            this.initializeTabHandlers();
-            this.initializeActivityTabHandlers();
-            this.loadFilterOptions();
-        }, 100);
+            try {
+                this.initializeTabHandlers();
+                if (typeof this.initializeActivityTabHandlers === 'function') {
+                    this.initializeActivityTabHandlers();
+                }
+                if (typeof this.loadFilterOptions === 'function') {
+                    this.loadFilterOptions();
+                }
+            } catch (error) {
+                console.error('Error during initialization:', error);
+            }
+        }, 200);
     }
 
     initializeCalendar() {
@@ -2229,11 +2237,11 @@ class AdminApp {
                 ` : ''}
                 
                 <div class="activity-item-actions">
-                    <button class="btn-outline-modern" onclick="adminManager.openActivityModal('${activity.id}')" style="font-size: 12px; padding: 6px 12px;">
+                    <button class="btn-outline-modern" onclick="openActivityModal('${activity.id}')" style="font-size: 12px; padding: 6px 12px;">
                         <i data-lucide="edit" width="14" height="14"></i>
                         Editar
                     </button>
-                    <button class="btn-danger-modern" onclick="adminManager.deleteActivity('${activity.id}')" style="font-size: 12px; padding: 6px 12px;">
+                    <button class="btn-danger-modern" onclick="deleteActivityFromList('${activity.id}')" style="font-size: 12px; padding: 6px 12px;">
                         <i data-lucide="trash-2" width="14" height="14"></i>
                         Excluir
                     </button>
@@ -2332,6 +2340,30 @@ class AdminApp {
         this.currentFilters = {};
         this.loadActivitiesList();
     }
+
+    async deleteActivityById(activityId) {
+        try {
+            const response = await fetch(`/admin/api/activities/${activityId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                alert('Atividade excluída com sucesso!');
+                // Refresh the list view
+                if (this.currentActivityView === 'lista') {
+                    this.loadActivitiesList();
+                } else {
+                    this.calendar.refetchEvents();
+                }
+                this.loadTodayActivities();
+            } else {
+                throw new Error('Erro ao excluir atividade');
+            }
+        } catch (error) {
+            console.error('Error deleting activity:', error);
+            alert('Erro ao excluir atividade: ' + error.message);
+        }
+    }
 }
 
 // Global functions for HTML template
@@ -2359,5 +2391,11 @@ function clearFilters() {
 function openActivityModal(activityId = null, date = null) {
     if (adminManager) {
         adminManager.openActivityModal(activityId, date);
+    }
+}
+
+function deleteActivityFromList(activityId) {
+    if (adminManager && confirm('Tem certeza que deseja excluir esta atividade?')) {
+        adminManager.deleteActivityById(activityId);
     }
 }
