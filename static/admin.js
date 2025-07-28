@@ -52,7 +52,20 @@ class AdminManager {
                 this.openActivityModal(clickInfo.event.id);
             },
             
-            events: '/admin/api/activities'
+            events: async (info, successCallback, failureCallback) => {
+                try {
+                    const response = await fetch('/admin/api/activities');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    const events = await response.json();
+                    console.log('Calendar events loaded:', events.length);
+                    successCallback(events);
+                } catch (error) {
+                    console.error('Error loading calendar events:', error);
+                    failureCallback(error);
+                }
+            }
         });
         
         this.calendar.render();
@@ -455,40 +468,48 @@ class AdminManager {
         
         try {
             const response = await fetch(`/admin/api/activities/date/${today}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
             const activities = await response.json();
             
             this.renderTodayActivities(activities);
         } catch (error) {
             console.error('Error loading today activities:', error);
+            const container = document.getElementById('todayActivities');
+            if (container) {
+                container.innerHTML = '<p class="text-muted">Erro ao carregar atividades</p>';
+            }
         }
     }
 
     renderTodayActivities(activities) {
         const container = document.getElementById('todayActivities');
+        if (!container) return;
         
-        if (activities.length === 0) {
+        if (!activities || activities.length === 0) {
             container.innerHTML = '<p class="text-muted">Nenhuma atividade para hoje</p>';
             return;
         }
         
         container.innerHTML = activities.map(activity => `
-            <div class="today-activity" onclick="adminManager.openActivityModal('${activity.id}')" style="cursor: pointer;">
+            <div class="today-activity" onclick="openActivityModal('${activity.id}')" style="cursor: pointer;">
                 <div class="today-activity-title" style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">
-                    ${activity.activity}
+                    ${activity.activity || 'Atividade sem nome'}
                 </div>
                 <div class="today-activity-time" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">
                     ${this.formatTimeForDisplay(activity.time_start)} - ${this.formatTimeForDisplay(activity.time_end)}
                 </div>
                 <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                    <span class="badge bg-${this.getCategoryColor(activity.category)}" style="font-size: 11px;">${activity.category}</span>
-                    <span class="badge bg-${this.getStatusColor(activity.status)}" style="font-size: 11px;">${activity.status}</span>
-                    ${activity.has_images ? '<i data-feather="image" class="text-success" style="width: 14px; height: 14px;"></i>' : ''}
-                    ${activity.has_videos ? '<i data-feather="video" class="text-info" style="width: 14px; height: 14px;"></i>' : ''}
+                    <span class="badge bg-primary" style="font-size: 11px;">${activity.category || 'Sem categoria'}</span>
+                    <span class="badge bg-success" style="font-size: 11px;">${activity.status || 'upcoming'}</span>
+                    ${activity.has_images ? '<i data-lucide="image" style="width: 14px; height: 14px;"></i>' : ''}
+                    ${activity.has_videos ? '<i data-lucide="video" style="width: 14px; height: 14px;"></i>' : ''}
                 </div>
             </div>
         `).join('');
         
-        feather.replace();
+        lucide.createIcons();
     }
 
     formatTimeForDisplay(timeString) {
@@ -2079,26 +2100,37 @@ class AdminApp {
     }
 
     switchActivityTab(tabName) {
+        console.log('Switching to tab:', tabName);
+        
         // Update tab buttons
         document.querySelectorAll('.activity-tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        document.querySelector(`[data-activity-tab="${tabName}"]`).classList.add('active');
+        const activeTab = document.querySelector(`[data-activity-tab="${tabName}"]`);
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
 
         // Update panels
         document.querySelectorAll('.activity-sub-panel').forEach(panel => {
             panel.classList.remove('active');
         });
-        document.getElementById(`${tabName}-view`).classList.add('active');
+        const activePanel = document.getElementById(`${tabName}-view`);
+        if (activePanel) {
+            activePanel.classList.add('active');
+        }
 
         this.currentActivityView = tabName;
 
         // Load appropriate content
         if (tabName === 'lista') {
+            console.log('Loading activities list...');
             this.loadActivitiesList();
         } else if (tabName === 'calendario') {
+            console.log('Refreshing calendar...');
             if (this.calendar) {
-                this.calendar.render();
+                this.calendar.refetchEvents();
+                setTimeout(() => this.calendar.render(), 100);
             }
         }
     }
@@ -2129,10 +2161,21 @@ class AdminApp {
     }
 
     async loadActivitiesList() {
+        console.log('Loading activities list...');
         try {
             const params = new URLSearchParams(this.currentFilters);
-            const response = await fetch(`/admin/api/activities/list?${params}`);
+            const url = `/admin/api/activities/list?${params}`;
+            console.log('Fetching from:', url);
+            
+            const response = await fetch(url);
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
             const data = await response.json();
+            console.log('Activities list data:', data);
 
             if (data.error) {
                 document.getElementById('activitiesList').innerHTML = `
@@ -2144,6 +2187,10 @@ class AdminApp {
             }
 
             const activitiesListContainer = document.getElementById('activitiesList');
+            if (!activitiesListContainer) {
+                console.error('Activities list container not found!');
+                return;
+            }
             
             if (Object.keys(data).length === 0) {
                 activitiesListContainer.innerHTML = `
@@ -2160,6 +2207,7 @@ class AdminApp {
             
             // Sort dates in descending order
             const sortedDates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+            console.log('Sorted dates:', sortedDates);
             
             for (const date of sortedDates) {
                 const activities = data[date];
@@ -2176,16 +2224,20 @@ class AdminApp {
                 `;
             }
 
+            console.log('Setting HTML for activities list, length:', html.length);
             activitiesListContainer.innerHTML = html;
             lucide.createIcons();
 
         } catch (error) {
             console.error('Error loading activities list:', error);
-            document.getElementById('activitiesList').innerHTML = `
-                <div style="color: #dc3545; font-size: 14px; text-align: center; padding: 20px;">
-                    Erro ao carregar atividades: ${error.message}
-                </div>
-            `;
+            const container = document.getElementById('activitiesList');
+            if (container) {
+                container.innerHTML = `
+                    <div style="color: #dc3545; font-size: 14px; text-align: center; padding: 20px;">
+                        Erro ao carregar atividades: ${error.message}
+                    </div>
+                `;
+            }
         }
     }
 
