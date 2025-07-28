@@ -13,9 +13,11 @@ class AdminManager {
         this.initializeCalendar();
         this.initializeEventListeners();
         this.loadTodayActivities();
-        setTimeout(() => this.initializeTabHandlers(), 100);
-        this.initializeActivityTabHandlers();
-        this.loadFilterOptions();
+        setTimeout(() => {
+            this.initializeTabHandlers();
+            this.initializeActivityTabHandlers();
+            this.loadFilterOptions();
+        }, 100);
     }
 
     initializeCalendar() {
@@ -2351,5 +2353,11 @@ function applyFilters() {
 function clearFilters() {
     if (adminManager) {
         adminManager.clearFilters();
+    }
+}
+
+function openActivityModal(activityId = null, date = null) {
+    if (adminManager) {
+        adminManager.openActivityModal(activityId, date);
     }
 }
