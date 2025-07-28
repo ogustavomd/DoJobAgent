@@ -1,0 +1,85 @@
+_app-fa2bbf2ef2a04535.js:18 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+125Tracking Prevention blocked access to storage for <URL>.
+_app-fa2bbf2ef2a04535.js:18 [LaunchDarkly] LaunchDarkly client initialized
+15Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+framework-3696f0681438c975.js:1  Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'battery'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'layout-animations'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'navigation-override'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'oversized-images'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'publickey-credentials'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'speaker-selection'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'unoptimized-images'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'unsized-media'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Unrecognized feature: 'pointer-lock'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-3696f0681438c975.js:1
+framework-3696f0681438c975.js:1  Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-3696f0681438c975.js:1
+MindCraft:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+m.stripe.com/6:1   Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+attached_assets/targeted_element_1753677091031.png:1   Failed to load resource: the server responded with a status of 404 ()
+workspace_iframe.html:32  Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32  Unrecognized feature: 'battery'.
+workspace_iframe.html:32  Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32  Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32  Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32  Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32  Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32  Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32  Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32  Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32  Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32  Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32  Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32  Allow attribute will take precedence over 'allowpaymentrequest'.
+Console.js:61  <i data-lucide="magic-wand" width="16" height="16"></i> icon name was not found in the provided icons object.
+Mt.forEach.n.<computed> @ Console.js:61
+2Console.js:61 Admin systems initialized successfully
+Console.js:61 Calendar events loaded: 11
+Console.js:61 Rendering today activities: Array(1)
+Console.js:61  <i data-lucide="magic-wand" width="16" height="16"></i> icon name was not found in the provided icons object.
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Today activities rendered successfully
+2Console.js:61  Error during initialization: TypeError: this.initializeActivityTabHandlers is not a function
+    at admin.js:19:22
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Calendar events loaded: 11
+Console.js:61 Rendering today activities: Array(1)
+Console.js:61  <i data-lucide="magic-wand" width="16" height="16"></i> icon name was not found in the provided icons object.
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Today activities rendered successfully
+[NOVO] Explique os erros do Console usando o Copilot no Edge: clique em
+         
+         para explicar um erro.
+        Saiba mais

@@ -16,11 +16,23 @@ class AdminManager {
         setTimeout(() => {
             try {
                 this.initializeTabHandlers();
-                this.initializeActivityTabHandlers();
-                this.loadFilterOptions();
+                
+                // Check if methods exist before calling
+                if (typeof this.initializeActivityTabHandlers === 'function') {
+                    this.initializeActivityTabHandlers();
+                } else {
+                    console.error('initializeActivityTabHandlers method not found, initializing manually');
+                    this.manualInitializeActivityTabs();
+                }
+                
+                if (typeof this.loadFilterOptions === 'function') {
+                    this.loadFilterOptions();
+                }
                 
                 // Force switch to calendar view first
-                this.switchActivityTab('calendario');
+                if (typeof this.switchActivityTab === 'function') {
+                    this.switchActivityTab('calendario');
+                }
             } catch (error) {
                 console.error('Error during initialization:', error);
             }
@@ -2402,6 +2414,36 @@ class AdminApp {
         
         this.currentFilters = {};
         this.loadActivitiesList();
+    }
+
+    manualInitializeActivityTabs() {
+        console.log('Manual initialization of activity tabs...');
+        const activityTabBtns = document.querySelectorAll('.activity-tab-btn');
+        console.log('Found activity tab buttons:', activityTabBtns.length);
+        
+        activityTabBtns.forEach((btn, index) => {
+            console.log(`Button ${index}:`, btn.getAttribute('data-activity-tab'));
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const tabName = e.target.closest('button').getAttribute('data-activity-tab');
+                console.log('Tab clicked:', tabName);
+                this.switchActivityTab(tabName);
+            });
+        });
+
+        // Initialize period filter handler
+        const periodFilter = document.getElementById('periodFilter');
+        if (periodFilter) {
+            periodFilter.addEventListener('change', (e) => {
+                const customRange = document.getElementById('customDateRange');
+                if (e.target.value === 'custom') {
+                    customRange.style.display = 'grid';
+                } else {
+                    customRange.style.display = 'none';
+                }
+            });
+        }
     }
 
     async deleteActivityById(activityId) {
