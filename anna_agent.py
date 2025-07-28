@@ -3,7 +3,7 @@ import json
 import logging
 from google.adk.agents import LlmAgent
 from google.genai import types
-from supabase_tools import (get_anna_routines, get_anna_routine_media,
+from database_tools_simple import (get_anna_routines, get_anna_routine_media,
                             search_memories, get_recent_conversations,
                             get_profile_info, search_content,
                             save_conversation_memory)
@@ -13,7 +13,7 @@ def create_anna_agent():
     """Create and configure Anna agent using configuration from database and file"""
     try:
         # First try to load from database (latest saved from config interface)
-        from supabase_tools import get_active_agent_configuration
+        from database_tools_simple import get_active_agent_configuration
         config = get_active_agent_configuration()
         
         if config and config.get('instructions'):
