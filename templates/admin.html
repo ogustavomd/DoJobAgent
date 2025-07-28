@@ -841,10 +841,30 @@
         }
 
         /* Dropdown Menu Enhancements */
+        .activity-card .dropdown {
+            position: relative;
+        }
+
         .dropdown-menu-dark {
+            position: absolute !important;
+            top: 100% !important;
+            right: 0 !important;
+            left: auto !important;
+            z-index: 1000 !important;
             background: var(--bg-primary) !important;
             border: 1px solid var(--border-color) !important;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+            border-radius: 8px !important;
+            min-width: 140px !important;
+            transform: translateY(4px) !important;
+        }
+
+        .dropdown-menu-dark:not(.show) {
+            display: none !important;
+        }
+
+        .dropdown-menu-dark.show {
+            display: block !important;
         }
 
         .dropdown-menu-dark .dropdown-item {
@@ -854,6 +874,11 @@
             align-items: center !important;
             gap: 8px !important;
             font-size: 14px !important;
+            text-decoration: none !important;
+            border: none !important;
+            background: none !important;
+            width: 100% !important;
+            text-align: left !important;
         }
 
         .dropdown-menu-dark .dropdown-item:hover {
@@ -864,6 +889,11 @@
         .dropdown-menu-dark .dropdown-item.text-danger:hover {
             background: rgba(239, 68, 68, 0.1) !important;
             color: #ef4444 !important;
+        }
+
+        .activity-menu-btn[aria-expanded="true"] {
+            background: var(--bg-tertiary) !important;
+            color: var(--text-primary) !important;
         }
 
         /* Filter Improvements */

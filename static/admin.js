@@ -249,9 +249,10 @@ class AdminManager {
         let queryParams = new URLSearchParams();
         if (this.currentFilters.category) queryParams.append('category', this.currentFilters.category);
         if (this.currentFilters.status) queryParams.append('status', this.currentFilters.status);
-        if (this.currentFilters.dateFrom) queryParams.append('date_from', this.currentFilters.dateFrom);
-        if (this.currentFilters.dateTo) queryParams.append('date_to', this.currentFilters.dateTo);
+        if (this.currentFilters.dateFrom) queryParams.append('dateFrom', this.currentFilters.dateFrom);
+        if (this.currentFilters.dateTo) queryParams.append('dateTo', this.currentFilters.dateTo);
         if (this.currentFilters.search) queryParams.append('search', this.currentFilters.search);
+        if (this.currentFilters.period) queryParams.append('period', this.currentFilters.period);
         
         const url = '/admin/api/activities/list' + (queryParams.toString() ? '?' + queryParams.toString() : '');
         
@@ -282,10 +283,12 @@ class AdminManager {
             status: statusFilter?.value || '',
             dateFrom: dateFromFilter?.value || '',
             dateTo: dateToFilter?.value || '',
-            search: searchFilter?.value || ''
+            search: searchFilter?.value || '',
+            period: document.getElementById('periodFilter')?.value || ''
         };
         
         // Reload activities list with filters
+        console.log('Applying filters:', this.currentFilters);
         this.loadActivitiesList();
     }
 
@@ -356,9 +359,11 @@ class AdminManager {
     createActivityCardHTML(activity) {
         const priorityColor = this.getPriorityColor(activity.category);
         const statusBadge = this.getStatusBadge(activity.status);
+        const cardId = `card-${activity.id}`;
+        const dropdownId = `dropdown-${activity.id}`;
         
         return `
-            <div class="activity-card" data-activity-id="${activity.id}">
+            <div class="activity-card" data-activity-id="${activity.id}" id="${cardId}">
                 <div class="activity-card-header">
                     <div class="activity-priority-indicator" style="background-color: ${priorityColor}"></div>
                     <div class="activity-card-main">
@@ -371,10 +376,10 @@ class AdminManager {
                     </div>
                     <div class="activity-card-actions">
                         <div class="dropdown">
-                            <button class="activity-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation();">
+                            <button class="activity-menu-btn" type="button" id="${dropdownId}" onclick="event.stopPropagation(); toggleDropdown('${dropdownId}')">
                                 <i data-lucide="more-vertical" width="16" height="16"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-dark">
+                            <ul class="dropdown-menu dropdown-menu-dark" id="menu-${activity.id}">
                                 <li><a class="dropdown-item" href="#" onclick="event.stopPropagation(); adminManager.openActivityModal('${activity.id}')">
                                     <i data-lucide="edit" width="16" height="16"></i> Editar
                                 </a></li>
@@ -483,6 +488,32 @@ class AdminManager {
             }
         }, 5000);
     }
+}
+
+// Global dropdown toggle function
+function toggleDropdown(dropdownId) {
+    // Close all other dropdowns first
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu.id !== 'menu-' + dropdownId.replace('dropdown-', '')) {
+            menu.classList.remove('show');
+        }
+    });
+    
+    // Toggle the clicked dropdown
+    const menu = document.getElementById('menu-' + dropdownId.replace('dropdown-', ''));
+    if (menu) {
+        menu.classList.toggle('show');
+    }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+});
 
     formatDateForDisplay(dateString) {
         if (dateString === 'sem-data') return 'Sem Data';
