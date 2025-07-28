@@ -1456,6 +1456,8 @@ class AdminApp {
         // Initialize calendar if not already done
         if (!this.calendar) {
             this.calendar = new FullCalendar.Calendar(calendarEl, {
+                height: 'auto',
+                aspectRatio: 1.35,
                 initialView: 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
@@ -1467,31 +1469,20 @@ class AdminApp {
                 selectMirror: true,
                 dayMaxEvents: true,
                 weekends: true,
-                events: activities.map(activity => ({
-                    id: activity.id,
-                    title: activity.name,
-                    start: activity.date + (activity.time_start ? 'T' + activity.time_start : ''),
-                    end: activity.date + (activity.time_end ? 'T' + activity.time_end : ''),
-                    allDay: !activity.time_start
-                })),
                 eventClick: (info) => {
-                    // Open activity modal for editing
-                    const modal = new bootstrap.Modal(document.getElementById('activityModal'));
-                    modal.show();
+                    this.openActivityModal(info.event.id);
                 }
             });
             this.calendar.render();
         } else {
             // Update existing calendar
             this.calendar.removeAllEvents();
-            this.calendar.addEventSource(activities.map(activity => ({
-                id: activity.id,
-                title: activity.name,
-                start: activity.date + (activity.time_start ? 'T' + activity.time_start : ''),
-                end: activity.date + (activity.time_end ? 'T' + activity.time_end : ''),
-                allDay: !activity.time_start
-            })));
+            this.calendar.addEventSource(activities);
         }
+        
+        // Refresh calendar with activities
+        this.calendar.removeAllEvents();
+        this.calendar.addEventSource(activities);
     }
 
     loadTodayActivities(activities) {
