@@ -750,7 +750,39 @@ def config_save():
         
         db.session.add(agent)
         db.session.commit()
-        logging.info(f"Agent configuration updated: {config}")
+        logging.info(f"Agent configuration saved to PostgreSQL")
+        
+        # Also save to Supabase with correct column names
+        try:
+            from supabase_tools import supabase
+            
+            # Check if agent already exists in Supabase
+            existing_agent = supabase.table('agents').select('id').eq('nome', config['name']).execute()
+            
+            supabase_config = {
+                'nome': config['name'],
+                'modelo': config['model'],
+                'descricao': config.get('description', 'Agent configuration'),
+                'instrucoes': config['instructions'],  # Note: different column name in Supabase
+                'temperatura': config.get('temperature', 0.7),
+                'max_tokens': config.get('max_tokens', 1000),
+                'tools_ativas': config.get('tools_enabled', {'routines': True, 'memories': True, 'media': True}),
+                'ativo': True,
+                'atualizado_em': datetime.utcnow().isoformat()
+            }
+            
+            if existing_agent.data:
+                # Update existing
+                agent_id = existing_agent.data[0]['id']
+                supabase.table('agents').update(supabase_config).eq('id', agent_id).execute()
+                logging.info(f"Agent configuration updated in Supabase: {agent_id}")
+            else:
+                # Create new
+                supabase.table('agents').insert(supabase_config).execute()
+                logging.info("Agent configuration created in Supabase")
+                
+        except Exception as supabase_error:
+            logging.warning(f"Supabase save failed, PostgreSQL saved: {supabase_error}")
         
         # Reinitialize the agent with new config
         global anna_agent
