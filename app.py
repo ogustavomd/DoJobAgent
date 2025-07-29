@@ -752,37 +752,40 @@ def config_save():
         db.session.commit()
         logging.info(f"Agent configuration saved to PostgreSQL")
         
-        # Also save to Supabase with correct column names
+        # Also save to Supabase agent_config table with correct schema
         try:
             from supabase_tools import supabase
             
-            # Check if agent already exists in Supabase
-            existing_agent = supabase.table('agents').select('id').eq('nome', config['name']).execute()
+            # Check if agent already exists in Supabase agent_config table
+            existing_agent = supabase.table('agent_config').select('id').eq('name', config['name']).eq('is_active', True).execute()
             
             supabase_config = {
-                'nome': config['name'],
-                'modelo': config['model'],
-                'descricao': config.get('description', 'Agent configuration'),
-                'instrucoes': config['instructions'],  # Note: different column name in Supabase
-                'temperatura': config.get('temperature', 0.7),
-                'max_tokens': config.get('max_tokens', 1000),
-                'tools_ativas': config.get('tools_enabled', {'routines': True, 'memories': True, 'media': True}),
-                'ativo': True,
-                'atualizado_em': datetime.utcnow().isoformat()
+                'name': config['name'],
+                'model': config['model'],
+                'description': config.get('description', 'Agent configuration'),
+                'instructions': config['instructions'],  # Correct column name for agent_config table
+                'temperature': float(config.get('temperature', 0.7)),
+                'max_tokens': int(config.get('max_tokens', 1000)),
+                'tools_enabled': config.get('tools_enabled', {'routines': True, 'memories': True, 'media': True}),
+                'is_active': True,
+                'company_id': None,  # Can be set later for multi-tenant support
+                'user_id': None,     # Can be set later for user-specific configs
+                'updated_at': datetime.utcnow().isoformat()
             }
             
             if existing_agent.data:
                 # Update existing
                 agent_id = existing_agent.data[0]['id']
-                supabase.table('agents').update(supabase_config).eq('id', agent_id).execute()
-                logging.info(f"Agent configuration updated in Supabase: {agent_id}")
+                supabase.table('agent_config').update(supabase_config).eq('id', agent_id).execute()
+                logging.info(f"Agent configuration updated in Supabase agent_config: {agent_id}")
             else:
                 # Create new
-                supabase.table('agents').insert(supabase_config).execute()
-                logging.info("Agent configuration created in Supabase")
+                supabase_config['created_at'] = datetime.utcnow().isoformat()
+                supabase.table('agent_config').insert(supabase_config).execute()
+                logging.info("Agent configuration created in Supabase agent_config")
                 
         except Exception as supabase_error:
-            logging.warning(f"Supabase save failed, PostgreSQL saved: {supabase_error}")
+            logging.warning(f"Supabase agent_config save failed, PostgreSQL saved: {supabase_error}")
         
         # Reinitialize the agent with new config
         global anna_agent

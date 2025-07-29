@@ -184,6 +184,13 @@ The application is designed to be a conversational AI that maintains character c
   - Fixed message schema compatibility between PostgreSQL and Supabase
   - Agent configuration now properly loads from saved settings in PostgreSQL/Supabase instead of file defaults
   - Successfully verified dual sync working with HTTP 201 responses from Supabase
+- **Agent Configuration Schema Alignment Fixed** (July 29, 2025):
+  - Corrected dual save system for agent configurations to use proper table schemas
+  - PostgreSQL uses 'agents' table with 'instrucoes_personalidade' column
+  - Supabase uses 'agent_config' table with 'instructions' column
+  - Configuration loading priority: PostgreSQL -> Supabase agent_config -> file fallback
+  - Both databases now receive complete configuration updates with proper column mapping
+  - Agent reinitializes automatically with new settings after each configuration save
 
 ### Current Database State
 - **Sample Data**: Populated with realistic routine activities, media files, and conversation history

@@ -146,19 +146,58 @@ def save_conversation_memory(user_id: str, session_id: str, user_message: str, a
         return {'success': False, 'error': str(e)}
 
 def get_active_agent_configuration() -> Dict[str, Any]:
-    """Get active agent configuration from PostgreSQL database"""
+    """Get active agent configuration from databases with priority: PostgreSQL -> Supabase -> File"""
     try:
         from app import db
         from models import Agent
         import json
         import os
         
-        # Try to get the most recent agent from database
-        agent = db.session.query(Agent).order_by(Agent.atualizado_em.desc()).first()
+        # First try PostgreSQL
+        agent = db.session.query(Agent).filter(Agent.nome == 'Anna').order_by(Agent.atualizado_em.desc()).first()
         
-        if agent:
-            # Use the full instructions from database, ensuring they include all necessary details
-            full_instructions = agent.instrucoes_personalidade if agent.instrucoes_personalidade else '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. 
+        if agent and agent.instrucoes_personalidade:
+            config_data = {
+                'name': agent.nome,
+                'model': agent.modelo,
+                'description': agent.descricao,
+                'instructions': agent.instrucoes_personalidade,
+                'temperature': float(agent.temperatura) if agent.temperatura else 0.7,
+                'max_tokens': agent.max_tokens or 1000,
+                'tools_enabled': {
+                    'routines': agent.rotinas_ativas,
+                    'memories': agent.memorias_ativas,
+                    'media': agent.midia_ativa
+                }
+            }
+            logging.info("Configuration loaded from PostgreSQL database")
+            logging.info(f"Instructions loaded: {len(agent.instrucoes_personalidade)} characters")
+            return config_data
+        
+        # Then try Supabase agent_config table
+        try:
+            from supabase_tools import supabase
+            response = supabase.table('agent_config').select('*').eq('is_active', True).eq('name', 'Anna').order('created_at', desc=True).limit(1).execute()
+            
+            if response.data:
+                supabase_config = response.data[0]
+                config_data = {
+                    'name': supabase_config['name'],
+                    'model': supabase_config['model'],
+                    'description': supabase_config.get('description', 'Agent configuration'),
+                    'instructions': supabase_config['instructions'],
+                    'temperature': float(supabase_config.get('temperature', 0.7)),
+                    'max_tokens': supabase_config.get('max_tokens', 1000),
+                    'tools_enabled': supabase_config.get('tools_enabled', {'routines': True, 'memories': True, 'media': True})
+                }
+                logging.info("Configuration loaded from Supabase agent_config table")
+                logging.info(f"Instructions loaded: {len(supabase_config['instructions'])} characters")
+                return config_data
+        except Exception as supabase_error:
+            logging.warning(f"Could not load from Supabase: {supabase_error}")
+        
+        # Finally try loading from PostgreSQL with default fallback
+        default_instructions = '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. 
 Você tem uma personalidade vibrante, é espontânea e se conecta facilmente com as pessoas. 
 Você ama criar conteúdo, compartilhar sua rotina e interagir de forma genuína e humana.
 
@@ -183,12 +222,14 @@ Você ama criar conteúdo, compartilhar sua rotina e interagir de forma genuína
 - Após receber dados das funções, inclua URLs diretamente na resposta (sem markdown): https://exemplo.com/foto.jpg
 - Use search_memories("termo", 10) para lembrar de conversas específicas
 - Seja específica sobre lugares, atividades e pessoas baseado nos dados reais do banco'''
-            
+        
+        if agent:
+            # PostgreSQL agent exists but no instructions - use default
             config_data = {
                 'name': agent.nome,
                 'model': agent.modelo,
                 'description': agent.descricao,
-                'instructions': full_instructions,
+                'instructions': default_instructions,
                 'temperature': float(agent.temperatura) if agent.temperatura else 0.7,
                 'max_tokens': agent.max_tokens or 1000,
                 'tools_enabled': {
@@ -197,8 +238,7 @@ Você ama criar conteúdo, compartilhar sua rotina e interagir de forma genuína
                     'media': agent.midia_ativa
                 }
             }
-            logging.info("Configuration loaded from PostgreSQL database")
-            logging.info(f"Instructions loaded: {len(full_instructions)} characters")
+            logging.info("Configuration loaded from PostgreSQL with default instructions")
             return config_data
         
         # Fallback to file if no database record
