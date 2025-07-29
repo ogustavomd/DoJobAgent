@@ -706,10 +706,14 @@ def config_get_current():
             'name': agent.nome,
             'model': agent.modelo,
             'description': agent.descricao,
-            'instructions': agent.instrucoes_personalidade,
+            'instructions': agent.instrucoes_personalidade or '',
             'temperature': float(agent.temperatura or 0.7),
-            'max_tokens': agent.max_tokens,
-            'tools': ['get_anna_routines', 'search_memories', 'get_anna_routine_media', 'get_recent_conversations', 'search_content']
+            'max_tokens': agent.max_tokens or 1000,
+            'tools_enabled': {
+                'routines': agent.rotinas_ativas,
+                'memories': agent.memorias_ativas,
+                'media': agent.midia_ativa
+            }
         }
         
         return jsonify(config)
@@ -717,7 +721,7 @@ def config_get_current():
         logging.error(f"Error getting current config: {e}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/config/api/save', methods=['POST'])
+@app.route('/config/api/config', methods=['POST'])
 def config_save():
     """Save agent configuration to PostgreSQL and reinitialize agent"""
     try:
@@ -796,7 +800,24 @@ def config_save():
             logging.error(f"Error reinitializing agent: {e}")
             return jsonify({'error': f'Erro ao reinicializar agente: {str(e)}'}), 500
         
-        return jsonify({'success': True, 'message': 'Configuração salva e agente reinicializado'})
+        return jsonify({
+            'success': True, 
+            'message': 'Configuração salva e agente reinicializado',
+            'config': {
+                'id': agent.id,
+                'name': agent.nome,
+                'model': agent.modelo,
+                'description': agent.descricao,
+                'instructions': agent.instrucoes_personalidade,
+                'temperature': float(agent.temperatura),
+                'max_tokens': agent.max_tokens,
+                'tools_enabled': {
+                    'routines': agent.rotinas_ativas,
+                    'memories': agent.memorias_ativas,
+                    'media': agent.midia_ativa
+                }
+            }
+        })
         
     except Exception as e:
         logging.error(f"Error saving config: {e}")

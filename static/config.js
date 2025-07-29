@@ -110,12 +110,12 @@ IMPORTANTE: Sempre consulte seus dados reais antes de responder. Nunca invente i
             console.log('Response data:', result);
             
             if (response.ok) {
-                this.showAlert('Configuração salva com sucesso! O agente será reinicializado.', 'success');
+                this.showAlert('Configuração salva com sucesso! Agente reinicializado.', 'success');
                 
-                // Reload after 2 seconds to reinitialize agent
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
+                // Update form with saved config if available
+                if (result.config) {
+                    this.populateForm(result.config);
+                }
             } else {
                 this.showAlert(result.error || 'Erro ao salvar configuração', 'danger');
                 console.error('Save error:', result);

@@ -2185,10 +2185,28 @@
                 console.log('Save result:', result);
                 
                 if (result.success) {
-                    alert('Configuração salva com sucesso! A página será recarregada.');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
+                    alert('Configuração salva com sucesso! Agente reinicializado.');
+                    
+                    // Update form with saved config if available
+                    if (result.config) {
+                        document.getElementById('agentName').value = result.config.name || '';
+                        document.getElementById('agentModel').value = result.config.model || '';
+                        document.getElementById('agentDescription').value = result.config.description || '';
+                        document.getElementById('agentInstructions').value = result.config.instructions || '';
+                        document.getElementById('agentTemperature').value = result.config.temperature || 0.7;
+                        document.getElementById('agentMaxTokens').value = result.config.max_tokens || 1000;
+                        
+                        // Update tools checkboxes
+                        if (result.config.tools_enabled) {
+                            const routinesCheckbox = document.getElementById('toolRoutines');
+                            const memoriesCheckbox = document.getElementById('toolMemories');
+                            const mediaCheckbox = document.getElementById('toolMedia');
+                            
+                            if (routinesCheckbox) routinesCheckbox.checked = result.config.tools_enabled.routines ?? true;
+                            if (memoriesCheckbox) memoriesCheckbox.checked = result.config.tools_enabled.memories ?? true;
+                            if (mediaCheckbox) mediaCheckbox.checked = result.config.tools_enabled.media ?? true;
+                        }
+                    }
                 } else {
                     alert('Erro ao salvar configuração: ' + (result.error || 'Erro desconhecido'));
                 }
