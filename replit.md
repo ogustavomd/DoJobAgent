@@ -30,13 +30,15 @@ Preferred communication style: Simple, everyday language.
 ### Data Storage Solutions
 - **Primary Database**: Supabase (PostgreSQL-based)
 - **Database Tables**:
-  - `anna_routine`: Stores Anna's daily activities and schedules
-  - `anna_routine_media`: Media files (images/videos) associated with routines
+  - `routine`: Stores daily activities and schedules
+  - `routine_media`: Media files (images/videos) associated with routines
   - `chat_sessions`: User conversation sessions
   - `messages`: Individual chat messages
   - `agents`: Agent configurations and personality settings
   - `clients`: Client conversation management with channel tracking
   - `users`: System user management with plans and permissions
+  - `memories`: Store important memories and context
+  - `image_bank`: Media assets library
 - **Data Access**: Direct Supabase client integration with custom Python tools
 
 ## Key Components

@@ -6,9 +6,9 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =====================================================
--- 1. TABELA: anna_routine (Rotinas/Atividades da Anna)
+-- 1. TABELA: routine (Rotinas/Atividades)
 -- =====================================================
-CREATE TABLE public.anna_routine (
+CREATE TABLE public.routine (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     activity TEXT NOT NULL,
     description TEXT NULL,
@@ -22,34 +22,34 @@ CREATE TABLE public.anna_routine (
     has_videos BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NULL DEFAULT NOW(),
-    CONSTRAINT anna_routine_pkey PRIMARY KEY (id),
-    CONSTRAINT anna_routine_status_check CHECK (status = ANY (ARRAY['upcoming'::TEXT, 'current'::TEXT, 'completed'::TEXT])),
-    CONSTRAINT anna_routine_category_check CHECK (category = ANY (ARRAY['fitness'::TEXT, 'trabalho'::TEXT, 'social'::TEXT, 'reunião'::TEXT, 'geral'::TEXT]))
+    CONSTRAINT routine_pkey PRIMARY KEY (id),
+    CONSTRAINT routine_status_check CHECK (status = ANY (ARRAY['upcoming'::TEXT, 'current'::TEXT, 'completed'::TEXT])),
+    CONSTRAINT routine_category_check CHECK (category = ANY (ARRAY['fitness'::TEXT, 'trabalho'::TEXT, 'social'::TEXT, 'reunião'::TEXT, 'geral'::TEXT]))
 );
 
--- Índices para anna_routine
-CREATE INDEX IF NOT EXISTS idx_anna_routine_date ON public.anna_routine USING btree (date);
-CREATE INDEX IF NOT EXISTS idx_anna_routine_status ON public.anna_routine USING btree (status);
-CREATE INDEX IF NOT EXISTS idx_anna_routine_category ON public.anna_routine USING btree (category);
+-- Índices para routine
+CREATE INDEX IF NOT EXISTS idx_routine_date ON public.routine USING btree (date);
+CREATE INDEX IF NOT EXISTS idx_routine_status ON public.routine USING btree (status);
+CREATE INDEX IF NOT EXISTS idx_routine_category ON public.routine USING btree (category);
 
 -- =====================================================
--- 2. TABELA: anna_routine_media (Mídia das Atividades)
+-- 2. TABELA: routine_media (Mídia das Atividades)
 -- =====================================================
-CREATE TABLE public.anna_routine_media (
+CREATE TABLE public.routine_media (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     routine_id UUID NOT NULL,
     media_type TEXT NOT NULL DEFAULT 'image',
     media_url TEXT NOT NULL,
     media_caption TEXT NULL,
     created_at TIMESTAMP WITH TIME ZONE NULL DEFAULT NOW(),
-    CONSTRAINT anna_routine_media_pkey PRIMARY KEY (id),
-    CONSTRAINT anna_routine_media_routine_id_fkey FOREIGN KEY (routine_id) REFERENCES anna_routine (id) ON DELETE CASCADE,
-    CONSTRAINT anna_routine_media_type_check CHECK (media_type = ANY (ARRAY['image'::TEXT, 'video'::TEXT]))
+    CONSTRAINT routine_media_pkey PRIMARY KEY (id),
+    CONSTRAINT routine_media_routine_id_fkey FOREIGN KEY (routine_id) REFERENCES routine (id) ON DELETE CASCADE,
+    CONSTRAINT routine_media_type_check CHECK (media_type = ANY (ARRAY['image'::TEXT, 'video'::TEXT]))
 );
 
--- Índices para anna_routine_media
-CREATE INDEX IF NOT EXISTS idx_anna_routine_media_routine_id ON public.anna_routine_media USING btree (routine_id);
-CREATE INDEX IF NOT EXISTS idx_anna_routine_media_type ON public.anna_routine_media USING btree (media_type);
+-- Índices para routine_media
+CREATE INDEX IF NOT EXISTS idx_routine_media_routine_id ON public.routine_media USING btree (routine_id);
+CREATE INDEX IF NOT EXISTS idx_routine_media_type ON public.routine_media USING btree (media_type);
 
 -- =====================================================
 -- 3. TABELA: chat_sessions (Sessões de Chat)
@@ -205,9 +205,9 @@ CREATE INDEX IF NOT EXISTS idx_users_ativo ON public.users USING btree (ativo);
 CREATE INDEX IF NOT EXISTS idx_users_plano ON public.users USING btree (plano);
 
 -- =====================================================
--- 9. TABELA: anna_memories (Memórias da Anna)
+-- 9. TABELA: memories (Memórias)
 -- =====================================================
-CREATE TABLE public.anna_memories (
+CREATE TABLE public.memories (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -218,20 +218,20 @@ CREATE TABLE public.anna_memories (
     date_referenced DATE NULL,
     created_at TIMESTAMP WITH TIME ZONE NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NULL DEFAULT NOW(),
-    CONSTRAINT anna_memories_pkey PRIMARY KEY (id),
-    CONSTRAINT anna_memories_importance_check CHECK (importance_level >= 1 AND importance_level <= 5)
+    CONSTRAINT memories_pkey PRIMARY KEY (id),
+    CONSTRAINT memories_importance_check CHECK (importance_level >= 1 AND importance_level <= 5)
 );
 
--- Índices para anna_memories
-CREATE INDEX IF NOT EXISTS idx_anna_memories_category ON public.anna_memories USING btree (category);
-CREATE INDEX IF NOT EXISTS idx_anna_memories_is_active ON public.anna_memories USING btree (is_active);
-CREATE INDEX IF NOT EXISTS idx_anna_memories_importance ON public.anna_memories USING btree (importance_level DESC);
-CREATE INDEX IF NOT EXISTS idx_anna_memories_date ON public.anna_memories USING btree (date_referenced DESC);
+-- Índices para memories
+CREATE INDEX IF NOT EXISTS idx_memories_category ON public.memories USING btree (category);
+CREATE INDEX IF NOT EXISTS idx_memories_is_active ON public.memories USING btree (is_active);
+CREATE INDEX IF NOT EXISTS idx_memories_importance ON public.memories USING btree (importance_level DESC);
+CREATE INDEX IF NOT EXISTS idx_memories_date ON public.memories USING btree (date_referenced DESC);
 
 -- =====================================================
--- 10. TABELA: anna_image_bank (Banco de Imagens)
+-- 10. TABELA: image_bank (Banco de Imagens)
 -- =====================================================
-CREATE TABLE public.anna_image_bank (
+CREATE TABLE public.image_bank (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     description TEXT NULL,
@@ -242,20 +242,20 @@ CREATE TABLE public.anna_image_bank (
     usage_count INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NULL DEFAULT NOW(),
-    CONSTRAINT anna_image_bank_pkey PRIMARY KEY (id)
+    CONSTRAINT image_bank_pkey PRIMARY KEY (id)
 );
 
--- Índices para anna_image_bank
-CREATE INDEX IF NOT EXISTS idx_anna_image_bank_category ON public.anna_image_bank USING btree (category);
-CREATE INDEX IF NOT EXISTS idx_anna_image_bank_is_active ON public.anna_image_bank USING btree (is_active);
-CREATE INDEX IF NOT EXISTS idx_anna_image_bank_usage ON public.anna_image_bank USING btree (usage_count DESC);
+-- Índices para image_bank
+CREATE INDEX IF NOT EXISTS idx_image_bank_category ON public.image_bank USING btree (category);
+CREATE INDEX IF NOT EXISTS idx_image_bank_is_active ON public.image_bank USING btree (is_active);
+CREATE INDEX IF NOT EXISTS idx_image_bank_usage ON public.image_bank USING btree (usage_count DESC);
 
 -- =====================================================
 -- DADOS DE EXEMPLO PARA DEMONSTRAÇÃO
 -- =====================================================
 
 -- Inserir rotinas de exemplo
-INSERT INTO public.anna_routine (activity, description, date, time_start, time_end, location, category, status, has_images, has_videos) VALUES
+INSERT INTO public.routine (activity, description, date, time_start, time_end, location, category, status, has_images, has_videos) VALUES
 ('Treino na academia', 'Treino de força e cardio', CURRENT_DATE, '07:00', '08:30', 'Smart Fit - Vila Madalena', 'fitness', 'upcoming', true, false),
 ('Gravação de conteúdo', 'Gravação de vídeos para Instagram', CURRENT_DATE, '10:00', '12:00', 'Estúdio em casa', 'trabalho', 'upcoming', true, true),
 ('Reunião com marca', 'Apresentação de proposta para parceria', CURRENT_DATE, '14:00', '15:30', 'Online - Zoom', 'reunião', 'upcoming', false, false),
@@ -337,13 +337,13 @@ INSERT INTO public.users (nome, email, telefone, plano, ativo, permissoes, ultim
 ('Usuário Teste', 'teste@anna.com', '+5511888888888', 'premium', true, ARRAY['chat', 'view'], NOW() - INTERVAL '1 day');
 
 -- Inserir memórias de exemplo
-INSERT INTO public.anna_memories (title, content, category, tags, importance_level, is_active, date_referenced) VALUES
+INSERT INTO public.memories (title, content, category, tags, importance_level, is_active, date_referenced) VALUES
 ('Primeiro treino na academia', 'Lembro que estava nervosa no meu primeiro dia na academia, mas acabou sendo incrível!', 'fitness', ARRAY['treino', 'academia', 'começo'], 4, true, CURRENT_DATE - INTERVAL '30 days'),
 ('Parceria com marca de suplementos', 'Fechei minha primeira parceria grande com uma marca conhecida de whey protein', 'trabalho', ARRAY['parceria', 'marca', 'suplementos'], 5, true, CURRENT_DATE - INTERVAL '15 days'),
 ('Receita de smoothie verde', 'Criei uma receita deliciosa de smoothie verde que virou hit no Instagram', 'receitas', ARRAY['smoothie', 'saudável', 'receita'], 3, true, CURRENT_DATE - INTERVAL '7 days');
 
 -- Inserir banco de imagens de exemplo
-INSERT INTO public.anna_image_bank (title, description, image_url, category, tags, is_active, usage_count) VALUES
+INSERT INTO public.image_bank (title, description, image_url, category, tags, is_active, usage_count) VALUES
 ('Treino na academia', 'Foto fazendo agachamento na academia', 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b', 'fitness', ARRAY['treino', 'academia', 'agachamento'], true, 5),
 ('Smoothie verde', 'Foto do smoothie verde com ingredientes', 'https://images.unsplash.com/photo-1610970881699-44a5587cabec', 'alimentação', ARRAY['smoothie', 'saudável', 'verde'], true, 8),
 ('Estúdio de gravação', 'Setup de gravação em casa com ring light', 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3', 'trabalho', ARRAY['gravação', 'estúdio', 'conteúdo'], true, 12),
@@ -354,7 +354,7 @@ INSERT INTO public.anna_image_bank (title, description, image_url, category, tag
 -- =====================================================
 
 -- Atualizar sequences e contadores se necessário
-SELECT setval(pg_get_serial_sequence('anna_routine', 'id'), COALESCE(MAX(id::text::int), 1)) FROM anna_routine WHERE id::text ~ '^[0-9]+$';
+SELECT setval(pg_get_serial_sequence('routine', 'id'), COALESCE(MAX(id::text::int), 1)) FROM routine WHERE id::text ~ '^[0-9]+$';
 
 -- Verificar se tudo foi criado corretamente
 SELECT 
@@ -367,9 +367,9 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 
 -- Mostrar contagem de registros por tabela
 SELECT 
-    'anna_routine' as tabela, COUNT(*) as registros FROM anna_routine
+    'routine' as tabela, COUNT(*) as registros FROM routine
 UNION ALL
-SELECT 'anna_routine_media', COUNT(*) FROM anna_routine_media
+SELECT 'routine_media', COUNT(*) FROM routine_media
 UNION ALL
 SELECT 'chat_sessions', COUNT(*) FROM chat_sessions
 UNION ALL
@@ -381,9 +381,9 @@ SELECT 'clients', COUNT(*) FROM clients
 UNION ALL
 SELECT 'users', COUNT(*) FROM users
 UNION ALL
-SELECT 'anna_memories', COUNT(*) FROM anna_memories
+SELECT 'memories', COUNT(*) FROM memories
 UNION ALL
-SELECT 'anna_image_bank', COUNT(*) FROM anna_image_bank
+SELECT 'image_bank', COUNT(*) FROM image_bank
 ORDER BY tabela;
 
 -- =====================================================
