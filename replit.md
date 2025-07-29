@@ -181,6 +181,9 @@ The application is designed to be a conversational AI that maintains character c
   - Session management with dual database support
   - Robust error handling with fallback to PostgreSQL if Supabase fails
   - Real-time sync verification for message and activity storage
+  - Fixed message schema compatibility between PostgreSQL and Supabase
+  - Agent configuration now properly loads from saved settings in PostgreSQL/Supabase instead of file defaults
+  - Successfully verified dual sync working with HTTP 201 responses from Supabase
 
 ### Current Database State
 - **Sample Data**: Populated with realistic routine activities, media files, and conversation history
