@@ -1763,8 +1763,60 @@
         }
 
         function saveAgentConfig() {
-            if (window.adminApp) {
-                window.adminApp.saveAgentConfig();
+            console.log('saveAgentConfig called from HTML');
+            // Call the global saveAgentConfig function from admin.js
+            if (typeof window.saveAgentConfig === 'function') {
+                console.log('Calling window.saveAgentConfig');
+                window.saveAgentConfig();
+            } else {
+                console.error('saveAgentConfig function not found in global scope');
+                // Fallback to direct implementation
+                saveAgentConfigDirect();
+            }
+        }
+        
+        // Direct implementation as fallback
+        async function saveAgentConfigDirect() {
+            console.log('Using direct implementation');
+            try {
+                const config = {
+                    name: document.getElementById('agentName').value || 'Anna',
+                    model: document.getElementById('agentModel').value || 'gemini-2.0-flash',
+                    description: document.getElementById('agentDescription').value || '',
+                    instructions: document.getElementById('agentInstructions').value || '',
+                    temperature: parseFloat(document.getElementById('agentTemperature').value) || 0.7,
+                    max_tokens: parseInt(document.getElementById('agentMaxTokens').value) || 1000,
+                    tools_enabled: {
+                        routines: document.getElementById('toolRoutines')?.checked ?? true,
+                        memories: document.getElementById('toolMemories')?.checked ?? true,
+                        media: document.getElementById('toolMedia')?.checked ?? true
+                    }
+                };
+
+                console.log('Saving agent config:', config);
+
+                const response = await fetch('/config/api/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                const result = await response.json();
+                console.log('Save result:', result);
+                
+                if (result.success) {
+                    alert('Configuração salva com sucesso! A página será recarregada.');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    alert('Erro ao salvar configuração: ' + (result.error || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                console.error('Error saving agent config:', error);
+                alert('Erro ao salvar configuração: ' + error.message);
             }
         }
 

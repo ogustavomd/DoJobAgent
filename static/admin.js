@@ -1523,6 +1523,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Load current agent configuration
     loadAgentConfig();
+    
+    // Note: Save agent config button uses onclick handler in HTML
 });
 
 // Global functions for HTML onclick handlers
@@ -1554,7 +1556,7 @@ function deleteActivityFromList(activityId) {
 }
 
 // Global function for saving agent configuration
-async function saveAgentConfig() {
+window.saveAgentConfig = async function() {
     try {
         const config = {
             name: document.getElementById('agentName').value || 'Anna',
@@ -1597,7 +1599,7 @@ async function saveAgentConfig() {
         console.error('Error saving agent config:', error);
         showMessage('Erro ao salvar configuração: ' + error.message, 'error');
     }
-}
+};
 
 // Helper function to show messages
 function showMessage(message, type = 'info') {
