@@ -1054,19 +1054,60 @@ def ai_create_suggested_activity():
 # Configuration API routes
 @app.route('/config/api/config', methods=['GET'])
 def get_config():
-    """Get current agent configuration"""
+    """Get current agent configuration from Supabase"""
     try:
-        # Use global anna_agent instance instead of undefined agent
-        config = {
-            'name': getattr(anna_agent, 'name', 'Anna') if anna_agent else 'Anna',
-            'model': 'gemini-2.0-flash',
-            'description': getattr(anna_agent, 'description', '') if anna_agent else '',
-            'instructions': getattr(anna_agent, 'instruction', '') if anna_agent else '',
-            'temperature': 0.7,
-            'max_tokens': 1000,
-            'tools': ['get_anna_routines', 'search_memories', 'get_anna_routine_media', 'get_recent_conversations', 'search_content', 'save_conversation_memory']
-        }
-        return jsonify(config)
+        # Get company_id and user_id from session or headers
+        company_id = request.headers.get('X-Company-Id', session.get('company_id'))
+        user_id = request.headers.get('X-User-Id', session.get('user_id'))
+        
+        # Load configuration from Supabase
+        from supabase_tools import supabase
+        
+        # Query agent configuration
+        query = supabase.table('agent_config').select("*").eq('is_active', True)
+        
+        if company_id:
+            query = query.eq('company_id', company_id)
+        elif user_id:
+            query = query.eq('user_id', user_id)
+        else:
+            # Default configuration - get the most recent one without company/user
+            query = query.is_('company_id', 'null').is_('user_id', 'null')
+        
+        query = query.eq('name', 'Anna')  # Filter by Anna agent
+        result = query.order('created_at', desc=True).limit(1).execute()
+        
+        if result.data and len(result.data) > 0:
+            config = result.data[0]
+            return jsonify({
+                'id': config.get('id'),
+                'name': config.get('name', 'Anna'),
+                'description': config.get('description', ''),
+                'instructions': config.get('instructions', ''),
+                'model': config.get('model', 'gemini-2.0-flash'),
+                'temperature': float(config.get('temperature', 0.7)),
+                'max_tokens': int(config.get('max_tokens', 1000)),
+                'tools_enabled': config.get('tools_enabled', {
+                    'routines': True,
+                    'memories': True, 
+                    'media': True
+                })
+            })
+        else:
+            # Return default configuration
+            return jsonify({
+                'name': 'Anna',
+                'description': 'Uma criadora de conteúdo brasileira carismática',
+                'instructions': 'Você é Anna, uma criadora de conteúdo brasileira...',
+                'model': 'gemini-2.0-flash',
+                'temperature': 0.7,
+                'max_tokens': 1000,
+                'tools_enabled': {
+                    'routines': True,
+                    'memories': True,
+                    'media': True
+                }
+            })
     except Exception as e:
         logging.error(f"Error getting config: {e}")
         return jsonify({
@@ -1076,12 +1117,16 @@ def get_config():
             'instructions': 'Você é Anna, uma criadora de conteúdo brasileira...',
             'temperature': 0.7,
             'max_tokens': 1000,
-            'tools': ['get_anna_routines', 'search_memories', 'get_anna_routine_media']
+            'tools_enabled': {
+                'routines': True,
+                'memories': True,
+                'media': True
+            }
         })
 
 @app.route('/config/api/config', methods=['POST'])
 def save_config():
-    """Save agent configuration"""
+    """Save agent configuration to Supabase"""
     try:
         data = request.get_json()
         if not data:
@@ -1089,26 +1134,69 @@ def save_config():
             
         logging.info(f"Saving agent config: {data}")
         
-        # Update agent configuration - for now we'll save to a simple config
-        # In a real implementation, you would update the actual agent
+        # Get company_id and user_id from session or headers
+        company_id = request.headers.get('X-Company-Id', session.get('company_id'))
+        user_id = request.headers.get('X-User-Id', session.get('user_id'))
+        
+        # Prepare configuration data
         config_data = {
             'name': data.get('name', 'Anna'),
-            'model': data.get('model', 'gemini-2.0-flash'),
             'description': data.get('description', ''),
             'instructions': data.get('instructions', ''),
-            'temperature': data.get('temperature', 0.7),
-            'max_tokens': data.get('max_tokens', 1000),
-            'tools': data.get('tools', [])
+            'model': data.get('model', 'gemini-2.0-flash'),
+            'temperature': float(data.get('temperature', 0.7)),
+            'max_tokens': int(data.get('max_tokens', 1000)),
+            'tools_enabled': data.get('tools_enabled', {
+                'routines': data.get('toolRoutines', True),
+                'memories': data.get('toolMemories', True),
+                'media': data.get('toolMedia', True)
+            }),
+            'is_active': True,
+            'updated_at': datetime.datetime.utcnow().isoformat()
         }
         
-        # You could save this to a database or file for persistence
-        # For now, we'll just log it and return success
-        logging.info(f"Agent configuration updated: {config_data}")
+        if company_id:
+            config_data['company_id'] = company_id
+        elif user_id:
+            config_data['user_id'] = user_id
+        
+        # Save configuration to Supabase
+        from supabase_tools import supabase
+        
+        # Check if configuration exists
+        existing_id = data.get('id')
+        if existing_id:
+            # Update existing configuration
+            result = supabase.table('agent_config').update(config_data).eq('id', existing_id).execute()
+        else:
+            # Check if there's an existing config for this user/company
+            query = supabase.table('agent_config').select("id").eq('name', 'Anna')
+            
+            if company_id:
+                query = query.eq('company_id', company_id)
+            elif user_id:
+                query = query.eq('user_id', user_id)
+            else:
+                query = query.is_('company_id', 'null').is_('user_id', 'null')
+            
+            existing = query.execute()
+            
+            if existing.data and len(existing.data) > 0:
+                # Update existing
+                result = supabase.table('agent_config').update(config_data).eq('id', existing.data[0]['id']).execute()
+            else:
+                # Insert new configuration
+                config_data['created_at'] = datetime.datetime.utcnow().isoformat()
+                result = supabase.table('agent_config').insert(config_data).execute()
+        
+        # Reload the Anna agent with new configuration
+        global anna_agent
+        anna_agent = create_anna_agent()
         
         return jsonify({
-            'success': True,
+            'success': True, 
             'message': 'Configuração salva com sucesso!',
-            'config': config_data
+            'id': result.data[0]['id'] if result.data else None
         })
         
     except Exception as e:

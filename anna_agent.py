@@ -10,19 +10,29 @@ from database_tools_simple import (get_anna_routines, get_anna_routine_media,
 
 
 def create_anna_agent():
-    """Create and configure Anna agent using configuration from database and file"""
+    """Create and configure Anna agent using configuration from Supabase or database and file"""
     try:
-        # First try to load from database (latest saved from config interface)
-        from database_tools_simple import get_active_agent_configuration
-        config = get_active_agent_configuration()
+        # First try to load from Supabase
+        from supabase_tools import supabase
         
-        if config and config.get('instructions'):
-            logging.info("Configuration loaded from database (most recent)")
+        # Query for active Anna configuration
+        result = supabase.table('agent_config').select("*").eq('is_active', True).eq('name', 'Anna').order('created_at', desc=True).limit(1).execute()
+        
+        if result.data and len(result.data) > 0:
+            config = result.data[0]
+            logging.info("Configuration loaded from Supabase")
         else:
-            # Fallback to file if no database config
-            with open('agent_config.json', 'r', encoding='utf-8') as f:
-                config = json.load(f)
-            logging.info("Configuration loaded from agent_config.json file")
+            # Fallback to database tools
+            from database_tools_simple import get_active_agent_configuration
+            config = get_active_agent_configuration()
+            
+            if config and config.get('instructions'):
+                logging.info("Configuration loaded from database (most recent)")
+            else:
+                # Fallback to file if no database config
+                with open('agent_config.json', 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                logging.info("Configuration loaded from agent_config.json file")
             
     except Exception as e:
         logging.error(f"Error loading config, using defaults: {e}")
@@ -31,7 +41,9 @@ def create_anna_agent():
             'name': 'Anna', 
             'model': 'gemini-2.0-flash',
             'instructions': 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.',
-            'tools': ['get_anna_routines', 'search_memories', 'get_anna_routine_media', 'get_recent_conversations', 'search_content', 'save_conversation_memory']
+            'temperature': 0.8,
+            'max_tokens': 1000,
+            'tools_enabled': {'routines': True, 'memories': True, 'media': True}
         }
 
     # Get instructions from config (prioritizing database saved instructions)
@@ -41,20 +53,34 @@ def create_anna_agent():
     
     logging.info(f"Using instructions (first 100 chars): {instructions[:100]}...")
     
+    # Get description from config
+    description = config.get('description', "Anna é uma produtora de conteúdo brasileira que interage de forma natural e carismática, compartilhando sua rotina, memórias e criações.")
+    
+    # Get tools enabled settings
+    tools_enabled = config.get('tools_enabled', {'routines': True, 'memories': True, 'media': True})
+    
+    # Build tools list based on configuration
+    tools = []
+    if tools_enabled.get('routines', True):
+        tools.extend([get_anna_routines, get_anna_routine_media])
+    if tools_enabled.get('memories', True):
+        tools.extend([search_memories, get_recent_conversations, save_conversation_memory])
+    if tools_enabled.get('media', True):
+        tools.extend([search_content])
+    
+    # Always include profile info
+    tools.append(get_profile_info)
+    
     # Create the agent with tools from configuration
     agent = LlmAgent(
         model=config.get('model', 'gemini-2.0-flash'),
         name=config.get('name', 'Anna').lower(),
-        description="Anna é uma produtora de conteúdo brasileira que interage de forma natural e carismática, compartilhando sua rotina, memórias e criações.",
+        description=description,
         instruction=instructions,
-        tools=[
-            get_anna_routines, get_anna_routine_media, search_memories,
-            get_recent_conversations, get_profile_info, search_content,
-            save_conversation_memory
-        ],
+        tools=tools,
         generate_content_config=types.GenerateContentConfig(
-            temperature=0.8,  # More creative and spontaneous
-            max_output_tokens=1000))
+            temperature=float(config.get('temperature', 0.8)),
+            max_output_tokens=int(config.get('max_tokens', 1000))))
 
     logging.info("Anna agent created successfully")
     return agent

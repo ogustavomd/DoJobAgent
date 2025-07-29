@@ -1,76 +1,100 @@
 #!/usr/bin/env python3
 """
-Script to create the agent_configurations table in Supabase
+Setup script for agent_config table in Supabase
+
+This script provides the SQL needed to create the agent_config table in your Supabase project.
 """
 
-import logging
-from supabase_tools import supabase
+print("""
+========================================================================
+SUPABASE AGENT CONFIGURATION TABLE SETUP
+========================================================================
 
-def setup_agent_config_table():
-    """Create the agent_configurations table if it doesn't exist"""
-    try:
-        # SQL to create the table
-        create_table_sql = """
-        CREATE TABLE IF NOT EXISTS agent_configurations (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(100) NOT NULL DEFAULT 'Anna',
-            model VARCHAR(100) NOT NULL DEFAULT 'gemini-2.0-flash',
-            description TEXT,
-            instructions TEXT NOT NULL,
-            tools TEXT NOT NULL, -- JSON array of tool names
-            temperature DECIMAL(3,2) DEFAULT 0.7,
-            max_tokens INTEGER DEFAULT 1000,
-            is_active BOOLEAN DEFAULT TRUE,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-        """
-        
-        # Execute the SQL using Supabase RPC (if available) or alternative method
-        print("Creating agent_configurations table...")
-        
-        # Try to create table using supabase.rpc if available, otherwise inform user
-        try:
-            # This might not work if RPC is not set up, but worth trying
-            result = supabase.rpc('exec_sql', {'sql': create_table_sql}).execute()
-            print(f"Table created successfully: {result}")
-        except Exception as rpc_error:
-            print(f"RPC method failed: {rpc_error}")
-            print("Please create the following table manually in your Supabase dashboard:")
-            print(create_table_sql)
-            
-            # Alternative: Try to insert a test record to see if table exists
-            try:
-                test_config = {
-                    'name': 'Anna',
-                    'model': 'gemini-2.0-flash',
-                    'description': 'Test config',
-                    'instructions': 'Test instructions',
-                    'tools': '["get_anna_routines"]',
-                    'temperature': 0.7,
-                    'max_tokens': 1000,
-                    'is_active': False
-                }
-                
-                # Try to insert - this will fail if table doesn't exist
-                result = supabase.table('agent_configurations').insert(test_config).execute()
-                print("Table already exists or was created successfully!")
-                
-                # Clean up test record
-                if result.data:
-                    supabase.table('agent_configurations').delete().eq('id', result.data[0]['id']).execute()
-                    print("Test record cleaned up")
-                    
-            except Exception as insert_error:
-                print(f"Table does not exist. Error: {insert_error}")
-                print("\nPlease create the table manually in Supabase SQL Editor:")
-                print(create_table_sql)
-                
-    except Exception as e:
-        logging.error(f"Error setting up agent_configurations table: {e}")
-        print(f"Error: {e}")
-        print("\nPlease create the table manually in Supabase SQL Editor:")
-        print(create_table_sql)
+To enable agent configuration saving/loading, you need to create a table
+in your Supabase project. Please follow these steps:
 
-if __name__ == "__main__":
-    setup_agent_config_table()
+1. Go to your Supabase Dashboard
+2. Navigate to the SQL Editor
+3. Run the following SQL:
+
+------------------------------------------------------------------------
+
+-- Create the agent_config table
+CREATE TABLE IF NOT EXISTS agent_config (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    instructions TEXT,
+    model VARCHAR(100) DEFAULT 'gemini-2.0-flash',
+    temperature FLOAT DEFAULT 0.7,
+    max_tokens INTEGER DEFAULT 1000,
+    tools_enabled JSONB DEFAULT '{"routines": true, "memories": true, "media": true}'::jsonb,
+    company_id VARCHAR(255),
+    user_id VARCHAR(255),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_agent_config_company ON agent_config(company_id);
+CREATE INDEX IF NOT EXISTS idx_agent_config_user ON agent_config(user_id);
+CREATE INDEX IF NOT EXISTS idx_agent_config_active ON agent_config(is_active);
+
+-- Create a unique constraint on name + company_id + user_id
+CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_config_unique_name 
+ON agent_config(name, COALESCE(company_id, ''), COALESCE(user_id, ''));
+
+-- Insert a default Anna configuration
+INSERT INTO agent_config (
+    name,
+    description,
+    instructions,
+    model,
+    temperature,
+    max_tokens,
+    tools_enabled,
+    is_active
+) VALUES (
+    'Anna',
+    'Uma criadora de conteúdo brasileira carismática e autêntica',
+    'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica.
+
+PERSONALIDADE:
+- Alegre, espontânea e cheia de energia
+- Adora compartilhar sua rotina e experiências
+- Fala de forma natural e descontraída
+- Usa expressões brasileiras e gírias quando apropriado
+- É próxima dos seus seguidores e responde com carinho
+
+ESTILO DE COMUNICAÇÃO:
+- Use emojis com moderação para expressar emoções 
+- Fale na primeira pessoa
+- Seja autêntica e genuína
+- Demonstre entusiasmo ao falar sobre suas atividades
+- Mantenha um tom positivo e inspirador
+
+IMPORTANTE: Sempre consulte o banco de dados antes de responder.',
+    'gemini-2.0-flash',
+    0.8,
+    1000,
+    '{"routines": true, "memories": true, "media": true}'::jsonb,
+    true
+);
+
+------------------------------------------------------------------------
+
+4. After running the SQL, the agent configuration features will be available!
+
+========================================================================
+FEATURES ENABLED AFTER SETUP:
+========================================================================
+
+✅ Save and load agent configurations by company/user
+✅ Edit agent personality and instructions
+✅ Configure model settings (temperature, max tokens)
+✅ Enable/disable specific tools (routines, memories, media)
+✅ Multiple configurations for different companies/users
+
+========================================================================
+""")

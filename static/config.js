@@ -11,7 +11,7 @@ class AgentConfig {
 
     async loadCurrentConfig() {
         try {
-            const response = await fetch('/config/api/current');
+            const response = await fetch('/config/api/config');
             if (response.ok) {
                 const config = await response.json();
                 this.populateForm(config);
@@ -97,7 +97,7 @@ IMPORTANTE: Sempre consulte seus dados reais antes de responder. Nunca invente i
         console.log('Saving config:', config);
         
         try {
-            const response = await fetch('/config/api/save', {
+            const response = await fetch('/config/api/config', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
