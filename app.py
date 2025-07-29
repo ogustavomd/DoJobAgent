@@ -10,6 +10,7 @@ from anna_agent import create_anna_agent
 from google.genai import types
 from ai_routine_engine import RoutineSuggestionEngine
 from whatsapp_integration import whatsapp_manager
+from chat_session_manager_postgres import chat_session_manager
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -70,7 +71,7 @@ def index():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    """Handle chat messages"""
+    """Handle chat messages with automatic session management"""
     try:
         data = request.get_json()
         if not data or 'message' not in data:
@@ -79,19 +80,51 @@ def chat():
         user_message = data['message']
         logging.info(f"Received message: {user_message}")
         
-        # Get or create session ID
+        # Get user info from request or create default
+        contact_phone = data.get('phone', 'web_user')
+        contact_name = data.get('name', 'Usuário Web')
+        channel = data.get('channel', 'chat')
+        
+        # Get or create chat session
+        chat_session_id = chat_session_manager.get_or_create_session(
+            contact_phone=contact_phone,
+            contact_name=contact_name, 
+            channel=channel
+        )
+        
+        # Save user message
+        chat_session_manager.save_message(
+            session_id=chat_session_id,
+            sender_phone=contact_phone,
+            sender_name=contact_name,
+            content=user_message,
+            is_from_bot=False
+        )
+        
+        # Get or create Flask session ID for ADK
         if 'session_id' not in session:
             session['session_id'] = f"session_{os.urandom(8).hex()}"
         
-        session_id = session['session_id']
-        user_id = "web_user"
+        flask_session_id = session['session_id']
+        user_id = contact_phone
         
         # Run the agent asynchronously
-        response = asyncio.run(run_anna_agent(user_message, user_id, session_id))
+        response = asyncio.run(run_anna_agent(user_message, user_id, flask_session_id))
+        
+        # Save Anna's response
+        if response:
+            chat_session_manager.save_message(
+                session_id=chat_session_id,
+                sender_phone='anna_bot',
+                sender_name='Anna',
+                content=response,
+                is_from_bot=True
+            )
         
         return jsonify({
             'response': response,
-            'session_id': session_id
+            'session_id': flask_session_id,
+            'chat_session_id': chat_session_id
         })
         
     except Exception as e:
