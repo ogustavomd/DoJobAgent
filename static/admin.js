@@ -1520,6 +1520,9 @@ class AdminManager {
 document.addEventListener('DOMContentLoaded', () => {
     window.adminManager = new AdminManager();
     window.adminApp = window.adminManager; // Create alias for backward compatibility
+    
+    // Load current agent configuration
+    loadAgentConfig();
 });
 
 // Global functions for HTML onclick handlers
@@ -1547,5 +1550,130 @@ function clearFilters() {
 function deleteActivityFromList(activityId) {
     if (window.adminManager && confirm('Tem certeza que deseja excluir esta atividade?')) {
         return window.adminManager.deleteActivityById(activityId);
+    }
+}
+
+// Global function for saving agent configuration
+async function saveAgentConfig() {
+    try {
+        const config = {
+            name: document.getElementById('agentName').value || 'Anna',
+            model: document.getElementById('agentModel').value || 'gemini-2.0-flash',
+            description: document.getElementById('agentDescription').value || '',
+            instructions: document.getElementById('agentInstructions').value || '',
+            temperature: parseFloat(document.getElementById('agentTemperature').value) || 0.7,
+            max_tokens: parseInt(document.getElementById('agentMaxTokens').value) || 1000,
+            tools_enabled: {
+                routines: document.getElementById('toolRoutines')?.checked ?? true,
+                memories: document.getElementById('toolMemories')?.checked ?? true,
+                media: document.getElementById('toolMedia')?.checked ?? true
+            }
+        };
+
+        console.log('Saving agent config:', config);
+
+        const response = await fetch('/config/api/config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(config)
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message
+            showMessage('Configuração salva com sucesso! O agente será reinicializado.', 'success');
+            
+            // Reload page after 2 seconds to reinitialize agent
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showMessage('Erro ao salvar configuração: ' + (result.error || 'Erro desconhecido'), 'error');
+        }
+    } catch (error) {
+        console.error('Error saving agent config:', error);
+        showMessage('Erro ao salvar configuração: ' + error.message, 'error');
+    }
+}
+
+// Helper function to show messages
+function showMessage(message, type = 'info') {
+    const alertClass = type === 'success' ? 'alert-success' : 
+                      type === 'error' ? 'alert-danger' : 'alert-info';
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${alertClass}`;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.maxWidth = '400px';
+    alertDiv.style.padding = '12px 16px';
+    alertDiv.style.borderRadius = '8px';
+    alertDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+    
+    const iconName = type === 'success' ? 'check-circle' : 
+                     type === 'error' ? 'alert-circle' : 'info';
+    
+    alertDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="${iconName}" width="16" height="16"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Replace feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// Function to load current agent configuration
+async function loadAgentConfig() {
+    try {
+        const response = await fetch('/config/api/config');
+        if (response.ok) {
+            const config = await response.json();
+            
+            // Populate form fields
+            const agentName = document.getElementById('agentName');
+            const agentModel = document.getElementById('agentModel');
+            const agentDescription = document.getElementById('agentDescription');
+            const agentInstructions = document.getElementById('agentInstructions');
+            const agentTemperature = document.getElementById('agentTemperature');
+            const agentMaxTokens = document.getElementById('agentMaxTokens');
+            const toolRoutines = document.getElementById('toolRoutines');
+            const toolMemories = document.getElementById('toolMemories');
+            const toolMedia = document.getElementById('toolMedia');
+            
+            if (agentName) agentName.value = config.name || 'Anna';
+            if (agentModel) agentModel.value = config.model || 'gemini-2.0-flash';
+            if (agentDescription) agentDescription.value = config.description || '';
+            if (agentInstructions) agentInstructions.value = config.instructions || '';
+            if (agentTemperature) agentTemperature.value = config.temperature || 0.7;
+            if (agentMaxTokens) agentMaxTokens.value = config.max_tokens || 1000;
+            
+            // Handle tools_enabled object
+            const toolsEnabled = config.tools_enabled || {};
+            if (toolRoutines) toolRoutines.checked = toolsEnabled.routines !== false;
+            if (toolMemories) toolMemories.checked = toolsEnabled.memories !== false;
+            if (toolMedia) toolMedia.checked = toolsEnabled.media !== false;
+            
+            console.log('Agent configuration loaded:', config);
+        } else {
+            console.log('No existing configuration found, using defaults');
+        }
+    } catch (error) {
+        console.error('Error loading agent configuration:', error);
     }
 }
