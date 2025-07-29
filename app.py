@@ -1163,34 +1163,62 @@ def save_config():
         elif user_id:
             config_data['user_id'] = user_id
         
-        # Save configuration to Supabase
-        from supabase_tools import supabase
-        
-        # Check if configuration exists
-        existing_id = data.get('id')
-        if existing_id:
-            # Update existing configuration
-            result = supabase.table('agent_config').update(config_data).eq('id', existing_id).execute()
-        else:
-            # Check if there's an existing config for this user/company
-            query = supabase.table('agent_config').select("id").eq('name', 'Anna')
+        # Try to save configuration to Supabase, fallback to local file
+        try:
+            from supabase_tools import supabase
             
-            if company_id:
-                query = query.eq('company_id', company_id)
-            elif user_id:
-                query = query.eq('user_id', user_id)
+            # Check if configuration exists
+            existing_id = data.get('id')
+            if existing_id:
+                # Update existing configuration
+                result = supabase.table('agent_config').update(config_data).eq('id', existing_id).execute()
             else:
-                query = query.is_('company_id', 'null').is_('user_id', 'null')
+                # Check if there's an existing config for this user/company
+                query = supabase.table('agent_config').select("id").eq('name', 'Anna')
+                
+                if company_id:
+                    query = query.eq('company_id', company_id)
+                elif user_id:
+                    query = query.eq('user_id', user_id)
+                else:
+                    query = query.is_('company_id', 'null').is_('user_id', 'null')
+                
+                existing = query.execute()
+                
+                if existing.data and len(existing.data) > 0:
+                    # Update existing
+                    result = supabase.table('agent_config').update(config_data).eq('id', existing.data[0]['id']).execute()
+                else:
+                    # Insert new configuration
+                    config_data['created_at'] = datetime.utcnow().isoformat()
+                    result = supabase.table('agent_config').insert(config_data).execute()
+        except Exception as supabase_error:
+            # Fallback to local file storage if Supabase table doesn't exist
+            logging.warning(f"Supabase save failed, using local storage: {supabase_error}")
             
-            existing = query.execute()
+            import json
+            import os
             
-            if existing.data and len(existing.data) > 0:
-                # Update existing
-                result = supabase.table('agent_config').update(config_data).eq('id', existing.data[0]['id']).execute()
-            else:
-                # Insert new configuration
-                config_data['created_at'] = datetime.utcnow().isoformat()
-                result = supabase.table('agent_config').insert(config_data).execute()
+            # Save to local agent_config.json file
+            config_file_data = {
+                'name': data.get('name', 'Anna'),
+                'model': data.get('model', 'gemini-2.0-flash'),
+                'description': data.get('description', ''),
+                'instructions': data.get('instructions', ''),
+                'temperature': float(data.get('temperature', 0.7)),
+                'max_tokens': int(data.get('max_tokens', 1000)),
+                'tools_enabled': data.get('tools_enabled', {
+                    'routines': True,
+                    'memories': True,
+                    'media': True
+                }),
+                'updated_at': datetime.utcnow().isoformat()
+            }
+            
+            with open('agent_config.json', 'w', encoding='utf-8') as f:
+                json.dump(config_file_data, f, indent=2, ensure_ascii=False)
+            
+            result = {'data': [{'id': 'local_config'}]}
         
         # Reload the Anna agent with new configuration
         global anna_agent
