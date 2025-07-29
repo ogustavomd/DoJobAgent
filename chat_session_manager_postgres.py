@@ -67,27 +67,35 @@ class ChatSessionManager:
                     sender_name: Optional[str] = None, message_type: str = 'text', 
                     media_url: Optional[str] = None, is_from_bot: bool = False) -> bool:
         """
-        Salva uma mensagem na sessão de chat
+        Salva uma mensagem na sessão de chat usando sincronização dual
         """
         try:
-            with self.get_db_connection() as conn:
-                cursor = conn.cursor()
-                
-                # Inserir mensagem
-                cursor.execute("""
-                    INSERT INTO messages (chat_session_id, sender_phone, sender_name, content, message_type, media_url, is_from_bot)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """, (session_id, sender_phone, sender_name, content, message_type, media_url, is_from_bot))
-                
-                # Atualizar timestamp da sessão
-                cursor.execute("""
-                    UPDATE chat_sessions SET updated_at = NOW() WHERE id = %s
-                """, (session_id,))
-                
-                conn.commit()
-                
+            # Use dual sync system
+            message_data = {
+                'session_id': session_id,
+                'user_id': sender_phone,
+                'content': content,
+                'sender_phone': sender_phone,
+                'message_type': message_type,
+                'media_url': media_url,
+                'is_from_bot': is_from_bot,
+                'chat_session_id': session_id
+            }
+            
+            success = dual_sync.sync_message(message_data)
+            
+            if success:
                 logger.info(f"Mensagem salva para sessão {session_id}: {content[:50]}...")
-                return True
+                
+                # Update session timestamp in PostgreSQL
+                with self.get_db_connection() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        UPDATE chat_sessions SET updated_at = NOW() WHERE id = %s
+                    """, (session_id,))
+                    conn.commit()
+            
+            return success
                 
         except Exception as e:
             logger.error(f"Erro ao salvar mensagem: {e}")

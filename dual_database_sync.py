@@ -123,6 +123,8 @@ class DualDatabaseSync:
     def sync_message(self, message_data: Dict[str, Any]) -> bool:
         """Sync message to both databases"""
         try:
+            logger.info(f"Starting message sync for: {message_data.get('content', '')[:50]}...")
+            
             # 1. Save to PostgreSQL
             with self.get_postgres_connection() as pg_conn:
                 cursor = pg_conn.cursor()
@@ -144,35 +146,63 @@ class DualDatabaseSync:
                     message_data.get('chat_session_id')
                 ))
                 
-                message_id = cursor.fetchone()[0]
-                pg_conn.commit()
-                logger.info(f"Message saved to PostgreSQL: {message_id}")
+                result = cursor.fetchone()
+                if result:
+                    message_id = result[0]
+                    pg_conn.commit()
+                    logger.info(f"Message saved to PostgreSQL: {message_id}")
+                else:
+                    logger.error("Failed to save message to PostgreSQL")
 
             # 2. Sync to Supabase
             try:
-                supabase_message = {
-                    'session_id': message_data.get('session_id'),
-                    'content': message_data['content'],
-                    'sender_phone': message_data.get('sender_phone'),
-                    'message_type': message_data.get('message_type', 'text'),
-                    'media_url': message_data.get('media_url'),
-                    'is_from_bot': message_data.get('is_from_bot', False)
-                }
+                # First ensure chat session exists in Supabase
+                if message_data.get('sender_phone', '').startswith('web_user') or message_data.get('sender_phone') == 'web_user':
+                    contact_phone = 'web_user'
+                else:
+                    contact_phone = message_data.get('sender_phone', 'unknown')
                 
-                # Get chat_session_id from Supabase if needed
-                if message_data.get('sender_phone'):
-                    session_check = self.supabase.table('chat_sessions').select('id').eq(
-                        'contact_phone', message_data.get('sender_phone')
-                    ).eq('status', 'active').limit(1).execute()
+                # Check/create session in Supabase
+                session_check = self.supabase.table('chat_sessions').select('id').eq(
+                    'contact_phone', contact_phone
+                ).eq('channel', 'chat').eq('status', 'active').limit(1).execute()
+                
+                supabase_session_id = None
+                if not session_check.data:
+                    # Create session in Supabase
+                    session_result = self.supabase.table('chat_sessions').insert({
+                        'contact_phone': contact_phone,
+                        'contact_name': contact_phone,
+                        'channel': 'chat',
+                        'status': 'active'
+                    }).execute()
+                    if session_result.data:
+                        supabase_session_id = session_result.data[0]['id']
+                else:
+                    supabase_session_id = session_check.data[0]['id']
+                
+                # Insert message in Supabase
+                if supabase_session_id:
+                    supabase_message = {
+                        'session_id': message_data.get('session_id'),
+                        'user_id': contact_phone,
+                        'content': message_data['content'],
+                        'sender_phone': contact_phone,
+                        'message_type': message_data.get('message_type', 'text'),
+                        'media_url': message_data.get('media_url'),
+                        'is_from_bot': message_data.get('is_from_bot', False),
+                        'chat_session_id': supabase_session_id
+                    }
                     
-                    if session_check.data:
-                        supabase_message['chat_session_id'] = session_check.data[0]['id']
-                
-                self.supabase.table('messages').insert(supabase_message).execute()
-                logger.info(f"Message synced to Supabase")
+                    result = self.supabase.table('messages').insert(supabase_message).execute()
+                    logger.info(f"Message synced to Supabase successfully: {len(result.data)} records")
+                else:
+                    logger.error("Could not create/find session in Supabase")
                 
             except Exception as e:
                 logger.error(f"Error syncing message to Supabase: {e}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
                 # Continue even if Supabase sync fails
                 
             return True
