@@ -42,7 +42,7 @@ class ChatSessionManager:
                 conn.close()
 
     def get_or_create_session(self, contact_phone: str, contact_name: Optional[str] = None, 
-                             channel: str = 'chat', contact_avatar: Optional[str] = None) -> int:
+                             channel: str = 'chat', contact_avatar: Optional[str] = None) -> str:
         """
         Busca uma sessão ativa ou cria uma nova para o contato
         """
@@ -60,18 +60,18 @@ class ChatSessionManager:
                 result = cursor.fetchone()
                 
                 if result:
-                    session_id = result[0]
+                    session_id = str(result[0])
                     logger.info(f"Sessão existente encontrada: {session_id} para {contact_phone} ({channel})")
                     return session_id
                 
                 # Se não existe, cria uma nova sessão
                 cursor.execute("""
-                    INSERT INTO chat_sessions (contact_phone, contact_name, contact_avatar, channel, status, created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
+                    INSERT INTO chat_sessions (contact_phone, contact_name, contact_avatar, channel, status)
+                    VALUES (%s, %s, %s, %s, %s)
                     RETURNING id
                 """, (contact_phone, contact_name or contact_phone, contact_avatar, channel, 'active'))
                 
-                session_id = cursor.fetchone()[0]
+                session_id = str(cursor.fetchone()[0])
                 conn.commit()
                 
                 logger.info(f"Nova sessão criada: {session_id} para {contact_phone} ({channel})")
@@ -81,7 +81,7 @@ class ChatSessionManager:
             logger.error(f"Erro ao buscar/criar sessão: {e}")
             raise
 
-    def save_message(self, session_id: int, sender_phone: str, content: str, 
+    def save_message(self, session_id: str, sender_phone: str, content: str, 
                     sender_name: Optional[str] = None, message_type: str = 'text', 
                     media_url: Optional[str] = None, is_from_bot: bool = False) -> bool:
         """
@@ -93,8 +93,8 @@ class ChatSessionManager:
                 
                 # Inserir mensagem
                 cursor.execute("""
-                    INSERT INTO messages (chat_session_id, sender_phone, sender_name, content, message_type, media_url, is_from_bot, created_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                    INSERT INTO messages (chat_session_id, sender_phone, sender_name, content, message_type, media_url, is_from_bot)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """, (session_id, sender_phone, sender_name, content, message_type, media_url, is_from_bot))
                 
                 # Atualizar timestamp da sessão
@@ -111,7 +111,7 @@ class ChatSessionManager:
             logger.error(f"Erro ao salvar mensagem: {e}")
             return False
 
-    def get_session_messages(self, session_id: int, limit: int = 50) -> List[Dict]:
+    def get_session_messages(self, session_id: str, limit: int = 50) -> List[Dict]:
         """
         Busca mensagens de uma sessão de chat
         """
@@ -179,7 +179,7 @@ class ChatSessionManager:
             logger.error(f"Erro ao buscar sessões do contato: {e}")
             return []
 
-    def end_session(self, session_id: int) -> bool:
+    def end_session(self, session_id: str) -> bool:
         """
         Finaliza uma sessão de chat
         """

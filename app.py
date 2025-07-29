@@ -178,53 +178,37 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str):
         return "Desculpe, ocorreu um erro interno. Tente novamente em alguns instantes."
 
 async def load_conversation_history(session_obj, user_id: str, session_id: str):
-    """Load conversation history from PostgreSQL database and populate session"""
+    """Load conversation history from chat sessions into ADK session"""
     try:
-        from models import Message
-        from google.genai import types
+        # Get chat sessions for this user/phone
+        sessions = chat_session_manager.get_contact_sessions(user_id)
         
-        # Get recent messages for this session
-        messages = db.session.query(Message).filter(
-            Message.session_id == session_id
-        ).order_by(Message.created_at.asc()).limit(50).all()
-        
-        if messages:
-            # Add conversation history to session
-            for message in messages:
-                # Add user message
-                if message.user_message:
-                    user_content = types.Content(role='user', parts=[types.Part(text=message.user_message)])
-                    session_obj.add_turn(user_content)
-                
-                # Add assistant response
-                if message.assistant_response:
-                    assistant_content = types.Content(role='model', parts=[types.Part(text=message.assistant_response)])
-                    session_obj.add_turn(assistant_content)
+        # Load messages from the most recent session
+        if sessions:
+            latest_session = sessions[0]  # Most recent session
+            messages = chat_session_manager.get_session_messages(latest_session['id'], limit=20)
+            
+            # Add messages to ADK session history
+            for msg in messages:
+                if msg['is_from_bot']:
+                    # Assistant message
+                    assistant_content = types.Content(role='model', parts=[types.Part(text=msg['content'])])
+                    session_obj.add_message(assistant_content)
+                else:
+                    # User message
+                    user_content = types.Content(role='user', parts=[types.Part(text=msg['content'])])
+                    session_obj.add_message(user_content)
                     
-        logging.info(f"Loaded {len(messages)} conversation turns for session {session_id}")
+            logging.info(f"Loaded {len(messages)} messages for ADK session {session_id}")
         
     except Exception as e:
         logging.error(f"Error loading conversation history: {e}")
 
 async def save_conversation_turn(user_id: str, session_id: str, user_message: str, assistant_response: str):
-    """Save a conversation turn to PostgreSQL database"""
-    try:
-        from models import Message
-        
-        # Create new message record
-        message = Message()
-        message.user_id = user_id
-        message.session_id = session_id
-        message.user_message = user_message
-        message.assistant_response = assistant_response
-        
-        db.session.add(message)
-        db.session.commit()
-        logging.info(f"Saved conversation turn for session {session_id}")
-        
-    except Exception as e:
-        logging.error(f"Error saving conversation turn: {e}")
-        db.session.rollback()
+    """Save conversation turn - handled by ChatSessionManager in main chat endpoint"""
+    # This function is no longer needed as messages are saved directly in chat endpoint
+    logging.info(f"Conversation turn handled by ChatSessionManager for session {session_id}")
+    pass
 
 # Admin routes
 @app.route('/admin')
