@@ -166,6 +166,10 @@ The application is designed to be a conversational AI that maintains character c
 - **User Management System**: Full user administration with plans (Gratuito/Básico/Premium/Enterprise) and permissions
 - **Active/Inactive Control**: Ability to enable/disable users and clients to control Anna's responses
 - **Multi-Channel Support**: Unified management for WhatsApp, Instagram, Chat, and Web channels
+- **Chat Session Management PostgreSQL**: Complete chat session system with automatic contact registration and message tracking using PostgreSQL
+- **Automatic Session Creation**: All contacts are registered automatically when they interact via any channel (WhatsApp, Instagram, Chat, Web)
+- **Message Storage**: All sent and received messages are saved with proper session linking and timestamps
+- **Interface Simplification**: Removed WhatsApp, Clientes, and Usuários buttons from activity management interface per user request
 
 ### Current Database State
 - **Sample Data**: Populated with realistic routine activities, media files, and conversation history
