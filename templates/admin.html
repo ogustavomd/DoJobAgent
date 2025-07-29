@@ -978,6 +978,194 @@
             background: var(--bg-tertiary);
             color: var(--text-primary);
         }
+
+        /* Stat Cards */
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-purple);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-purple);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Table Styles */
+        .table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-secondary);
+        }
+
+        .data-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Badge Styles */
+        .badge-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-status.active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .badge-status.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .badge-canal {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-canal.whatsapp {
+            background: rgba(37, 211, 102, 0.2);
+            color: #25d366;
+        }
+
+        .badge-canal.instagram {
+            background: linear-gradient(45deg, rgba(240, 148, 51, 0.2), rgba(188, 24, 136, 0.2));
+            color: #bc1888;
+        }
+
+        .badge-canal.chat {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        .badge-canal.web {
+            background: rgba(25, 135, 84, 0.2);
+            color: #198754;
+        }
+
+        .badge-plano {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-plano.gratuito {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+
+        .badge-plano.basico {
+            background: rgba(13, 110, 253, 0.2);
+            color: #0d6efd;
+        }
+
+        .badge-plano.premium {
+            background: rgba(253, 126, 20, 0.2);
+            color: #fd7e14;
+        }
+
+        .badge-plano.enterprise {
+            background: rgba(111, 66, 193, 0.2);
+            color: #6f42c1;
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 4px;
+        }
+
+        .btn-action:last-child {
+            margin-right: 0;
+        }
+
+        .btn-action.btn-toggle {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-action.btn-toggle:hover {
+            background: var(--accent-purple-hover);
+        }
+
+        .btn-action.btn-edit {
+            background: rgba(13, 110, 253, 0.2);
+            color: #0d6efd;
+            border: 1px solid rgba(13, 110, 253, 0.3);
+        }
+
+        .btn-action.btn-edit:hover {
+            background: rgba(13, 110, 253, 0.3);
+        }
+
+        .btn-action.btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-action.btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -1018,6 +1206,15 @@
                 </button>
                 <button class="nav-item" data-tab="ai-suggestions" title="IA Sugestões">
                     <i data-lucide="brain" width="20" height="20"></i>
+                </button>
+                <button class="nav-item" data-tab="clientes" title="Clientes">
+                    <i data-lucide="users" width="20" height="20"></i>
+                </button>
+                <button class="nav-item" data-tab="usuarios" title="Usuários">
+                    <i data-lucide="user-cog" width="20" height="20"></i>
+                </button>
+                <button class="nav-item" data-tab="whatsapp" title="WhatsApp">
+                    <i data-lucide="message-circle" width="20" height="20"></i>
                 </button>
             </nav>
         </div>
@@ -1133,15 +1330,15 @@
                             <i data-lucide="plus" width="16" height="16"></i>
                             Nova Atividade
                         </button>
-                        <a href="/whatsapp/config" class="btn-outline-modern" target="_blank" title="Configurar WhatsApp">
+                        <button class="btn-outline-modern" onclick="switchTab('whatsapp')" title="Configurar WhatsApp">
                             📱 WhatsApp
-                        </a>
-                        <a href="/clients" class="btn-outline-modern" title="Gerenciar Clientes">
+                        </button>
+                        <button class="btn-outline-modern" onclick="switchTab('clientes')" title="Gerenciar Clientes">
                             👥 Clientes
-                        </a>
-                        <a href="/users" class="btn-outline-modern" title="Gerenciar Usuários">
+                        </button>
+                        <button class="btn-outline-modern" onclick="switchTab('usuarios')" title="Gerenciar Usuários">
                             👤 Usuários
-                        </a>
+                        </button>
                     </div>
                     
                     <!-- Calendar View -->
@@ -1357,6 +1554,200 @@
                         <div id="activity-optimization" style="display: none;">
                             <!-- Activity optimization results will be shown here -->
                         </div>
+                    </div>
+                </div>
+                <!-- Clients Tab -->
+                <div class="tab-panel" id="clientes-panel">
+                    <div class="text-title">Gerenciar Clientes</div>
+                    <div class="text-body">Controle e monitore todas as conversas com seus clientes</div>
+                    
+                    <!-- Client Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalClientsAdmin">-</div>
+                            <div class="stat-label">Total de Clientes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="activeClientsAdmin">-</div>
+                            <div class="stat-label">Clientes Ativos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="whatsappClientsAdmin">-</div>
+                            <div class="stat-label">WhatsApp</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="chatClientsAdmin">-</div>
+                            <div class="stat-label">Chat Web</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Client Filters -->
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label class="filter-label">Canal</label>
+                                <select class="filter-control" id="filterCanalClientes">
+                                    <option value="">Todos os Canais</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="chat">Chat Web</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Status</label>
+                                <select class="filter-control" id="filterStatusClientes">
+                                    <option value="">Todos</option>
+                                    <option value="true">Ativo</option>
+                                    <option value="false">Inativo</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Buscar</label>
+                                <input type="text" class="filter-control" id="searchInputClientes" placeholder="Nome ou telefone...">
+                            </div>
+                            <div class="filter-actions">
+                                <button class="btn-filter btn-filter-primary" onclick="loadClientesAdmin()">Atualizar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Clients Table -->
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Telefone</th>
+                                    <th>Canal</th>
+                                    <th>Status</th>
+                                    <th>Primeira Conversa</th>
+                                    <th>Última Conversa</th>
+                                    <th>Total Mensagens</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientesTableAdmin">
+                                <tr>
+                                    <td colspan="8" class="text-center" style="padding: 40px;">
+                                        <div style="color: var(--text-secondary);">Carregando clientes...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div class="tab-panel" id="usuarios-panel">
+                    <div class="text-title">Gerenciar Usuários</div>
+                    <div class="text-body">Controle de usuários, planos e permissões do sistema</div>
+                    
+                    <!-- User Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalUsersAdmin">-</div>
+                            <div class="stat-label">Total de Usuários</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="activeUsersAdmin">-</div>
+                            <div class="stat-label">Usuários Ativos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="premiumUsersAdmin">-</div>
+                            <div class="stat-label">Planos Premium</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="whatsappUsersAdmin">-</div>
+                            <div class="stat-label">Via WhatsApp</div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Actions -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div></div>
+                        <button class="btn-modern" onclick="openAddUserModalAdmin()">
+                            <i data-lucide="plus" width="16" height="16"></i>
+                            Novo Usuário
+                        </button>
+                    </div>
+                    
+                    <!-- User Filters -->
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label class="filter-label">Plano</label>
+                                <select class="filter-control" id="filterPlanoUsuarios">
+                                    <option value="">Todos os Planos</option>
+                                    <option value="gratuito">Gratuito</option>
+                                    <option value="basico">Básico</option>
+                                    <option value="premium">Premium</option>
+                                    <option value="enterprise">Enterprise</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Canal</label>
+                                <select class="filter-control" id="filterCanalUsuarios">
+                                    <option value="">Todos os Canais</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="chat">Chat</option>
+                                    <option value="web">Web</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Status</label>
+                                <select class="filter-control" id="filterStatusUsuarios">
+                                    <option value="">Todos</option>
+                                    <option value="true">Ativo</option>
+                                    <option value="false">Inativo</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Buscar</label>
+                                <input type="text" class="filter-control" id="searchInputUsuarios" placeholder="Nome, telefone ou email...">
+                            </div>
+                            <div class="filter-actions">
+                                <button class="btn-filter btn-filter-primary" onclick="loadUsuariosAdmin()">Atualizar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Users Table -->
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuário</th>
+                                    <th>Contato</th>
+                                    <th>Plano</th>
+                                    <th>Canal</th>
+                                    <th>Status</th>
+                                    <th>Data Cadastro</th>
+                                    <th>Último Acesso</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usuariosTableAdmin">
+                                <tr>
+                                    <td colspan="8" class="text-center" style="padding: 40px;">
+                                        <div style="color: var(--text-secondary);">Carregando usuários...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- WhatsApp Tab -->
+                <div class="tab-panel" id="whatsapp-panel">
+                    <div class="text-title">Configuração WhatsApp</div>
+                    <div class="text-body">Configure a integração com Evolution API para WhatsApp</div>
+                    
+                    <div style="text-align: center; margin-top: 24px;">
+                        <a href="/whatsapp/config" class="btn-modern" target="_blank">
+                            <i data-lucide="external-link" width="16" height="16"></i>
+                            Abrir Configuração WhatsApp
+                        </a>
                     </div>
                 </div>
             </div>
@@ -1850,6 +2241,254 @@
             }, 100);
         }
         
+        // Client and User Management Functions
+        let clientesData = [];
+        let usuariosData = [];
+
+        // Load clients data
+        async function loadClientesAdmin() {
+            try {
+                const response = await fetch('/api/clients');
+                const data = await response.json();
+                
+                if (data.success) {
+                    clientesData = data.clients;
+                    renderClientesAdmin();
+                    updateClientesStats();
+                } else {
+                    console.error('Error loading clients:', data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('clientesTableAdmin').innerHTML = `
+                    <tr><td colspan="8" class="text-center" style="padding: 40px; color: var(--text-secondary);">Erro ao carregar clientes</td></tr>
+                `;
+            }
+        }
+
+        // Load users data
+        async function loadUsuariosAdmin() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    usuariosData = data.users;
+                    renderUsuariosAdmin();
+                    updateUsuariosStats();
+                } else {
+                    console.error('Error loading users:', data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('usuariosTableAdmin').innerHTML = `
+                    <tr><td colspan="8" class="text-center" style="padding: 40px; color: var(--text-secondary);">Erro ao carregar usuários</td></tr>
+                `;
+            }
+        }
+
+        // Render clients table
+        function renderClientesAdmin() {
+            const tbody = document.getElementById('clientesTableAdmin');
+            const filterCanal = document.getElementById('filterCanalClientes').value;
+            const filterStatus = document.getElementById('filterStatusClientes').value;
+            const searchTerm = document.getElementById('searchInputClientes').value.toLowerCase();
+            
+            const filteredClients = clientesData.filter(client => {
+                const matchesCanal = !filterCanal || client.canal === filterCanal;
+                const matchesStatus = !filterStatus || client.ativo.toString() === filterStatus;
+                const matchesSearch = !searchTerm || 
+                    (client.nome && client.nome.toLowerCase().includes(searchTerm)) || 
+                    client.telefone.includes(searchTerm);
+                
+                return matchesCanal && matchesStatus && matchesSearch;
+            });
+            
+            if (filteredClients.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8" class="text-center" style="padding: 40px; color: var(--text-secondary);">Nenhum cliente encontrado</td></tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = filteredClients.map(client => `
+                <tr>
+                    <td>
+                        <div style="font-weight: 500;">${client.nome || 'Cliente'}</div>
+                    </td>
+                    <td><code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">${client.telefone}</code></td>
+                    <td><span class="badge-canal ${client.canal}">${client.canal.toUpperCase()}</span></td>
+                    <td><span class="badge-status ${client.ativo ? 'active' : 'inactive'}">${client.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                    <td>${formatDateAdmin(client.primeira_conversa)}</td>
+                    <td>${formatDateAdmin(client.ultima_conversa)}</td>
+                    <td><span style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 12px; font-size: 12px;">${client.total_mensagens}</span></td>
+                    <td>
+                        <button class="btn-action btn-toggle" onclick="toggleClientStatusAdmin('${client.id}', ${client.ativo})" title="${client.ativo ? 'Inativar' : 'Ativar'}">
+                            ${client.ativo ? 'Inativar' : 'Ativar'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Render users table
+        function renderUsuariosAdmin() {
+            const tbody = document.getElementById('usuariosTableAdmin');
+            const filterPlano = document.getElementById('filterPlanoUsuarios').value;
+            const filterCanal = document.getElementById('filterCanalUsuarios').value;
+            const filterStatus = document.getElementById('filterStatusUsuarios').value;
+            const searchTerm = document.getElementById('searchInputUsuarios').value.toLowerCase();
+            
+            const filteredUsers = usuariosData.filter(user => {
+                const matchesPlano = !filterPlano || user.plano === filterPlano;
+                const matchesCanal = !filterCanal || user.canal === filterCanal;
+                const matchesStatus = !filterStatus || user.ativo.toString() === filterStatus;
+                const matchesSearch = !searchTerm || 
+                    user.nome.toLowerCase().includes(searchTerm) || 
+                    user.telefone.includes(searchTerm) ||
+                    (user.email && user.email.toLowerCase().includes(searchTerm));
+                
+                return matchesPlano && matchesCanal && matchesStatus && matchesSearch;
+            });
+            
+            if (filteredUsers.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8" class="text-center" style="padding: 40px; color: var(--text-secondary);">Nenhum usuário encontrado</td></tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = filteredUsers.map(user => `
+                <tr>
+                    <td>
+                        <div style="font-weight: 500;">${user.nome}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">${user.email || 'Sem email'}</div>
+                    </td>
+                    <td><code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">${user.telefone}</code></td>
+                    <td><span class="badge-plano ${user.plano}">${user.plano.toUpperCase()}</span></td>
+                    <td><span class="badge-canal ${user.canal}">${user.canal.toUpperCase()}</span></td>
+                    <td><span class="badge-status ${user.ativo ? 'active' : 'inactive'}">${user.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                    <td>${formatDateAdmin(user.data_cadastro)}</td>
+                    <td>${formatDateAdmin(user.ultimo_acesso) || 'Nunca'}</td>
+                    <td>
+                        <button class="btn-action btn-toggle" onclick="toggleUserStatusAdmin('${user.id}', ${user.ativo})" title="${user.ativo ? 'Inativar' : 'Ativar'}">
+                            ${user.ativo ? 'Inativar' : 'Ativar'}
+                        </button>
+                        <button class="btn-action btn-edit" onclick="editUserAdmin('${user.id}')" title="Editar">
+                            Edit
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update client stats
+        function updateClientesStats() {
+            const total = clientesData.length;
+            const active = clientesData.filter(c => c.ativo).length;
+            const whatsapp = clientesData.filter(c => c.canal === 'whatsapp').length;
+            const chat = clientesData.filter(c => c.canal === 'chat').length;
+            
+            document.getElementById('totalClientsAdmin').textContent = total;
+            document.getElementById('activeClientsAdmin').textContent = active;
+            document.getElementById('whatsappClientsAdmin').textContent = whatsapp;
+            document.getElementById('chatClientsAdmin').textContent = chat;
+        }
+
+        // Update user stats
+        function updateUsuariosStats() {
+            const total = usuariosData.length;
+            const active = usuariosData.filter(u => u.ativo).length;
+            const premium = usuariosData.filter(u => u.plano === 'premium' || u.plano === 'enterprise').length;
+            const whatsapp = usuariosData.filter(u => u.canal === 'whatsapp').length;
+            
+            document.getElementById('totalUsersAdmin').textContent = total;
+            document.getElementById('activeUsersAdmin').textContent = active;
+            document.getElementById('premiumUsersAdmin').textContent = premium;
+            document.getElementById('whatsappUsersAdmin').textContent = whatsapp;
+        }
+
+        // Toggle client status
+        async function toggleClientStatusAdmin(clientId, currentStatus) {
+            try {
+                const response = await fetch(`/api/clients/${clientId}/toggle-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ativo: !currentStatus })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    loadClientesAdmin();
+                } else {
+                    alert('Erro ao alterar status do cliente');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Erro ao conectar com o servidor');
+            }
+        }
+
+        // Toggle user status
+        async function toggleUserStatusAdmin(userId, currentStatus) {
+            try {
+                const response = await fetch(`/api/users/${userId}/toggle-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ativo: !currentStatus })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    loadUsuariosAdmin();
+                } else {
+                    alert('Erro ao alterar status do usuário');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Erro ao conectar com o servidor');
+            }
+        }
+
+        // Placeholder functions
+        function openAddUserModalAdmin() {
+            alert('Funcionalidade em desenvolvimento');
+        }
+
+        function editUserAdmin(userId) {
+            alert('Funcionalidade em desenvolvimento');
+        }
+
+        // Format date helper
+        function formatDateAdmin(dateString) {
+            if (!dateString) return null;
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Add event listeners for filters
+        document.addEventListener('DOMContentLoaded', function() {
+            // Client filters
+            const clientFilters = ['filterCanalClientes', 'filterStatusClientes', 'searchInputClientes'];
+            clientFilters.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', renderClientesAdmin);
+                    element.addEventListener('input', renderClientesAdmin);
+                }
+            });
+
+            // User filters
+            const userFilters = ['filterPlanoUsuarios', 'filterCanalUsuarios', 'filterStatusUsuarios', 'searchInputUsuarios'];
+            userFilters.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', renderUsuariosAdmin);
+                    element.addEventListener('input', renderUsuariosAdmin);
+                }
+            });
+        });
+
         // Initialize both admin managers after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             // Ensure Bootstrap is fully loaded
@@ -1857,6 +2496,10 @@
                 window.adminManager = new AdminManager();
                 window.adminApp = window.adminManager; // Create alias for backward compatibility
                 console.log('Admin systems initialized successfully');
+                
+                // Load initial data for new tabs
+                loadClientesAdmin();
+                loadUsuariosAdmin();
             } else {
                 console.error('Bootstrap not loaded');
             }
