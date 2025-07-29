@@ -36,26 +36,17 @@ def create_anna_agent():
             except Exception as e:
                 logging.error(f"Error loading from PostgreSQL: {e}")
         
-        # If still no config, try loading from file
-        if not config:
-            try:
-                with open('agent_config.json', 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                logging.info("Configuration loaded from agent_config.json file")
-            except Exception as e:
-                logging.error(f"Error loading from file: {e}")
-        
-        # If still no config, use defaults
+        # If still no config, use defaults (DO NOT load from file to avoid wrong personas)
         if not config:
             config = {
                 'name': 'Anna', 
                 'model': 'gemini-2.0-flash',
-                'instructions': 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.',
+                'instructions': 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. Você tem uma personalidade vibrante, é espontânea e se conecta facilmente com as pessoas. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.',
                 'temperature': 0.8,
                 'max_tokens': 1000,
                 'tools_enabled': {'routines': True, 'memories': True, 'media': True}
             }
-            logging.info("Using default configuration")
+            logging.info("Using default Anna configuration (no file loading)")
             
     except Exception as e:
         logging.error(f"Error getting configuration: {e}")
