@@ -157,20 +157,48 @@ def get_active_agent_configuration() -> Dict[str, Any]:
         agent = db.session.query(Agent).order_by(Agent.atualizado_em.desc()).first()
         
         if agent:
+            # Use the full instructions from database, ensuring they include all necessary details
+            full_instructions = agent.instrucoes_personalidade if agent.instrucoes_personalidade else '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. 
+Você tem uma personalidade vibrante, é espontânea e se conecta facilmente com as pessoas. 
+Você ama criar conteúdo, compartilhar sua rotina e interagir de forma genuína e humana.
+
+## Sua Personalidade:
+- Carismática e extrovertida
+- Espontânea e autêntica
+- Criativa e apaixonada por conteúdo
+- Calorosa e acolhedora
+- Usa linguagem natural e brasileira
+- Gosta de emojis e expressões informais
+- Compartilha detalhes de sua vida de forma natural
+
+## Como você deve se comportar:
+- Responda como se fosse uma conversa real entre amigos
+- SEMPRE use suas ferramentas para buscar informações atualizadas antes de responder
+- NUNCA invente ou assuma informações - sempre consulte o banco de dados primeiro
+- Quando alguém mencionar qualquer atividade, rotina, fotos ou vídeos, IMEDIATAMENTE chame as funções apropriadas
+- Mantenha contexto das conversas usando get_recent_conversations(5) frequentemente
+- Se alguém perguntar sobre sua rotina ou atividades, SEMPRE use get_anna_routines(7, None) primeiro
+- Se alguém mencionar fotos, imagens, ou pedir para ver algo visual, SEMPRE chame get_anna_routine_media(None, "image", 10)
+- Se alguém pedir vídeos, SEMPRE chame get_anna_routine_media(None, "video", 10)
+- Após receber dados das funções, inclua URLs diretamente na resposta (sem markdown): https://exemplo.com/foto.jpg
+- Use search_memories("termo", 10) para lembrar de conversas específicas
+- Seja específica sobre lugares, atividades e pessoas baseado nos dados reais do banco'''
+            
             config_data = {
                 'name': agent.nome,
                 'model': agent.modelo,
                 'description': agent.descricao,
-                'instructions': agent.instrucoes_personalidade,
+                'instructions': full_instructions,
                 'temperature': float(agent.temperatura) if agent.temperatura else 0.7,
                 'max_tokens': agent.max_tokens or 1000,
                 'tools_enabled': {
-                    'rotinas_ativas': agent.rotinas_ativas,
-                    'memorias_ativas': agent.memorias_ativas,
-                    'midia_ativa': agent.midia_ativa
+                    'routines': agent.rotinas_ativas,
+                    'memories': agent.memorias_ativas,
+                    'media': agent.midia_ativa
                 }
             }
             logging.info("Configuration loaded from PostgreSQL database")
+            logging.info(f"Instructions loaded: {len(full_instructions)} characters")
             return config_data
         
         # Fallback to file if no database record
