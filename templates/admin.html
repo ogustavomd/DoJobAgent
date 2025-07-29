@@ -840,30 +840,63 @@
             opacity: 0.6;
         }
 
-        /* Dropdown Menu Enhancements */
-        .dropdown-menu-dark {
-            background: var(--bg-primary) !important;
-            border: 1px solid var(--border-color) !important;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+        /* Custom Activity Dropdown Menu */
+        .activity-dropdown-container {
+            position: relative;
         }
 
-        .dropdown-menu-dark .dropdown-item {
-            color: var(--text-primary) !important;
-            padding: 8px 12px !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            font-size: 14px !important;
+        .activity-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            min-width: 120px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.2s ease;
         }
 
-        .dropdown-menu-dark .dropdown-item:hover {
-            background: var(--bg-tertiary) !important;
-            color: var(--text-primary) !important;
+        .activity-dropdown-container.active .activity-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
         }
 
-        .dropdown-menu-dark .dropdown-item.text-danger:hover {
-            background: rgba(239, 68, 68, 0.1) !important;
-            color: #ef4444 !important;
+        .activity-dropdown-item {
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            background: none;
+            color: var(--text-primary);
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .activity-dropdown-item:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .activity-dropdown-item:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+
+        .activity-dropdown-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .activity-dropdown-delete:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
         }
 
         /* Filter Improvements */

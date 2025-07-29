@@ -370,18 +370,18 @@ class AdminManager {
                         ${activity.location ? `<div class="activity-card-location">${activity.location}</div>` : ''}
                     </div>
                     <div class="activity-card-actions">
-                        <div class="dropdown">
-                            <button class="activity-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation();">
+                        <div class="activity-dropdown-container">
+                            <button class="activity-menu-btn" type="button" onclick="event.stopPropagation(); this.parentElement.classList.toggle('active');">
                                 <i data-lucide="more-vertical" width="16" height="16"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><a class="dropdown-item" href="#" onclick="event.stopPropagation(); adminManager.openActivityModal('${activity.id}')">
+                            <div class="activity-dropdown-menu">
+                                <button class="activity-dropdown-item" onclick="event.stopPropagation(); window.adminManager.openActivityModal('${activity.id}'); document.querySelector('.activity-dropdown-container.active')?.classList.remove('active');">
                                     <i data-lucide="edit" width="16" height="16"></i> Editar
-                                </a></li>
-                                <li><a class="dropdown-item text-danger" href="#" onclick="event.stopPropagation(); adminManager.deleteActivity('${activity.id}')">
+                                </button>
+                                <button class="activity-dropdown-item activity-dropdown-delete" onclick="event.stopPropagation(); window.adminManager.deleteActivity('${activity.id}'); document.querySelector('.activity-dropdown-container.active')?.classList.remove('active');">
                                     <i data-lucide="trash-2" width="16" height="16"></i> Excluir
-                                </a></li>
-                            </ul>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -422,11 +422,20 @@ class AdminManager {
         document.querySelectorAll('.activity-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 // Don't trigger if clicked on dropdown or its children
-                if (!e.target.closest('.dropdown') && !e.target.closest('.activity-menu-btn')) {
+                if (!e.target.closest('.activity-dropdown-container') && !e.target.closest('.activity-menu-btn')) {
                     const activityId = card.dataset.activityId;
                     this.openActivityModal(activityId);
                 }
             });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.activity-dropdown-container')) {
+                document.querySelectorAll('.activity-dropdown-container.active').forEach(dropdown => {
+                    dropdown.classList.remove('active');
+                });
+            }
         });
     }
 
