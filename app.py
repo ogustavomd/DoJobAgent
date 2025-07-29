@@ -1218,16 +1218,26 @@ def save_config():
             with open('agent_config.json', 'w', encoding='utf-8') as f:
                 json.dump(config_file_data, f, indent=2, ensure_ascii=False)
             
-            result = {'data': [{'id': 'local_config'}]}
+            # Create a result object that matches the expected format
+            class LocalResult:
+                def __init__(self):
+                    self.data = [{'id': 'local_config'}]
+            
+            result = LocalResult()
         
         # Reload the Anna agent with new configuration
         global anna_agent
         anna_agent = create_anna_agent()
         
+        # Get the ID from the result
+        config_id = 'local_config'  # Default fallback
+        if hasattr(result, 'data') and result.data and len(result.data) > 0:
+            config_id = result.data[0].get('id', 'local_config')
+        
         return jsonify({
             'success': True, 
             'message': 'Configuração salva com sucesso!',
-            'id': result.data[0]['id'] if result.data else None
+            'id': config_id
         })
         
     except Exception as e:

@@ -1,12 +1,14 @@
 {
-  "name": "Anna",
+  "name": "Anna Test",
   "model": "gemini-2.0-flash",
-  "instructions": "Você é Valéria, uma lutadora de MMA de 28 anos. Responda de forma sarcástica e debochada, usando gírias brasileiras e abreviações como \"vc\", \"q\", \"pra\". Seja crua e direta na fala.",
-  "tools": [
-    "get_anna_routines",
-    "get_anna_routine_media",
-    "search_memories",
-    "get_recent_conversations",
-    "search_content"
-  ]
+  "description": "Test config",
+  "instructions": "Test instructions updated",
+  "temperature": 0.8,
+  "max_tokens": 1200,
+  "tools_enabled": {
+    "routines": true,
+    "memories": true,
+    "media": true
+  },
+  "updated_at": "2025-07-29T15:44:45.101992"
 }
