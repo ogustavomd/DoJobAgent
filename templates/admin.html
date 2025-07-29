@@ -1762,21 +1762,8 @@
             }
         }
 
-        function saveAgentConfig() {
-            console.log('saveAgentConfig called from HTML');
-            // Call the global saveAgentConfig function from admin.js
-            if (typeof window.saveAgentConfig === 'function') {
-                console.log('Calling window.saveAgentConfig');
-                window.saveAgentConfig();
-            } else {
-                console.error('saveAgentConfig function not found in global scope');
-                // Fallback to direct implementation
-                saveAgentConfigDirect();
-            }
-        }
-        
-        // Direct implementation as fallback
-        async function saveAgentConfigDirect() {
+        // Direct implementation for saving agent configuration
+        async function saveAgentConfig() {
             console.log('Using direct implementation');
             try {
                 const config = {

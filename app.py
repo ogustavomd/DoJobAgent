@@ -1138,6 +1138,9 @@ def save_config():
         company_id = request.headers.get('X-Company-Id', session.get('company_id'))
         user_id = request.headers.get('X-User-Id', session.get('user_id'))
         
+        # Import datetime at the top of the function
+        from datetime import datetime
+        
         # Prepare configuration data
         config_data = {
             'name': data.get('name', 'Anna'),
@@ -1152,7 +1155,7 @@ def save_config():
                 'media': data.get('toolMedia', True)
             }),
             'is_active': True,
-            'updated_at': datetime.datetime.utcnow().isoformat()
+            'updated_at': datetime.utcnow().isoformat()
         }
         
         if company_id:
@@ -1186,7 +1189,7 @@ def save_config():
                 result = supabase.table('agent_config').update(config_data).eq('id', existing.data[0]['id']).execute()
             else:
                 # Insert new configuration
-                config_data['created_at'] = datetime.datetime.utcnow().isoformat()
+                config_data['created_at'] = datetime.utcnow().isoformat()
                 result = supabase.table('agent_config').insert(config_data).execute()
         
         # Reload the Anna agent with new configuration

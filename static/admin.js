@@ -1555,51 +1555,7 @@ function deleteActivityFromList(activityId) {
     }
 }
 
-// Global function for saving agent configuration
-window.saveAgentConfig = async function() {
-    try {
-        const config = {
-            name: document.getElementById('agentName').value || 'Anna',
-            model: document.getElementById('agentModel').value || 'gemini-2.0-flash',
-            description: document.getElementById('agentDescription').value || '',
-            instructions: document.getElementById('agentInstructions').value || '',
-            temperature: parseFloat(document.getElementById('agentTemperature').value) || 0.7,
-            max_tokens: parseInt(document.getElementById('agentMaxTokens').value) || 1000,
-            tools_enabled: {
-                routines: document.getElementById('toolRoutines')?.checked ?? true,
-                memories: document.getElementById('toolMemories')?.checked ?? true,
-                media: document.getElementById('toolMedia')?.checked ?? true
-            }
-        };
-
-        console.log('Saving agent config:', config);
-
-        const response = await fetch('/config/api/config', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(config)
-        });
-
-        const result = await response.json();
-        
-        if (result.success) {
-            // Show success message
-            showMessage('Configuração salva com sucesso! O agente será reinicializado.', 'success');
-            
-            // Reload page after 2 seconds to reinitialize agent
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
-        } else {
-            showMessage('Erro ao salvar configuração: ' + (result.error || 'Erro desconhecido'), 'error');
-        }
-    } catch (error) {
-        console.error('Error saving agent config:', error);
-        showMessage('Erro ao salvar configuração: ' + error.message, 'error');
-    }
-};
+// Note: saveAgentConfig function is now implemented directly in HTML template
 
 // Helper function to show messages
 function showMessage(message, type = 'info') {
