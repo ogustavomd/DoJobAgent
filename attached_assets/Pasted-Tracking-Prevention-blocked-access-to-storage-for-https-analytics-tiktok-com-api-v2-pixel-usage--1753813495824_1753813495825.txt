@@ -1,0 +1,274 @@
+Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/account#billing:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/account#billing:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/~:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/repls:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+/usage:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel.
+MindCraft:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+MindCraft:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'battery'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'layout-animations'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'navigation-override'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'oversized-images'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'publickey-credentials'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'speaker-selection'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'unoptimized-images'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'unsized-media'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Unrecognized feature: 'pointer-lock'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+stallwart.build.js:1 stallwart: failed ping 3
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+/cdn-cgi/image/width=1920,quality=80,format=auto/https://storage.googleapis.com/screenshot-production-us-central1/c8b7d1a6-6e5d-47f1-ac1f-0066cbd4c2fd/1b8392c1-b240-4032-9426-520d1295f4ba/xFUTuYr:1   Failed to load resource: the server responded with a status of 524 ()
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+stallwart.build.js:1 stallwart: failed ping 3
+stallwart.build.js:1 stallwart: failed ping 4
+stallwart.build.js:1 stallwart: failed ping 5
+stallwart.build.js:1 stallwart: session stalled
+DoJobAgent:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+5802-f8e6d9c4515a163b.js:1  WebSocket connection to 'wss://eval.picard.platform.replit.com/wsv2/v2.public.Q2dZSW44dWp4QVlTQmdpKzU2UEVCaUlHY0dsallYSmtNQUE2MHdFS0pHTTRZamRrTVdFMkxUWmxOV1F0TkRkbU1TMWhZekZtTFRBd05qWmpZbVEwWXpKbVpCSURibWw0R2hoeVpYQnNhWFF0Y21Wd2JDMW1hV3hsY3kxd2FXTmhjbVFpQ1UxcGJtUkRjbUZtZENvTlozVnRaR1ZwY205ek1ERXdNMEpVQ2hseVpYQnNhWFF0Y21Wd2JDMWliRzlqYTNNdGNHbGpZWEprRWhkeVpYQnNhWFF0Y21Wd2JDMXRaWFJoTFhCcFkyRnlaQm9lY21Wd2JHbDBMVzFoY21kaGNtbHVaUzFpYkc5amEzTXRjR2xqWVhKa1NnY0l2NXpERkJBQlVBQmFEMmx1ZEdWdWRGOXdaWEp6YjI1aGJIZ0FVaU1JQVJDQWdJQ0FJQmtBQUFBQUFBQVFRQ0VBQUFBQUFBQVFRQ2lBZ0lDQXlBRXdBbUFBYWhRSXY1ekRGQklOWjNWdFpHVnBjbTl6TURFd000SUJBaW9BbWdFS0NnZ3dMakF1TVRVMk5xQUJBUT09bfkS4l9nO7We1OSgzOflTEX4G2B2UuRkMok4W7z92cwC5PoRj-C53lyw5NMwsO7y3Kxo6w1SNp-fCiRVmqKzDw.Q2dad2NtOWtPak1pQ25KbGNHeHBkQzVqYjIwPQ' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED
+connect @ 5802-f8e6d9c4515a163b.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+DoJobAgent#anna_agent.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#anna_agent.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#anna_agent.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#anna_agent.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#app.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#app.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#app.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#app.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#supabase_tools.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#supabase_tools.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#supabase_tools.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+DoJobAgent#supabase_tools.py:1  Tracking Prevention blocked access to storage for https://analytics.tiktok.com/api/v2/pixel/act.
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+DoJobAgent:1 [DOM] Password field is not contained in a form: (More info: https://www.chromium.org/developers/design-documents/create-amazing-password-forms)
+DoJobAgent:1 [DOM] Password field is not contained in a form: (More info: https://www.chromium.org/developers/design-documents/create-amazing-password-forms)
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  If you do not provide children, you must specify an aria-label for accessibility
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+5802-f8e6d9c4515a163b.js:1  WebSocket connection to 'wss://eval.picard.platform.replit.com/wsv2/v2.public.Q2dZSW1mbWp4QVlTQmdpNGxhVEVCaUlHY0dsallYSmtNQUE2MUFFS0pHTTRZamRrTVdFMkxUWmxOV1F0TkRkbU1TMWhZekZtTFRBd05qWmpZbVEwWXpKbVpCSURibWw0R2hoeVpYQnNhWFF0Y21Wd2JDMW1hV3hsY3kxd2FXTmhjbVFpQ2tSdlNtOWlRV2RsYm5RcURXZDFiV1JsYVhKdmN6QXhNRE5DVkFvWmNtVndiR2wwTFhKbGNHd3RZbXh2WTJ0ekxYQnBZMkZ5WkJJWGNtVndiR2wwTFhKbGNHd3RiV1YwWVMxd2FXTmhjbVFhSG5KbGNHeHBkQzF0WVhKbllYSnBibVV0WW14dlkydHpMWEJwWTJGeVpFb0hDTCtjd3hRUUFWQUFXZzlwYm5SbGJuUmZjR1Z5YzI5dVlXeDRBRklqQ0FFUWdJQ0FnQ0FaQUFBQUFBQUFFRUFoQUFBQUFBQUFFRUFvZ0lDQWdNZ0JNQUpnQUdvVUNMK2N3eFFTRFdkMWJXUmxhWEp2Y3pBeE1ET0NBUUlxQUpvQkNnb0lNQzR3TGpFMU5qYWdBUUU9Uc5UWER4X-5mpZ-7WpiSnrNaqfU3XVlUntWk6oqFeCQT3CHLUamt6i7Af9PbkVwNriT7Sk0538962in70iElAQ.Q2dad2NtOWtPak1pQ25KbGNHeHBkQzVqYjIwPQ' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED
+connect @ 5802-f8e6d9c4515a163b.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+_app-424ade17f85111cf.js:18  `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+_app-424ade17f85111cf.js:18  Measure loop restarted more than 5 times
+push.21223.e2 @ _app-424ade17f85111cf.js:18
+framework-0ca1b51e9fd8bea3.js:1  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-0ca1b51e9fd8bea3.js:1
+workspace_iframe.html:32  Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+workspace_iframe.html:32  Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32  Unrecognized feature: 'battery'.
+workspace_iframe.html:32  Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32  Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32  Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32  Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32  Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32  Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32  Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32  Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32  Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32  Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32  Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32  Allow attribute will take precedence over 'allowpaymentrequest'.
+Console.js:61 SW registration failed:  TypeError: Failed to register a ServiceWorker for scope ('https://c8b7d1a6-6e5d-47f1-ac1f-0066cbd4c2fd-00-1o86kztfffbjy.picard.replit.dev/static/') with script ('https://c8b7d1a6-6e5d-47f1-ac1f-0066cbd4c2fd-00-1o86kztfffbjy.picard.replit.dev/static/sw.js'): A bad HTTP response code (404) was received when fetching the script.
+[NOVO] Explique os erros do Console usando o Copilot no Edge: clique em
+         
+         para explicar um erro.
+        Saiba mais
