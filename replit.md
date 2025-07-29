@@ -34,6 +34,9 @@ Preferred communication style: Simple, everyday language.
   - `anna_routine_media`: Media files (images/videos) associated with routines
   - `chat_sessions`: User conversation sessions
   - `messages`: Individual chat messages
+  - `agents`: Agent configurations and personality settings
+  - `clients`: Client conversation management with channel tracking
+  - `users`: System user management with plans and permissions
 - **Data Access**: Direct Supabase client integration with custom Python tools
 
 ## Key Components
@@ -62,6 +65,10 @@ Preferred communication style: Simple, everyday language.
   - `/admin/api/*`: RESTful API endpoints for CRUD operations
   - `/config`: Agent configuration interface
   - `/config/api/*`: Configuration management endpoints
+  - `/clients`: Client management interface with conversation control
+  - `/users`: User management interface with plans and permissions
+  - `/api/clients/*`: Client management API endpoints
+  - `/api/users/*`: User management API endpoints
 - **Session Management**: Maintains conversation continuity
 
 ### 4. Chat Interface (`static/chat.js`, `templates/index.html`)
@@ -155,6 +162,10 @@ The application is designed to be a conversational AI that maintains character c
 - **WhatsApp Configuration Interface**: Complete UI for setting up Evolution API connection with status monitoring and testing capabilities
 - **Docker Compose Setup**: Pre-configured Docker environment for Evolution API with PostgreSQL and Redis dependencies
 - **WhatsApp Admin Navigation**: Added WhatsApp configuration button to admin interface header for easy access
+- **Client Management System**: Complete interface for managing client conversations with channel tracking (WhatsApp/Instagram/Chat)
+- **User Management System**: Full user administration with plans (Gratuito/Básico/Premium/Enterprise) and permissions
+- **Active/Inactive Control**: Ability to enable/disable users and clients to control Anna's responses
+- **Multi-Channel Support**: Unified management for WhatsApp, Instagram, Chat, and Web channels
 
 ### Current Database State
 - **Sample Data**: Populated with realistic routine activities, media files, and conversation history

@@ -1198,6 +1198,154 @@ def save_config():
         logging.error(f"Error saving config: {e}")
         return jsonify({'error': str(e)}), 500
 
+# Client and User Management Routes
+@app.route('/clients')
+def clients_page():
+    """Clients management interface"""
+    return render_template('clients.html')
+
+@app.route('/users')
+def users_page():
+    """Users management interface"""
+    return render_template('users.html')
+
+# API Routes for Clients
+@app.route('/api/clients', methods=['GET'])
+def get_clients():
+    """Get all clients"""
+    try:
+        from supabase_tools import supabase
+        result = supabase.table('clients').select("*").order('ultima_conversa', desc=True).execute()
+        
+        return jsonify({
+            'success': True,
+            'clients': result.data
+        })
+    except Exception as e:
+        logging.error(f"Error getting clients: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/clients/<client_id>/toggle-status', methods=['POST'])
+def toggle_client_status(client_id):
+    """Toggle client active status"""
+    try:
+        data = request.get_json()
+        ativo = data.get('ativo', True)
+        
+        from supabase_tools import supabase
+        from datetime import datetime
+        
+        result = supabase.table('clients').update({
+            'ativo': ativo,
+            'updated_at': datetime.utcnow().isoformat()
+        }).eq('id', client_id).execute()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        logging.error(f"Error toggling client status: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# API Routes for Users
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    """Get all users"""
+    try:
+        from supabase_tools import supabase
+        result = supabase.table('users').select("*").order('data_cadastro', desc=True).execute()
+        
+        return jsonify({
+            'success': True,
+            'users': result.data
+        })
+    except Exception as e:
+        logging.error(f"Error getting users: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users', methods=['POST'])
+def create_user():
+    """Create new user"""
+    try:
+        data = request.get_json()
+        from supabase_tools import supabase
+        from datetime import datetime
+        
+        # Validate required fields
+        required_fields = ['nome', 'telefone', 'plano', 'canal']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'success': False, 'error': f'Campo obrigatório: {field}'}), 400
+        
+        user_data = {
+            'nome': data['nome'],
+            'telefone': data['telefone'],
+            'email': data.get('email'),
+            'canal': data['canal'],
+            'plano': data['plano'],
+            'ativo': data.get('ativo', True),
+            'data_cadastro': datetime.utcnow().isoformat()
+        }
+        
+        result = supabase.table('users').insert(user_data).execute()
+        return jsonify({'success': True, 'user': result.data[0]})
+    except Exception as e:
+        logging.error(f"Error creating user: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/<user_id>', methods=['PUT'])
+def update_user(user_id):
+    """Update user"""
+    try:
+        data = request.get_json()
+        from supabase_tools import supabase
+        from datetime import datetime
+        
+        user_data = {
+            'nome': data['nome'],
+            'telefone': data['telefone'],
+            'email': data.get('email'),
+            'canal': data['canal'],
+            'plano': data['plano'],
+            'ativo': data.get('ativo', True),
+            'updated_at': datetime.utcnow().isoformat()
+        }
+        
+        result = supabase.table('users').update(user_data).eq('id', user_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        logging.error(f"Error updating user: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/<user_id>/toggle-status', methods=['POST'])
+def toggle_user_status(user_id):
+    """Toggle user active status"""
+    try:
+        data = request.get_json()
+        ativo = data.get('ativo', True)
+        
+        from supabase_tools import supabase
+        from datetime import datetime
+        
+        result = supabase.table('users').update({
+            'ativo': ativo,
+            'updated_at': datetime.utcnow().isoformat()
+        }).eq('id', user_id).execute()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        logging.error(f"Error toggling user status: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    """Delete user"""
+    try:
+        from supabase_tools import supabase
+        result = supabase.table('users').delete().eq('id', user_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        logging.error(f"Error deleting user: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # WhatsApp Integration Routes
 @app.route('/whatsapp/config')
 def whatsapp_config():

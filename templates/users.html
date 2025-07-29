@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários - Anna</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        
+        .main-container {
+            padding: 20px;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .stats-row {
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #667eea;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .users-table {
+            background: #1e1e1e;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .table-dark {
+            --bs-table-bg: #1e1e1e;
+        }
+        
+        .btn-status {
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.85rem;
+        }
+        
+        .status-ativo {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        
+        .status-inativo {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .plano-badge {
+            border-radius: 15px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .plano-gratuito {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .plano-basico {
+            background-color: #0d6efd;
+            color: white;
+        }
+        
+        .plano-premium {
+            background-color: #fd7e14;
+            color: white;
+        }
+        
+        .plano-enterprise {
+            background-color: #6f42c1;
+            color: white;
+        }
+        
+        .canal-badge {
+            border-radius: 15px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .canal-whatsapp {
+            background-color: #25d366;
+            color: white;
+        }
+        
+        .canal-instagram {
+            background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+            color: white;
+        }
+        
+        .canal-chat {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .canal-web {
+            background-color: #198754;
+            color: white;
+        }
+        
+        .filters-section {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="header-section">
+            <h1><i class="bi bi-person-gear me-2"></i>Gerenciar Usuários</h1>
+            <p class="mb-0">Controle de usuários, planos e permissões do sistema</p>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <nav class="d-flex gap-2">
+                    <a href="/admin" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Voltar ao Admin
+                    </a>
+                    <a href="/clients" class="btn btn-outline-primary">
+                        <i class="bi bi-people me-1"></i>Gerenciar Clientes
+                    </a>
+                    <button class="btn btn-success" onclick="openAddUserModal()">
+                        <i class="bi bi-plus-circle me-1"></i>Novo Usuário
+                    </button>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="row stats-row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">-</div>
+                    <div>Total de Usuários</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number" id="activeUsers">-</div>
+                    <div>Usuários Ativos</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number" id="premiumUsers">-</div>
+                    <div>Planos Premium</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number" id="whatsappUsers">-</div>
+                    <div>Via WhatsApp</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="row">
+                <div class="col-md-2">
+                    <label class="form-label">Plano</label>
+                    <select class="form-select" id="filterPlano">
+                        <option value="">Todos os Planos</option>
+                        <option value="gratuito">Gratuito</option>
+                        <option value="basico">Básico</option>
+                        <option value="premium">Premium</option>
+                        <option value="enterprise">Enterprise</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Canal</label>
+                    <select class="form-select" id="filterCanal">
+                        <option value="">Todos os Canais</option>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="chat">Chat</option>
+                        <option value="web">Web</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="filterStatus">
+                        <option value="">Todos</option>
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Buscar</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Nome, telefone ou email...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary w-100" onclick="loadUsers()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Users Table -->
+        <div class="users-table">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Contato</th>
+                            <th>Plano</th>
+                            <th>Canal</th>
+                            <th>Status</th>
+                            <th>Data Cadastro</th>
+                            <th>Último Acesso</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalTitle">Novo Usuário</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <input type="hidden" id="userId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nome *</label>
+                                <input type="text" class="form-control" id="userName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Telefone *</label>
+                                <input type="tel" class="form-control" id="userPhone" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="userEmail">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Plano *</label>
+                                <select class="form-select" id="userPlan" required>
+                                    <option value="gratuito">Gratuito</option>
+                                    <option value="basico">Básico</option>
+                                    <option value="premium">Premium</option>
+                                    <option value="enterprise">Enterprise</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Canal *</label>
+                                <select class="form-select" id="userChannel" required>
+                                    <option value="web">Web</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="chat">Chat</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="userActive" checked>
+                            <label class="form-check-label" for="userActive">
+                                Usuário ativo
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUser()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let users = [];
+        let userModal;
+        
+        // Initialize modal
+        document.addEventListener('DOMContentLoaded', function() {
+            userModal = new bootstrap.Modal(document.getElementById('userModal'));
+            loadUsers();
+        });
+        
+        // Load users data
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    users = data.users;
+                    renderUsers();
+                    updateStats();
+                } else {
+                    console.error('Error loading users:', data.error);
+                    showError('Erro ao carregar usuários');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro ao conectar com o servidor');
+            }
+        }
+        
+        // Render users table
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            const filterPlano = document.getElementById('filterPlano').value;
+            const filterCanal = document.getElementById('filterCanal').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filteredUsers = users.filter(user => {
+                const matchesPlano = !filterPlano || user.plano === filterPlano;
+                const matchesCanal = !filterCanal || user.canal === filterCanal;
+                const matchesStatus = !filterStatus || user.ativo.toString() === filterStatus;
+                const matchesSearch = !searchTerm || 
+                    user.nome.toLowerCase().includes(searchTerm) || 
+                    user.telefone.includes(searchTerm) ||
+                    (user.email && user.email.toLowerCase().includes(searchTerm));
+                
+                return matchesPlano && matchesCanal && matchesStatus && matchesSearch;
+            });
+            
+            if (filteredUsers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <p class="text-muted mb-0">Nenhum usuário encontrado</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = filteredUsers.map(user => `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                <i class="bi bi-person text-white"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">${user.nome}</div>
+                                <small class="text-muted">${user.email || 'Sem email'}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <code>${user.telefone}</code>
+                    </td>
+                    <td>
+                        <span class="plano-badge plano-${user.plano}">
+                            ${getPlanoIcon(user.plano)} ${user.plano.toUpperCase()}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="canal-badge canal-${user.canal}">
+                            ${getCanalIcon(user.canal)} ${user.canal.toUpperCase()}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-status ${user.ativo ? 'status-ativo' : 'status-inativo'}" 
+                                onclick="toggleUserStatus('${user.id}', ${user.ativo})">
+                            <i class="bi bi-${user.ativo ? 'check-circle' : 'x-circle'} me-1"></i>
+                            ${user.ativo ? 'Ativo' : 'Inativo'}
+                        </button>
+                    </td>
+                    <td>${formatDate(user.data_cadastro)}</td>
+                    <td>${formatDate(user.ultimo_acesso) || 'Nunca'}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="editUser('${user.id}')" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteUser('${user.id}')" title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const total = users.length;
+            const active = users.filter(u => u.ativo).length;
+            const premium = users.filter(u => u.plano === 'premium' || u.plano === 'enterprise').length;
+            const whatsapp = users.filter(u => u.canal === 'whatsapp').length;
+            
+            document.getElementById('totalUsers').textContent = total;
+            document.getElementById('activeUsers').textContent = active;
+            document.getElementById('premiumUsers').textContent = premium;
+            document.getElementById('whatsappUsers').textContent = whatsapp;
+        }
+        
+        // Open add user modal
+        function openAddUserModal() {
+            document.getElementById('userModalTitle').textContent = 'Novo Usuário';
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('userActive').checked = true;
+            userModal.show();
+        }
+        
+        // Edit user
+        function editUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            
+            document.getElementById('userModalTitle').textContent = 'Editar Usuário';
+            document.getElementById('userId').value = user.id;
+            document.getElementById('userName').value = user.nome;
+            document.getElementById('userPhone').value = user.telefone;
+            document.getElementById('userEmail').value = user.email || '';
+            document.getElementById('userPlan').value = user.plano;
+            document.getElementById('userChannel').value = user.canal;
+            document.getElementById('userActive').checked = user.ativo;
+            
+            userModal.show();
+        }
+        
+        // Save user
+        async function saveUser() {
+            const form = document.getElementById('userForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const userId = document.getElementById('userId').value;
+            const userData = {
+                nome: document.getElementById('userName').value,
+                telefone: document.getElementById('userPhone').value,
+                email: document.getElementById('userEmail').value || null,
+                plano: document.getElementById('userPlan').value,
+                canal: document.getElementById('userChannel').value,
+                ativo: document.getElementById('userActive').checked
+            };
+            
+            try {
+                const url = userId ? `/api/users/${userId}` : '/api/users';
+                const method = userId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    userModal.hide();
+                    loadUsers();
+                    showSuccess(`Usuário ${userId ? 'atualizado' : 'criado'} com sucesso`);
+                } else {
+                    showError(data.error || 'Erro ao salvar usuário');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro ao conectar com o servidor');
+            }
+        }
+        
+        // Toggle user status
+        async function toggleUserStatus(userId, currentStatus) {
+            try {
+                const response = await fetch(`/api/users/${userId}/toggle-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ativo: !currentStatus })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    loadUsers();
+                    showSuccess(`Usuário ${!currentStatus ? 'ativado' : 'inativado'} com sucesso`);
+                } else {
+                    showError('Erro ao alterar status do usuário');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro ao conectar com o servidor');
+            }
+        }
+        
+        // Delete user
+        async function deleteUser(userId) {
+            if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+            
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    loadUsers();
+                    showSuccess('Usuário excluído com sucesso');
+                } else {
+                    showError('Erro ao excluir usuário');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro ao conectar com o servidor');
+            }
+        }
+        
+        // Helper functions
+        function getPlanoIcon(plano) {
+            const icons = {
+                gratuito: '<i class="bi bi-gift"></i>',
+                basico: '<i class="bi bi-star"></i>',
+                premium: '<i class="bi bi-star-fill"></i>',
+                enterprise: '<i class="bi bi-building"></i>'
+            };
+            return icons[plano] || '<i class="bi bi-person"></i>';
+        }
+        
+        function getCanalIcon(canal) {
+            const icons = {
+                whatsapp: '<i class="bi bi-whatsapp"></i>',
+                instagram: '<i class="bi bi-instagram"></i>',
+                chat: '<i class="bi bi-chat-dots"></i>',
+                web: '<i class="bi bi-globe"></i>'
+            };
+            return icons[canal] || '<i class="bi bi-chat"></i>';
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return null;
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function showSuccess(message) {
+            alert(message);
+        }
+        
+        function showError(message) {
+            alert(message);
+        }
+        
+        // Event listeners
+        document.getElementById('filterPlano').addEventListener('change', renderUsers);
+        document.getElementById('filterCanal').addEventListener('change', renderUsers);
+        document.getElementById('filterStatus').addEventListener('change', renderUsers);
+        document.getElementById('searchInput').addEventListener('input', renderUsers);
+    </script>
+</body>
+</html>
