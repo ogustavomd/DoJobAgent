@@ -225,9 +225,9 @@ def config():
 def admin_get_activities():
     """Get all activities for calendar display from PostgreSQL"""
     try:
-        from models import AnnaRoutine
+        from models import Routine
         
-        routines = db.session.query(AnnaRoutine).order_by(AnnaRoutine.date.asc()).all()
+        routines = db.session.query(Routine).order_by(Routine.date.asc()).all()
         
         # Format for FullCalendar
         events = []
@@ -262,9 +262,9 @@ def admin_get_activities():
 def admin_get_activity(activity_id):
     """Get specific activity details from PostgreSQL"""
     try:
-        from models import AnnaRoutine
+        from models import Routine
         
-        routine = db.session.query(AnnaRoutine).filter(AnnaRoutine.id == activity_id).first()
+        routine = db.session.query(Routine).filter(Routine.id == activity_id).first()
         
         if not routine:
             return jsonify({'error': 'Activity not found'}), 404
@@ -293,15 +293,15 @@ def admin_get_activity(activity_id):
 def admin_get_activities_by_date(date):
     """Get activities for specific date from PostgreSQL"""
     try:
-        from models import AnnaRoutine
+        from models import Routine
         from datetime import datetime
         
         # Convert date string to date object for database query
         date_obj = datetime.strptime(date, '%Y-%m-%d').date()
         
-        routines = db.session.query(AnnaRoutine).filter(
-            AnnaRoutine.date == date_obj
-        ).order_by(AnnaRoutine.time_start.asc()).all()
+        routines = db.session.query(Routine).filter(
+            Routine.date == date_obj
+        ).order_by(Routine.time_start.asc()).all()
         
         activities = []
         for routine in routines:
@@ -329,7 +329,7 @@ def admin_get_activities_by_date(date):
 def admin_get_activities_list():
     """Get all activities for list view with filtering support"""
     try:
-        from models import AnnaRoutine
+        from models import Routine
         from datetime import datetime
         from sqlalchemy import func
         
@@ -341,32 +341,32 @@ def admin_get_activities_list():
         search_term = request.args.get('search')
         
         # Start with base query
-        query = db.session.query(AnnaRoutine)
+        query = db.session.query(Routine)
         
         # Apply filters
         if category_filter:
-            query = query.filter(AnnaRoutine.category == category_filter)
+            query = query.filter(Routine.category == category_filter)
         
         if status_filter:
-            query = query.filter(AnnaRoutine.status == status_filter)
+            query = query.filter(Routine.status == status_filter)
             
         if date_from:
             date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
-            query = query.filter(AnnaRoutine.date >= date_from_obj)
+            query = query.filter(Routine.date >= date_from_obj)
             
         if date_to:
             date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
-            query = query.filter(AnnaRoutine.date <= date_to_obj)
+            query = query.filter(Routine.date <= date_to_obj)
             
         if search_term:
             query = query.filter(
-                func.lower(AnnaRoutine.activity).contains(search_term.lower()) |
-                func.lower(AnnaRoutine.description).contains(search_term.lower()) |
-                func.lower(AnnaRoutine.location).contains(search_term.lower())
+                func.lower(Routine.activity).contains(search_term.lower()) |
+                func.lower(Routine.description).contains(search_term.lower()) |
+                func.lower(Routine.location).contains(search_term.lower())
             )
         
         # Order by date and time
-        routines = query.order_by(AnnaRoutine.date.desc(), AnnaRoutine.time_start.asc()).all()
+        routines = query.order_by(Routine.date.desc(), Routine.time_start.asc()).all()
         
         # Group by date
         activities_by_date = {}
@@ -401,15 +401,15 @@ def admin_get_activities_list():
 def admin_get_filter_options():
     """Get available filter options for list view"""
     try:
-        from models import AnnaRoutine
+        from models import Routine
         from sqlalchemy import distinct
         
-        categories = db.session.query(distinct(AnnaRoutine.category)).filter(
-            AnnaRoutine.category.isnot(None)
+        categories = db.session.query(distinct(Routine.category)).filter(
+            Routine.category.isnot(None)
         ).all()
         
-        statuses = db.session.query(distinct(AnnaRoutine.status)).filter(
-            AnnaRoutine.status.isnot(None)
+        statuses = db.session.query(distinct(Routine.status)).filter(
+            Routine.status.isnot(None)
         ).all()
         
         return jsonify({
@@ -435,7 +435,7 @@ def admin_get_activity_media(activity_id):
 def admin_create_activity():
     """Create new activity in PostgreSQL"""
     try:
-        from models import AnnaRoutine
+        from models import Routine
         from datetime import datetime
         
         # Get JSON data from request
@@ -458,31 +458,33 @@ def admin_create_activity():
         time_start_obj = datetime.strptime(data.get('time_start', '00:00'), '%H:%M').time() if data.get('time_start') else None
         time_end_obj = datetime.strptime(data.get('time_end', '23:59'), '%H:%M').time() if data.get('time_end') else None
         
-        # Create new routine with proper data types
-        routine = AnnaRoutine()
-        routine.date = date_obj
-        routine.time_start = time_start_obj
-        routine.time_end = time_end_obj
-        routine.activity = data['activity']
-        routine.category = data['category']
-        routine.location = data.get('location', '')
-        routine.description = data.get('description', '')
-        routine.status = 'upcoming'
-        routine.has_images = False
-        routine.has_videos = False
+        # Use dual sync system for PostgreSQL + Supabase
+        from dual_database_sync import dual_sync
         
-        db.session.add(routine)
-        db.session.commit()
+        routine_data = {
+            'date': date_obj,
+            'time_start': time_start_obj,
+            'time_end': time_end_obj,
+            'activity': data['activity'],
+            'category': data['category'],
+            'location': data.get('location', ''),
+            'description': data.get('description', ''),
+            'status': 'upcoming',
+            'has_images': False,
+            'has_videos': False
+        }
         
-        activity_id = routine.id
-        logging.info(f"Activity created with ID: {activity_id}")
+        activity_id = dual_sync.sync_routine(routine_data)
         
-        # Return success response (media upload can be implemented later if needed)
-        return jsonify({
-            'success': True, 
-            'activity_id': str(activity_id),  # Convert UUID to string
-            'message': 'Atividade criada com sucesso!'
-        })
+        if activity_id:
+            logging.info(f"Activity created with ID: {activity_id}")
+            return jsonify({
+                'success': True, 
+                'activity_id': activity_id,
+                'message': 'Atividade criada com sucesso em ambos os bancos!'
+            })
+        else:
+            return jsonify({'error': 'Falha ao criar atividade'}), 500
         
     except Exception as e:
         logging.error(f"Error creating activity: {e}")
@@ -493,7 +495,7 @@ def admin_create_activity():
 def admin_update_activity(activity_id):
     """Update existing activity in PostgreSQL"""
     try:
-        from models import AnnaRoutine
+        from models import Routine
         from datetime import datetime
         
         # Get JSON data from request
@@ -504,7 +506,7 @@ def admin_update_activity(activity_id):
         logging.info(f"Updating activity {activity_id} with data: {data}")
         
         # Find the activity
-        routine = db.session.query(AnnaRoutine).filter(AnnaRoutine.id == activity_id).first()
+        routine = db.session.query(Routine).filter(Routine.id == activity_id).first()
         
         if not routine:
             return jsonify({'error': 'Activity not found'}), 404
@@ -545,22 +547,21 @@ def admin_update_activity(activity_id):
 def admin_delete_activity(activity_id):
     """Delete activity from PostgreSQL"""
     try:
-        from models import AnnaRoutine
+        from models import Routine
         
-        # Find the activity
-        routine = db.session.query(AnnaRoutine).filter(AnnaRoutine.id == activity_id).first()
+        # Use dual sync system for delete
+        from dual_database_sync import dual_sync
         
-        if not routine:
-            return jsonify({'error': 'Activity not found'}), 404
+        success = dual_sync.sync_routine_delete(activity_id)
         
-        db.session.delete(routine)
-        db.session.commit()
-        logging.info(f"Activity {activity_id} deleted successfully")
-        
-        return jsonify({
-            'success': True, 
-            'message': 'Atividade excluída com sucesso!'
-        })
+        if success:
+            logging.info(f"Activity {activity_id} deleted successfully from both databases")
+            return jsonify({
+                'success': True, 
+                'message': 'Atividade excluída com sucesso de ambos os bancos!'
+            })
+        else:
+            return jsonify({'error': 'Falha ao excluir atividade'}), 500
         
     except Exception as e:
         logging.error(f"Error deleting activity: {e}")
@@ -1043,12 +1044,12 @@ def ai_create_suggested_activity():
         suggestion = request.get_json()
         
         # Create activity using database tools
-        from models import AnnaRoutine
+        from models import Routine
         from datetime import datetime
         import uuid
         
         # Convert suggestion to activity format
-        new_activity = AnnaRoutine()
+        new_activity = Routine()
         new_activity.activity = suggestion['activity']
         new_activity.category = suggestion['category']
         new_activity.date = datetime.strptime(suggestion['date'], '%Y-%m-%d').date()

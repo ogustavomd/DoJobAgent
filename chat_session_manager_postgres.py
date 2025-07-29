@@ -1,6 +1,6 @@
 """
-Chat Session Manager - Sistema de gerenciamento de sessões de chat com PostgreSQL
-Responsável por criar/gerenciar sessões e salvar mensagens automaticamente
+Chat Session Manager - Sistema de gerenciamento de sessões de chat com PostgreSQL + Supabase
+Responsável por criar/gerenciar sessões e salvar mensagens automaticamente em ambos os bancos
 """
 
 import os
@@ -9,6 +9,7 @@ import psycopg2
 from datetime import datetime
 from typing import Optional, Dict, List, Any, Generator
 from contextlib import contextmanager
+from dual_database_sync import dual_sync
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -44,38 +45,19 @@ class ChatSessionManager:
     def get_or_create_session(self, contact_phone: str, contact_name: Optional[str] = None, 
                              channel: str = 'chat', contact_avatar: Optional[str] = None) -> str:
         """
-        Busca uma sessão ativa ou cria uma nova para o contato
+        Busca uma sessão ativa ou cria uma nova para o contato usando sincronização dual
         """
         try:
-            with self.get_db_connection() as conn:
-                cursor = conn.cursor()
-                
-                # Primeiro, busca uma sessão ativa existente
-                cursor.execute("""
-                    SELECT id FROM chat_sessions 
-                    WHERE contact_phone = %s AND channel = %s AND status = %s 
-                    LIMIT 1
-                """, (contact_phone, channel, 'active'))
-                
-                result = cursor.fetchone()
-                
-                if result:
-                    session_id = str(result[0])
-                    logger.info(f"Sessão existente encontrada: {session_id} para {contact_phone} ({channel})")
-                    return session_id
-                
-                # Se não existe, cria uma nova sessão
-                cursor.execute("""
-                    INSERT INTO chat_sessions (contact_phone, contact_name, contact_avatar, channel, status)
-                    VALUES (%s, %s, %s, %s, %s)
-                    RETURNING id
-                """, (contact_phone, contact_name or contact_phone, contact_avatar, channel, 'active'))
-                
-                session_id = str(cursor.fetchone()[0])
-                conn.commit()
-                
-                logger.info(f"Nova sessão criada: {session_id} para {contact_phone} ({channel})")
-                return session_id
+            # Use dual sync system
+            session_data = {
+                'contact_phone': contact_phone,
+                'contact_name': contact_name,
+                'contact_avatar': contact_avatar,
+                'channel': channel
+            }
+            
+            session_id = dual_sync.sync_chat_session(session_data)
+            return session_id
                 
         except Exception as e:
             logger.error(f"Erro ao buscar/criar sessão: {e}")
