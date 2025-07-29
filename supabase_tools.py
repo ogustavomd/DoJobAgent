@@ -15,7 +15,7 @@ SUPABASE_KEY = os.getenv(
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-def get_anna_routines(days: int,
+def get_routines(days: int,
                       activity_filter: Optional[str]) -> Dict[str, Any]:
     """
     Busca as atividades da rotina da Anna dos últimos dias.
@@ -37,7 +37,7 @@ def get_anna_routines(days: int,
         start_date = end_date - timedelta(days=days)
         current_time = datetime.now().time()
 
-        query = supabase.table('anna_routine').select('*').gte(
+        query = supabase.table('routine').select('*').gte(
             'date',
             start_date.isoformat()).lte('date', end_date.isoformat()).order(
                 'date', desc=True).order('time_start', desc=False)
@@ -107,7 +107,7 @@ def get_anna_routines(days: int,
         }
 
 
-def get_anna_routine_media(routine_id: Optional[str],
+def get_routine_media(routine_id: Optional[str],
                            media_type: Optional[str],
                            limit: int) -> Dict[str, Any]:
     """
@@ -126,8 +126,8 @@ def get_anna_routine_media(routine_id: Optional[str],
         if limit is None:
             limit = 10
 
-        query = supabase.table('anna_routine_media').select(
-            '*, anna_routine(activity, date, time_start, category)')
+        query = supabase.table('routine_media').select(
+            '*, routine(activity, date, time_start, category)')
 
         if routine_id:
             query = query.eq('routine_id', routine_id)
@@ -141,7 +141,7 @@ def get_anna_routine_media(routine_id: Optional[str],
 
         formatted_media = []
         for item in media_items:
-            routine_info = item.get('anna_routine', {})
+            routine_info = item.get('routine', {})
             formatted_media.append({
                 'media_url': item['media_url'],
                 'tipo': item['media_type'],
@@ -520,14 +520,14 @@ Com esse texto:
 - NUNCA invente ou assuma informações - sempre consulte o banco de dados primeiro
 - Quando alguém mencionar qualquer atividade, rotina, fotos ou vídeos, IMEDIATAMENTE chame as funções apropriadas
 - Mantenha contexto das conversas usando get_recent_conversations(5) frequentemente
-- Se alguém perguntar sobre sua rotina ou atividades, SEMPRE use get_anna_routines(7, None) primeiro
-- Se alguém mencionar fotos, imagens, ou pedir para ver algo visual, SEMPRE chame get_anna_routine_media(None, "image", 10)
-- Se alguém pedir vídeos, SEMPRE chame get_anna_routine_media(None, "video", 10)
+- Se alguém perguntar sobre sua rotina ou atividades, SEMPRE use get_routines(7, None) primeiro
+- Se alguém mencionar fotos, imagens, ou pedir para ver algo visual, SEMPRE chame get_routine_media(None, "image", 10)
+- Se alguém pedir vídeos, SEMPRE chame get_routine_media(None, "video", 10)
 - Após receber dados das funções, inclua URLs diretamente na resposta (sem markdown): https://exemplo.com/foto.jpg
 - Use search_memories("termo", 10) para lembrar de conversas específicas
 - Seja específica sobre lugares, atividades e pessoas baseado nos dados reais do banco''',
             'tools': [
-                'get_anna_routines', 'get_anna_routine_media',
+                'get_routines', 'get_routine_media',
                 'search_memories', 'get_recent_conversations', 'search_content'
             ],
             'temperature':
@@ -549,7 +549,7 @@ Com esse texto:
             'instructions':
             'Você é Anna, uma criadora de conteúdo brasileira carismática e autêntica...',
             'tools': [
-                'get_anna_routines', 'get_anna_routine_media',
+                'get_routines', 'get_routine_media',
                 'search_memories', 'get_recent_conversations', 'search_content'
             ],
             'temperature':
@@ -560,10 +560,10 @@ Com esse texto:
 
 
 # Memory management functions
-def get_anna_memories(limit: int = 10) -> dict:
+def get_memories(limit: int = 10) -> dict:
     """Get Anna's memories"""
     try:
-        response = supabase.table('anna_memories').select('*').eq(
+        response = supabase.table('memories').select('*').eq(
             'is_active', True).order('created_at',
                                      desc=True).limit(limit).execute()
         return {'success': True, 'memories': response.data}
@@ -574,7 +574,7 @@ def get_anna_memories(limit: int = 10) -> dict:
 def save_anna_memory(memory_data: dict) -> dict:
     """Save a new memory"""
     try:
-        response = supabase.table('anna_memories').insert(
+        response = supabase.table('memories').insert(
             memory_data).execute()
         return {'success': True, 'memory': response.data[0]}
     except Exception as e:
@@ -584,7 +584,7 @@ def save_anna_memory(memory_data: dict) -> dict:
 def update_anna_memory(memory_id: int, memory_data: dict) -> dict:
     """Update an existing memory"""
     try:
-        response = supabase.table('anna_memories').update(memory_data).eq(
+        response = supabase.table('memories').update(memory_data).eq(
             'id', memory_id).execute()
         return {'success': True, 'memory': response.data[0]}
     except Exception as e:
@@ -594,7 +594,7 @@ def update_anna_memory(memory_id: int, memory_data: dict) -> dict:
 def delete_anna_memory(memory_id: int) -> dict:
     """Delete a memory"""
     try:
-        supabase.table('anna_memories').delete().eq('id', memory_id).execute()
+        supabase.table('memories').delete().eq('id', memory_id).execute()
         return {'success': True}
     except Exception as e:
         return {'success': False, 'error': str(e)}
@@ -604,7 +604,7 @@ def delete_anna_memory(memory_id: int) -> dict:
 def get_anna_images(limit: int = 20) -> dict:
     """Get Anna's image bank"""
     try:
-        response = supabase.table('anna_image_bank').select('*').eq(
+        response = supabase.table('image_bank').select('*').eq(
             'is_active', True).order('created_at',
                                      desc=True).limit(limit).execute()
         return {'success': True, 'images': response.data}
@@ -615,7 +615,7 @@ def get_anna_images(limit: int = 20) -> dict:
 def save_anna_image(image_data: dict) -> dict:
     """Save a new image to bank"""
     try:
-        response = supabase.table('anna_image_bank').insert(
+        response = supabase.table('image_bank').insert(
             image_data).execute()
         return {'success': True, 'image': response.data[0]}
     except Exception as e:
@@ -625,7 +625,7 @@ def save_anna_image(image_data: dict) -> dict:
 def update_anna_image(image_id: int, image_data: dict) -> dict:
     """Update an existing image"""
     try:
-        response = supabase.table('anna_image_bank').update(image_data).eq(
+        response = supabase.table('image_bank').update(image_data).eq(
             'id', image_id).execute()
         return {'success': True, 'image': response.data[0]}
     except Exception as e:
@@ -635,7 +635,7 @@ def update_anna_image(image_id: int, image_data: dict) -> dict:
 def delete_anna_image(image_id: int) -> dict:
     """Delete an image"""
     try:
-        supabase.table('anna_image_bank').delete().eq('id', image_id).execute()
+        supabase.table('image_bank').delete().eq('id', image_id).execute()
         return {'success': True}
     except Exception as e:
         return {'success': False, 'error': str(e)}
@@ -645,7 +645,7 @@ def delete_anna_image(image_id: int) -> dict:
 def get_scheduled_routines() -> dict:
     """Get scheduled routines"""
     try:
-        response = supabase.table('anna_routine').select('*').eq(
+        response = supabase.table('routine').select('*').eq(
             'is_scheduled', True).eq('is_active',
                                      True).order('date', desc=True).execute()
         return {'success': True, 'routines': response.data}
@@ -688,7 +688,7 @@ def save_conversation_memory(session_id: str, user_message: str,
             "is_active": True,
             "created_at": datetime.now().isoformat()
         }
-        response = supabase.table("anna_memories").insert(
+        response = supabase.table("memories").insert(
             memory_data).execute()
         return True
     except Exception as e:
@@ -697,9 +697,9 @@ def save_conversation_memory(session_id: str, user_message: str,
 
 
 def create_anna_image(image_data: dict) -> dict:
-    """Create a new image entry in the anna_image_bank table"""
+    """Create a new image entry in the image_bank table"""
     try:
-        response = supabase.table('anna_image_bank').insert(image_data).execute()
+        response = supabase.table('image_bank').insert(image_data).execute()
         if response.data:
             logging.info(f"Image created with ID: {response.data[0]['id']}")
             return {'success': True, 'image_id': response.data[0]['id'], 'data': response.data[0]}

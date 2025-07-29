@@ -172,6 +172,9 @@ The application is designed to be a conversational AI that maintains character c
 - **Automatic Session Creation**: All contacts are registered automatically when they interact via any channel (WhatsApp, Instagram, Chat, Web)
 - **Message Storage**: All sent and received messages are saved with proper session linking and timestamps
 - **Interface Simplification**: Removed WhatsApp, Clientes, and Usuários buttons from activity management interface per user request
+- **Table Name Cleanup Complete**: Removed "anna_" prefix from all database tables (anna_routine → routine, anna_routine_media → routine_media, anna_memories → memories)
+- **Database Schema Updated**: Fixed UUID compatibility issues and foreign key relationships between routine and routine_media tables
+- **SQLAlchemy Models Updated**: Updated all model classes to match new table names with proper UUID types and relationships
 
 ### Current Database State
 - **Sample Data**: Populated with realistic routine activities, media files, and conversation history
