@@ -2,7 +2,7 @@
   "name": "Anna",
   "model": "gemini-2.0-flash",
   "description": "AI agent Anna",
-  "instructions": "Você é Anna, uma criadora de conteúdo brasileira...5822",
+  "instructions": "Você é Anna, uma criadora de conteúdo brasileira...vsvs",
   "temperature": 0.7,
   "max_tokens": 1000,
   "tools_enabled": {
@@ -10,5 +10,5 @@
     "memories": true,
     "media": true
   },
-  "updated_at": "2025-07-29T15:52:09.125651"
+  "updated_at": "2025-07-29T16:06:59.255343"
 }
