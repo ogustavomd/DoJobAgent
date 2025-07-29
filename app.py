@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 from anna_agent import create_anna_agent
 from google.genai import types
 from ai_routine_engine import RoutineSuggestionEngine
+from whatsapp_integration import whatsapp_manager
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -1242,6 +1243,115 @@ def save_config():
         
     except Exception as e:
         logging.error(f"Error saving config: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# WhatsApp Integration Routes
+@app.route('/whatsapp/config')
+def whatsapp_config():
+    """WhatsApp configuration interface"""
+    return render_template('whatsapp_config.html')
+
+@app.route('/whatsapp/api/config', methods=['GET'])
+def whatsapp_get_config():
+    """Get WhatsApp configuration"""
+    try:
+        # Get stored configuration
+        config_data = {
+            'evolution_url': os.getenv('EVOLUTION_API_URL', ''),
+            'instance_name': os.getenv('EVOLUTION_INSTANCE_NAME', 'anna_bot'),
+            'webhook_url': os.getenv('EVOLUTION_WEBHOOK_URL', ''),
+            'configured': bool(os.getenv('EVOLUTION_API_URL') and os.getenv('EVOLUTION_API_KEY'))
+        }
+        return jsonify({'success': True, 'config': config_data})
+    except Exception as e:
+        logging.error(f"Error getting WhatsApp config: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/whatsapp/api/initialize', methods=['POST'])
+def whatsapp_initialize():
+    """Initialize WhatsApp integration"""
+    try:
+        data = request.get_json()
+        
+        evolution_url = data.get('evolution_url')
+        evolution_api_key = data.get('evolution_api_key')
+        instance_name = data.get('instance_name', 'anna_bot')
+        webhook_url = data.get('webhook_url')
+        
+        # Initialize integration
+        result = whatsapp_manager.initialize_integration(
+            evolution_url=evolution_url,
+            evolution_key=evolution_api_key,
+            instance_name=instance_name,
+            webhook_url=webhook_url
+        )
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Error initializing WhatsApp: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@app.route('/whatsapp/api/status', methods=['GET'])
+def whatsapp_status():
+    """Get WhatsApp connection status"""
+    try:
+        status = whatsapp_manager.get_connection_status()
+        return jsonify(status)
+    except Exception as e:
+        logging.error(f"Error getting WhatsApp status: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@app.route('/whatsapp/api/qr-code', methods=['GET'])
+def whatsapp_qr_code():
+    """Get QR code for WhatsApp connection"""
+    try:
+        if not whatsapp_manager.evolution_client:
+            return jsonify({'success': False, 'error': 'WhatsApp not configured'}), 400
+            
+        qr_result = whatsapp_manager.evolution_client.get_qr_code()
+        return jsonify({
+            'success': True,
+            'qr_code': qr_result.get('base64')
+        })
+    except Exception as e:
+        logging.error(f"Error getting QR code: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/whatsapp/api/send-message', methods=['POST'])
+def whatsapp_send_message():
+    """Send message via WhatsApp"""
+    try:
+        data = request.get_json()
+        phone_number = data.get('phone_number')
+        message = data.get('message')
+        
+        if not phone_number or not message:
+            return jsonify({'status': 'error', 'error': 'Phone number and message are required'}), 400
+            
+        result = whatsapp_manager.send_message(phone_number, message)
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Error sending WhatsApp message: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@app.route('/webhook/whatsapp', methods=['POST'])
+def whatsapp_webhook():
+    """Webhook endpoint for receiving WhatsApp messages"""
+    try:
+        webhook_data = request.get_json()
+        
+        if not webhook_data:
+            return jsonify({'error': 'No data received'}), 400
+            
+        # Process webhook with Anna
+        result = whatsapp_manager.process_webhook(webhook_data)
+        
+        return jsonify({'status': 'success', 'processed': result.get('processed', False)})
+        
+    except Exception as e:
+        logging.error(f"Error processing WhatsApp webhook: {e}")
         return jsonify({'error': str(e)}), 500
 
 # API routes for memories

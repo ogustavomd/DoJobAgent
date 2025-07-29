@@ -1,14 +1,14 @@
 {
-  "name": "Anna Test",
+  "name": "Anna",
   "model": "gemini-2.0-flash",
-  "description": "Test config",
-  "instructions": "Test instructions updated",
-  "temperature": 0.8,
-  "max_tokens": 1200,
+  "description": "AI agent Anna",
+  "instructions": "Você é Anna, uma criadora de conteúdo brasileira...5822",
+  "temperature": 0.7,
+  "max_tokens": 1000,
   "tools_enabled": {
     "routines": true,
     "memories": true,
     "media": true
   },
-  "updated_at": "2025-07-29T15:44:45.101992"
+  "updated_at": "2025-07-29T15:52:09.125651"
 }

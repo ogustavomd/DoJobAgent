@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração WhatsApp - Anna Agent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #25D366;
+            --secondary-color: #128C7E;
+            --accent-color: #075E54;
+            --bg-dark: #0d1117;
+            --card-dark: #161b22;
+            --text-light: #f0f6fc;
+            --border-dark: #30363d;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .whatsapp-container {
+            background: var(--card-dark);
+            border-radius: 15px;
+            border: 1px solid var(--border-dark);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin: 2rem auto;
+            max-width: 900px;
+        }
+
+        .whatsapp-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+
+        .whatsapp-header h2 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .config-section {
+            padding: 2rem;
+        }
+
+        .form-control, .form-select {
+            background: #0d1117;
+            border: 1px solid var(--border-dark);
+            color: var(--text-light);
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: #0d1117;
+            border-color: var(--primary-color);
+            color: var(--text-light);
+            box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25);
+        }
+
+        .btn-whatsapp {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-whatsapp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            color: white;
+        }
+
+        .status-card {
+            background: var(--card-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .status-connected {
+            border-left: 4px solid #28a745;
+        }
+
+        .status-disconnected {
+            border-left: 4px solid #dc3545;
+        }
+
+        .status-pending {
+            border-left: 4px solid #ffc107;
+        }
+
+        .qr-code-container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .qr-code-container img {
+            max-width: 256px;
+            height: auto;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: var(--border-dark);
+            z-index: 1;
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--border-dark);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step.active .step-circle {
+            background: var(--primary-color);
+        }
+
+        .step.completed .step-circle {
+            background: #28a745;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .test-section {
+            background: var(--card-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .conversation-preview {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .message.user {
+            background: var(--accent-color);
+            margin-left: 2rem;
+            text-align: right;
+        }
+
+        .message.anna {
+            background: var(--secondary-color);
+            margin-right: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="whatsapp-container">
+            <!-- Header -->
+            <div class="whatsapp-header">
+                <h2>
+                    <i class="fab fa-whatsapp"></i>
+                    Configuração WhatsApp Evolution API
+                </h2>
+                <p class="mb-0">Conecte Anna ao WhatsApp para atendimento automatizado</p>
+            </div>
+
+            <!-- Content -->
+            <div class="config-section">
+                <!-- Step Indicator -->
+                <div class="step-indicator">
+                    <div class="step" id="step-config">
+                        <div class="step-circle">1</div>
+                        <div>Configuração</div>
+                    </div>
+                    <div class="step" id="step-connection">
+                        <div class="step-circle">2</div>
+                        <div>Conexão</div>
+                    </div>
+                    <div class="step" id="step-qr">
+                        <div class="step-circle">3</div>
+                        <div>QR Code</div>
+                    </div>
+                    <div class="step" id="step-ready">
+                        <div class="step-circle">4</div>
+                        <div>Pronto</div>
+                    </div>
+                </div>
+
+                <!-- Configuration Form -->
+                <div id="config-form" class="section">
+                    <h4><i class="fas fa-cog"></i> Configuração da Evolution API</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="evolutionUrl" class="form-label">URL da Evolution API</label>
+                                <input type="url" class="form-control" id="evolutionUrl" 
+                                       placeholder="http://localhost:8080 ou https://sua-api.com">
+                                <div class="form-text">URL base da sua instância Evolution API</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="evolutionApiKey" class="form-label">API Key</label>
+                                <input type="password" class="form-control" id="evolutionApiKey" 
+                                       placeholder="sua-api-key-aqui">
+                                <div class="form-text">Chave de autenticação da API</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="instanceName" class="form-label">Nome da Instância</label>
+                                <input type="text" class="form-control" id="instanceName" 
+                                       value="anna_bot" placeholder="anna_bot">
+                                <div class="form-text">Nome único para a instância WhatsApp</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="webhookUrl" class="form-label">Webhook URL</label>
+                                <input type="url" class="form-control" id="webhookUrl" 
+                                       placeholder="https://sua-app.com/webhook/whatsapp">
+                                <div class="form-text">URL para receber mensagens (opcional)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button class="btn btn-whatsapp" onclick="initializeWhatsApp()">
+                            <i class="fas fa-rocket"></i> Inicializar Integração
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status Section -->
+                <div id="status-section" class="section" style="display: none;">
+                    <h4><i class="fas fa-signal"></i> Status da Conexão</h4>
+                    <div id="status-card" class="status-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 id="status-title">Verificando...</h6>
+                                <p id="status-description" class="mb-0">Aguarde...</p>
+                            </div>
+                            <div id="status-icon">
+                                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QR Code Section -->
+                <div id="qr-section" class="section" style="display: none;">
+                    <h4><i class="fas fa-qrcode"></i> QR Code para Conexão</h4>
+                    <div class="qr-code-container">
+                        <p><strong>Escaneie o QR Code com seu WhatsApp:</strong></p>
+                        <p class="text-muted">Abra o WhatsApp > Menu > Dispositivos conectados > Conectar um dispositivo</p>
+                        <div id="qr-code-display">
+                            <!-- QR Code será inserido aqui -->
+                        </div>
+                        <button class="btn btn-outline-success mt-3" onclick="refreshQRCode()">
+                            <i class="fas fa-sync-alt"></i> Atualizar QR Code
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Test Section -->
+                <div id="test-section" class="section" style="display: none;">
+                    <h4><i class="fas fa-comment-dots"></i> Teste de Mensagem</h4>
+                    <div class="test-section">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="testPhone" class="form-label">Número de Teste</label>
+                                    <input type="tel" class="form-control" id="testPhone" 
+                                           placeholder="11999999999">
+                                    <div class="form-text">Digite apenas números (DDD + número)</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="testMessage" class="form-label">Mensagem</label>
+                                    <textarea class="form-control" id="testMessage" rows="3" 
+                                              placeholder="Olá! Este é um teste da Anna via WhatsApp."></textarea>
+                                </div>
+                                <button class="btn btn-whatsapp" onclick="sendTestMessage()">
+                                    <i class="fas fa-paper-plane"></i> Enviar Teste
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>Últimas Conversas</h6>
+                                <div id="conversation-preview" class="conversation-preview">
+                                    <p class="text-muted text-center">Nenhuma conversa ainda</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documentation Section -->
+                <div class="section">
+                    <h4><i class="fas fa-book"></i> Documentação</h4>
+                    <div class="alert alert-info alert-custom">
+                        <h6><i class="fas fa-info-circle"></i> Próximos Passos</h6>
+                        <ul class="mb-0">
+                            <li><strong>Docker Evolution API:</strong> Certifique-se que sua instância Docker esteja rodando</li>
+                            <li><strong>Webhook:</strong> Configure sua URL pública para receber mensagens automaticamente</li>
+                            <li><strong>Teste:</strong> Envie uma mensagem de teste para verificar a integração</li>
+                            <li><strong>Produção:</strong> A Anna responderá automaticamente às mensagens recebidas</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-warning alert-custom">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Importante</h6>
+                        <p class="mb-0">
+                            Mantenha sua instância Docker Evolution API sempre ativa. 
+                            Se desconectar, será necessário escanear o QR Code novamente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentStep = 1;
+        let integrationStatus = {
+            configured: false,
+            connected: false,
+            qr_ready: false,
+            webhook_ready: false
+        };
+
+        // Carregar configuração existente
+        window.addEventListener('DOMContentLoaded', function() {
+            loadExistingConfig();
+            checkConnectionStatus();
+        });
+
+        function loadExistingConfig() {
+            // Buscar configuração salva
+            fetch('/whatsapp/api/config')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.config) {
+                        document.getElementById('evolutionUrl').value = data.config.evolution_url || '';
+                        document.getElementById('instanceName').value = data.config.instance_name || 'anna_bot';
+                        document.getElementById('webhookUrl').value = data.config.webhook_url || '';
+                        
+                        if (data.config.evolution_url) {
+                            updateStep(2);
+                        }
+                    }
+                })
+                .catch(error => console.log('Nenhuma configuração existente'));
+        }
+
+        function updateStep(step) {
+            // Reset all steps
+            for (let i = 1; i <= 4; i++) {
+                const stepEl = document.getElementById(`step-${getStepName(i)}`);
+                stepEl.classList.remove('active', 'completed');
+                
+                if (i < step) {
+                    stepEl.classList.add('completed');
+                } else if (i === step) {
+                    stepEl.classList.add('active');
+                }
+            }
+            currentStep = step;
+        }
+
+        function getStepName(num) {
+            const names = ['config', 'connection', 'qr', 'ready'];
+            return names[num - 1];
+        }
+
+        function initializeWhatsApp() {
+            const url = document.getElementById('evolutionUrl').value;
+            const apiKey = document.getElementById('evolutionApiKey').value;
+            const instance = document.getElementById('instanceName').value;
+            const webhook = document.getElementById('webhookUrl').value;
+
+            if (!url || !apiKey || !instance) {
+                alert('Por favor, preencha todos os campos obrigatórios');
+                return;
+            }
+
+            // Show loading
+            showStatus('pending', 'Inicializando...', 'Configurando integração WhatsApp');
+
+            const payload = {
+                evolution_url: url,
+                evolution_api_key: apiKey,
+                instance_name: instance,
+                webhook_url: webhook
+            };
+
+            fetch('/whatsapp/api/initialize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    integrationStatus.configured = true;
+                    updateStep(3);
+                    
+                    showStatus('connected', 'Integração Inicializada', 'WhatsApp configurado com sucesso');
+                    
+                    // Show QR Code if available
+                    if (data.qr_code) {
+                        showQRCode(data.qr_code);
+                    }
+                    
+                    document.getElementById('qr-section').style.display = 'block';
+                    document.getElementById('test-section').style.display = 'block';
+                    
+                } else {
+                    showStatus('disconnected', 'Erro na Configuração', data.error || 'Falha na inicialização');
+                }
+            })
+            .catch(error => {
+                showStatus('disconnected', 'Erro de Conexão', 'Não foi possível conectar à Evolution API');
+                console.error('Error:', error);
+            });
+        }
+
+        function showStatus(type, title, description) {
+            const statusCard = document.getElementById('status-card');
+            const statusTitle = document.getElementById('status-title');
+            const statusDescription = document.getElementById('status-description');
+            const statusIcon = document.getElementById('status-icon');
+
+            statusCard.className = `status-card status-${type}`;
+            statusTitle.textContent = title;
+            statusDescription.textContent = description;
+
+            // Update icon
+            let iconClass = 'fas fa-spinner fa-spin fa-2x';
+            if (type === 'connected') iconClass = 'fas fa-check-circle fa-2x text-success';
+            else if (type === 'disconnected') iconClass = 'fas fa-times-circle fa-2x text-danger';
+            else if (type === 'pending') iconClass = 'fas fa-clock fa-2x text-warning';
+
+            statusIcon.innerHTML = `<i class="${iconClass}"></i>`;
+            
+            document.getElementById('status-section').style.display = 'block';
+        }
+
+        function showQRCode(base64Data) {
+            const qrDisplay = document.getElementById('qr-code-display');
+            qrDisplay.innerHTML = `<img src="data:image/png;base64,${base64Data}" alt="QR Code WhatsApp" class="img-fluid">`;
+        }
+
+        function refreshQRCode() {
+            fetch('/whatsapp/api/qr-code')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.qr_code) {
+                        showQRCode(data.qr_code);
+                    } else {
+                        alert('Erro ao obter QR Code: ' + (data.error || 'Erro desconhecido'));
+                    }
+                })
+                .catch(error => {
+                    alert('Erro ao conectar com a API');
+                    console.error('Error:', error);
+                });
+        }
+
+        function checkConnectionStatus() {
+            fetch('/whatsapp/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'open') {
+                        showStatus('connected', 'WhatsApp Conectado', 'Pronto para receber e enviar mensagens');
+                        updateStep(4);
+                        document.getElementById('test-section').style.display = 'block';
+                    } else if (data.status === 'not_configured') {
+                        showStatus('disconnected', 'Não Configurado', 'Configure a integração primeiro');
+                        updateStep(1);
+                    } else {
+                        showStatus('pending', 'Aguardando Conexão', 'Escaneie o QR Code para conectar');
+                        updateStep(3);
+                    }
+                })
+                .catch(error => {
+                    console.log('Status check failed:', error);
+                });
+        }
+
+        function sendTestMessage() {
+            const phone = document.getElementById('testPhone').value;
+            const message = document.getElementById('testMessage').value;
+
+            if (!phone || !message) {
+                alert('Preencha o número e a mensagem');
+                return;
+            }
+
+            fetch('/whatsapp/api/send-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    phone_number: phone,
+                    message: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Mensagem enviada com sucesso!');
+                    addToConversationPreview('user', message);
+                } else {
+                    alert('Erro ao enviar mensagem: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                alert('Erro ao conectar com a API');
+                console.error('Error:', error);
+            });
+        }
+
+        function addToConversationPreview(type, message) {
+            const preview = document.getElementById('conversation-preview');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${type}`;
+            messageEl.textContent = message;
+            
+            preview.appendChild(messageEl);
+            preview.scrollTop = preview.scrollHeight;
+        }
+
+        // Auto-refresh connection status
+        setInterval(checkConnectionStatus, 30000);
+    </script>
+</body>
+</html>
