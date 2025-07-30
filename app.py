@@ -83,13 +83,15 @@ def init_agent():
     try:
         from supabase_tools import get_active_agent_configuration
         config = get_active_agent_configuration()
-        anna_agent = create_anna_agent()
+        anna_agent = create_anna_agent(config)
         logging.info("Anna agent created successfully with configuration")
     except Exception as e:
         logging.error(f"Failed to initialize Anna agent: {e}")
         # Fallback to default agent
         try:
-            anna_agent = create_anna_agent()
+            from supabase_tools import get_default_config
+            config = get_default_config()
+            anna_agent = create_anna_agent(config)
             logging.info("Anna agent initialized with fallback configuration")
         except Exception as fallback_error:
             logging.error(f"Fallback initialization also failed: {fallback_error}")
@@ -772,215 +774,6 @@ def health():
             'agent_initialized': False
         }), 503
 
-# Configuration API routes
-@app.route('/config/api/current')
-def config_get_current():
-    """Get current agent configuration from PostgreSQL"""
-    try:
-        from models import Agent
-        
-        # Get the most recent active agent configuration
-        agent = db.session.query(Agent).order_by(Agent.atualizado_em.desc()).first()
-        
-        if not agent:
-            return jsonify({'error': 'No agent configuration found'}), 404
-        
-        config = {
-            'id': str(agent.id),
-            'name': agent.nome,
-            'model': agent.modelo,
-            'description': agent.descricao,
-            'instructions': agent.instrucoes_personalidade or '',
-            'temperature': float(agent.temperatura or 0.7),
-            'max_tokens': agent.max_tokens or 1000,
-            'tools_enabled': {
-                'routines': agent.rotinas_ativas,
-                'memories': agent.memorias_ativas,
-                'media': agent.midia_ativa
-            }
-        }
-        
-        agent_logger.debug(f"Returning config - Instructions length: {len(config['instructions'])} chars")
-        
-        return jsonify(config)
-    except Exception as e:
-        logging.error(f"Error getting current config: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/config/api/config', methods=['POST'])
-def config_save():
-    """Save agent configuration to PostgreSQL and reinitialize agent"""
-    try:
-        config = request.get_json()
-        logging.info(f"Saving agent config: {config}")
-        
-        # Validate required fields
-        required_fields = ['name', 'model', 'instructions']
-        for field in required_fields:
-            if field not in config or not config[field]:
-                logging.error(f"Missing required field: {field}")
-                return jsonify({'error': f'Campo obrigatório: {field}'}), 400
-        
-        # Save configuration to PostgreSQL database
-        from models import Agent
-        from datetime import datetime
-        
-        # Check if agent with this name already exists
-        existing_agent = db.session.query(Agent).filter_by(nome=config['name']).first()
-        
-        if existing_agent:
-            # Update existing agent using a new approach to avoid UUID casting issues
-            agent_logger.debug(f"Updating existing agent UUID: {existing_agent.id}")
-            
-            # Update using update() method instead of direct attribute assignment
-            db.session.query(Agent).filter_by(nome=config['name']).update({
-                'modelo': config['model'],
-                'descricao': config.get('description', 'Agent configuration'),
-                'instrucoes_personalidade': config['instructions'],
-                'temperatura': config.get('temperature', 0.7),
-                'max_tokens': config.get('max_tokens', 1000),
-                'rotinas_ativas': config.get('tools_enabled', {}).get('routines', True),
-                'memorias_ativas': config.get('tools_enabled', {}).get('memories', True),
-                'midia_ativa': config.get('tools_enabled', {}).get('media', True),
-                'atualizado_em': datetime.utcnow()
-            })
-            
-            # Get the updated agent for returning config
-            agent = db.session.query(Agent).filter_by(nome=config['name']).first()
-        else:
-            # Create new agent record with UUID generation
-            agent = Agent()
-            agent.id = uuid.uuid4()
-            agent.nome = config['name']
-            agent.modelo = config['model']
-            agent.descricao = config.get('description', 'Agent configuration')
-            agent.instrucoes_personalidade = config['instructions']
-            agent.temperatura = config.get('temperature', 0.7)
-            agent.max_tokens = config.get('max_tokens', 1000)
-            agent.rotinas_ativas = config.get('tools_enabled', {}).get('routines', True)
-            agent.memorias_ativas = config.get('tools_enabled', {}).get('memories', True)
-            agent.midia_ativa = config.get('tools_enabled', {}).get('media', True)
-            agent.atualizado_em = datetime.utcnow()
-            db.session.add(agent)
-            agent_logger.debug(f"Creating new agent with UUID: {agent.id}")
-        
-        # Log detailed configuration before saving
-        agent_logger.debug(f"Agent config before save - Name: {config['name']}, Instructions: {config['instructions'][:100]}...")
-        
-        db.session.commit()
-        
-        # Safely log agent ID
-        agent_id = getattr(agent, 'id', 'unknown') if agent else 'none'
-        agent_logger.info(f"Agent configuration saved to PostgreSQL with ID: {agent_id}")
-        
-        # Also save to Supabase agent_config table with correct schema
-        try:
-            from supabase_tools import supabase
-            
-            # Check if agent already exists in Supabase agent_config table
-            existing_agent = supabase.table('agent_config').select('id').eq('name', config['name']).eq('is_active', True).execute()
-            
-            supabase_config = {
-                'name': config['name'],
-                'model': config['model'],
-                'description': config.get('description', 'Agent configuration'),
-                'instructions': config['instructions'],  # Correct column name for agent_config table
-                'temperature': float(config.get('temperature', 0.7)),
-                'max_tokens': int(config.get('max_tokens', 1000)),
-                'tools_enabled': config.get('tools_enabled', {'routines': True, 'memories': True, 'media': True}),
-                'is_active': True,
-                'company_id': None,  # Can be set later for multi-tenant support
-                'user_id': None,     # Can be set later for user-specific configs
-                'updated_at': datetime.utcnow().isoformat()
-            }
-            
-            if existing_agent.data:
-                # Update existing
-                agent_id = existing_agent.data[0]['id']
-                supabase.table('agent_config').update(supabase_config).eq('id', agent_id).execute()
-                logging.info(f"Agent configuration updated in Supabase agent_config: {agent_id}")
-            else:
-                # Create new
-                supabase_config['created_at'] = datetime.utcnow().isoformat()
-                supabase.table('agent_config').insert(supabase_config).execute()
-                logging.info("Agent configuration created in Supabase agent_config")
-                
-        except Exception as supabase_error:
-            logging.warning(f"Supabase agent_config save failed, PostgreSQL saved: {supabase_error}")
-        
-        # Reinitialize the agent with new config
-        global anna_agent
-        try:
-            anna_agent = create_anna_agent()
-            logging.info("Agent reinitialized with new configuration")
-        except Exception as e:
-            logging.error(f"Error reinitializing agent: {e}")
-            return jsonify({'error': f'Erro ao reinicializar agente: {str(e)}'}), 500
-        
-        config_response = {
-            'success': True, 
-            'message': 'Configuração salva e agente reinicializado'
-        }
-        
-        if agent:
-            config_response['config'] = {
-                'id': str(agent.id),
-                'name': agent.nome,
-                'model': agent.modelo,
-                'description': agent.descricao,
-                'instructions': agent.instrucoes_personalidade,
-                'temperature': float(agent.temperatura),
-                'max_tokens': agent.max_tokens,
-                'tools_enabled': {
-                    'routines': agent.rotinas_ativas,
-                    'memories': agent.memorias_ativas,
-                    'media': agent.midia_ativa
-                }
-            }
-        
-        return jsonify(config_response)
-        
-    except Exception as e:
-        logging.error(f"Error saving config: {e}")
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-def create_anna_agent_from_config(config):
-    """Create Anna agent from configuration"""
-    from google.adk.agents import LlmAgent
-    from database_tools_simple import (
-        get_anna_routines,
-        get_anna_routine_media,
-        search_memories,
-        get_recent_conversations,
-        search_content
-    )
-    
-    # Map tool names to actual functions
-    tool_mapping = {
-        'get_anna_routines': get_anna_routines,
-        'get_anna_routine_media': get_anna_routine_media,
-        'search_memories': search_memories,
-        'get_recent_conversations': get_recent_conversations,
-        'search_content': search_content
-    }
-    
-    # Remove save_conversation_memory as it doesn't exist yet
-    if 'save_conversation_memory' in config['tools']:
-        config['tools'].remove('save_conversation_memory')
-    
-    # Get enabled tools
-    enabled_tools = [tool_mapping[tool_name] for tool_name in config['tools'] if tool_name in tool_mapping]
-    
-    # Create agent
-    agent = LlmAgent(
-        model=config.get('model', 'gemini-2.0-flash'),
-        name=config.get('name', 'anna').lower(),
-        description=config.get('instructions', ''),
-        tools=enabled_tools
-    )
-    
-    return agent
 
 # Memory management API routes
 @app.route('/admin/api/memories')
@@ -1381,7 +1174,8 @@ def save_config():
         
         # Reload the Anna agent with new configuration
         global anna_agent
-        anna_agent = create_anna_agent()
+        reloaded_config = get_config().get_json()
+        anna_agent = create_anna_agent(reloaded_config)
         
         return jsonify({
             'success': True, 

@@ -30,9 +30,9 @@ class DualDatabaseSync:
         self.supabase: Client = create_client(self.supabase_url, self.supabase_key)
         
         if not self.postgres_url:
-            logger.error("DATABASE_URL environment variable is required")
-            raise Exception("PostgreSQL configuration not found")
-            
+            logger.warning("DATABASE_URL not set, using fallback SQLite database")
+            self.postgres_url = "sqlite:///fallback.db"
+        
         logger.info("DualDatabaseSync initialized successfully")
 
     @contextmanager

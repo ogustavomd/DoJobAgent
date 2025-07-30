@@ -9,62 +9,14 @@ from database_tools_simple import (get_anna_routines, get_anna_routine_media,
                             save_conversation_memory)
 
 
-def create_anna_agent():
-    """Create and configure Anna agent using configuration from Supabase or database and file"""
-    try:
-        config = None
-        
-        # First try to load from Supabase agent_config table
-        try:
-            from supabase_tools import supabase
-            result = supabase.table('agent_config').select("*").eq('is_active', True).eq('name', 'Anna').order('created_at', desc=True).limit(1).execute()
-            
-            if result.data and len(result.data) > 0:
-                config = result.data[0]
-                logging.info("Configuration loaded from Supabase agent_config")
-        except Exception as e:
-            logging.error(f"Error loading from Supabase: {e}")
-        
-        # If no config from Supabase, try PostgreSQL agents table
-        if not config:
-            try:
-                from database_tools_simple import get_active_agent_configuration
-                config = get_active_agent_configuration()
-                
-                if config and config.get('instructions'):
-                    logging.info("Configuration loaded from PostgreSQL agents table")
-            except Exception as e:
-                logging.error(f"Error loading from PostgreSQL: {e}")
-        
-        # If still no config, use defaults (DO NOT load from file to avoid wrong personas)
-        if not config:
-            config = {
-                'name': 'Anna', 
-                'model': 'gemini-2.0-flash',
-                'instructions': 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. Você tem uma personalidade vibrante, é espontânea e se conecta facilmente com as pessoas. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.',
-                'temperature': 0.8,
-                'max_tokens': 1000,
-                'tools_enabled': {'routines': True, 'memories': True, 'media': True}
-            }
-            logging.info("Using default Anna configuration (no file loading)")
-            
-    except Exception as e:
-        logging.error(f"Error getting configuration: {e}")
-        # Fallback configuration
-        config = {
-            'name': 'Anna', 
-            'model': 'gemini-2.0-flash',
-            'instructions': 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.',
-            'temperature': 0.8,
-            'max_tokens': 1000,
-            'tools_enabled': {'routines': True, 'memories': True, 'media': True}
-        }
+def create_anna_agent(config: dict):
+    """Create and configure Anna agent using a configuration dictionary."""
+    if not config:
+        logging.error("Configuration dictionary is missing. Cannot create agent.")
+        raise ValueError("Configuration is required to create an agent.")
 
-    # Get instructions from config (prioritizing database saved instructions)
-    instructions = config.get('instructions')
-    if not instructions:
-        instructions = 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.'
-    
+    # Get instructions from config
+    instructions = config.get('instructions', 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações do banco de dados antes de responder.')
     logging.info(f"Using instructions (first 100 chars): {instructions[:100]}...")
     
     # Get description from config
@@ -96,23 +48,5 @@ def create_anna_agent():
             temperature=float(config.get('temperature', 0.8)),
             max_output_tokens=int(config.get('max_tokens', 1000))))
 
-    logging.info("Anna agent created successfully")
+    logging.info("Anna agent created successfully with provided configuration.")
     return agent
-
-
-# Function to dynamically reload agent with new instructions
-def reload_agent_with_instructions(new_instructions):
-    """Reload agent with new instructions"""
-    try:
-        with open('agent_config.json', 'r', encoding='utf-8') as f:
-            config = json.load(f)
-        
-        config['instructions'] = new_instructions
-        
-        with open('agent_config.json', 'w', encoding='utf-8') as f:
-            json.dump(config, f, ensure_ascii=False, indent=2)
-        
-        return True
-    except Exception as e:
-        logging.error(f"Error updating instructions: {e}")
-        return False

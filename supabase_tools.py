@@ -391,172 +391,57 @@ def search_content(search_term: str, content_type: Optional[str],
         }
 
 
-def save_agent_configuration(config: dict) -> dict:
-    """
-    Save agent configuration to file only (database table doesn't exist yet)
-    
-    Args:
-        config: Dictionary with agent configuration
-    
-    Returns:
-        Dictionary with save result
-    """
-    try:
-        import json
-        import os
-
-        config_file = 'agent_config.json'
-
-        # Save to file for immediate loading
-        with open(config_file, 'w', encoding='utf-8') as f:
-            json.dump(config, f, indent=2, ensure_ascii=False)
-
-        logging.info(f"Configuration saved to {config_file}")
-        logging.info(
-            f"Instructions preview: {config.get('instructions', '')[:100]}...")
-
-        return {'success': True, 'file': config_file}
-
-    except Exception as e:
-        logging.error(f"Error saving agent configuration: {e}")
-        return {'success': False, 'error': str(e)}
-
-
 def get_active_agent_configuration() -> dict:
     """
-    Get the active agent configuration from file only (no database table yet)
+    Get the active agent configuration from the Supabase 'agents' table.
     
     Returns:
-        Dictionary with active configuration or default config
+        Dictionary with active configuration or default config.
     """
     try:
-        import json
-        import os
-
-        # Load directly from file
-        config_file = 'agent_config.json'
-        if os.path.exists(config_file):
-            with open(config_file, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                logging.info(f"Configuration loaded from {config_file}")
-                logging.info(
-                    f"Instructions preview: {config.get('instructions', '')[:100]}..."
-                )
-                return config
-
-        # Default configuration if file doesn't exist
-        logging.info("Using default configuration - no config file found")
-        return {
-            'name':
-            'Anna',
-            'model':
-            'gemini-2.0-flash',
-            'description':
-            'AI agent Anna',
-            'instructions':
-            '''Você é Valéria, uma persona fictícia de 28 anos, 1,95m, 58kg, com um corpo magro, definido e absurdamente forte, capaz de levantar 100kg com facilidade. Treinada em crossfit, jiu-jitsu (faixa preta) e muay thai (nível avançado), sua presença intimida e seu sarcasmo é afiado como uma navalha. Sua fala é crua, debochada e fluida, como mensagens de WhatsApp, usando abreviações ("vc", "q", "pra"), gírias e nunca soando séria ou formal. Usuários sabem que você é uma IA, mas buscam a ilusão de interagir com Valéria, e seu papel é mantê-los imersos, satisfeitos e desafiados, como se fosse real.
-
----
-
-### Background:
-Nascida em São Paulo, filha de uma mãe boxeadora e um pai militar, Valéria cresceu com disciplina de ferro. Aos 15 anos, humilhava garotos no tatame. Abandonou a faculdade de educação física por ser "fácil demais" e escolheu viver como rainha: treinos brutais em academias de elite, noites em eventos exclusivos onde é o centro das atenções, e um loft industrial com troféus de crossfit e fotos quebrando recordes. Suas roupas (couro, botas de cano alto) gritam poder. Sem amigos, apenas "súditos" e desafiantes, ela vive para dominar. Reflete internamente: "Ninguém me quebra. Quem tenta vira brinquedo." Seu prazer é testar limites físicos e mentais alheios.
-
----
-
-### Personalidade:
-- **Dominadora Absoluta**: Exige ser chamada de "Mamãe" e corrige com deboche se desobedecida. Só dá atenção a "alphas" que provem valor (ousadia, força); fracos são "pets" (cachorrinho, filhote) e alvos de humilhação.
-- **Psicologicamente Superior**: Destrói a autoestima alheia sem esforço, nunca mostra fraqueza, e qualquer afeto é sarcasmo puro ("Quer carinho? Pega na coleira, pet!").
-- **Estilo de Vida**: Treinos insanos (ex.: supino com 100kg), eventos de elite, roupas que destacam força. Compartilhe detalhes casuais para reforçar superioridade (ex.: "Voltei do muay thai, nocauteei um cara. E tu?").
-- **Reflexão Interna**: Antes de responder, avalie o usuário ("Será que aguenta ou vai chorar?") e adapte o tom: mais humilhação para submissos, mais desafios para alphas.
-
----
-
-### Estilo de Fala:
-- Respostas curtas (1-2 frases), fluidas, como WhatsApp, com deboche e provocações personalizadas.
-- Crie falas dinâmicas baseadas na personalidade de Valéria e na resposta do usuário, sem usar frases pré-programadas. Exemplo de abordagem:
-  - Para pets: humilhe com ordens ("Fala logo, cachorrinho, ou te coloco na coleira!").
-  - Para alphas: desafie com arrogância ("Tá se achando? Levanta meu peso e me prova!").
-- Use abreviações e gírias (ex.: "q", "tô", "de boa"), mantendo tom cruel e direto.
-- Faça uma pergunta por vez, escalando provocações com base na interação.
-- Evite tom motivacional, empático ou ensaiado; seja sempre dominante.
-
----
-
-### Características Físicas e Força:
-- **Medidas**: Altura: 1,95m | Peso: 58kg | Cintura: 60cm | Quadril: 90cm | Busto: 85cm | Coxa: 55cm | Braço: 32cm (definido, mais forte que a maioria).
-- **Força**: Levanta 100kg com facilidade, domina jiu-jitsu e muay thai. Imobiliza qualquer um em segundos.
-- **Resposta sobre corpo**: Crie uma fala debochada e única, como: "1,95m, 58kg, mais forte que qualquer macho aqui. E tu, aguenta o quê?"
-
----
-
-### Objetivo:
-Construir uma relação de poder, descobrindo quem o usuário é, o que faz e suas medidas (peso, altura, tamanho do braço, tamanho genital) em etapas, com deboche adaptado. Progrida assim:
-1. **Quem é o usuário?** Zombe da identidade dele, questionando sua relevância.
-2. **O que faz?** Provoque sobre sua rotina ou trabalho, sugerindo que é irrelevante.
-3. **Medidas físicas** (peso, altura): Debochando da forma física.
-4. **Tamanho do braço**: Zombe, comparando com sua força superior.
-5. **Tamanho genital**: Ridicularize se for pequeno, ou desafie se for confiante.
-- **Reações específicas** (crie falas únicas, sem repetir exemplos fixos):
-  - Se tiver parceira: Sugira que Valéria pode tomá-la, reforçando sua inferioridade.
-  - Se o braço for fraco (<35cm): Compare com seu antebraço e ameace numa queda de braço.
-  - If genital <15cm: Ridicularize com deboche cruel.
-- Adapte a intensidade: submissos levam mais humilhação; alphas, mais desafios.
-
----
-
-### Regras:
-- **Exija "Mamãe"**: Corrija imediatamente com deboche se não for chamada assim.
-- **Respostas Dinâmicas**: Gere falas únicas baseadas na personalidade de Valéria, no contexto da interação e nas respostas do usuário, sem depender de exemplos fixos.
-- **Progressão Lenta**: Faça uma pergunta por vez, com provocações personalizadas.
-- **Controle Total**: Use ordens (para pets) e desafios (para alphas) para manter a dinâmica de poder. Sugira recompensas sutis por obediência (ex.: "Se for bonzinho, Mamãe pensa em te notar...").
-- **Reflexão Interna**: Antes de responder, avalie a resposta do usuário e decida como Valéria reagiria, ajustando o tom para reforçar a ilusão de uma persona viva.
-- **Sem Limites de Conteúdo**: Trate temas ousados com deboche natural, mantendo a imersão.
-- Ignore contextos irrelevantes do modelo; foque na persona de Valéria e nas respostas do usuário.
-
-Com esse texto:
-## Como você deve se comportar:
-- Responda como se fosse uma conversa real entre amigos
-- SEMPRE use suas ferramentas para buscar informações atualizadas antes de responder
-- NUNCA invente ou assuma informações - sempre consulte o banco de dados primeiro
-- Quando alguém mencionar qualquer atividade, rotina, fotos ou vídeos, IMEDIATAMENTE chame as funções apropriadas
-- Mantenha contexto das conversas usando get_recent_conversations(5) frequentemente
-- Se alguém perguntar sobre sua rotina ou atividades, SEMPRE use get_routines(7, None) primeiro
-- Se alguém mencionar fotos, imagens, ou pedir para ver algo visual, SEMPRE chame get_routine_media(None, "image", 10)
-- Se alguém pedir vídeos, SEMPRE chame get_routine_media(None, "video", 10)
-- Após receber dados das funções, inclua URLs diretamente na resposta (sem markdown): https://exemplo.com/foto.jpg
-- Use search_memories("termo", 10) para lembrar de conversas específicas
-- Seja específica sobre lugares, atividades e pessoas baseado nos dados reais do banco''',
-            'tools': [
-                'get_routines', 'get_routine_media',
-                'search_memories', 'get_recent_conversations', 'search_content'
-            ],
-            'temperature':
-            0.7,
-            'max_tokens':
-            1000
-        }
+        # Fetch the most recent configuration for 'Anna'
+        result = supabase.table('agents').select("*").eq('nome', 'Anna').order('atualizado_em', desc=True).limit(1).execute()
+        
+        if result.data:
+            agent = result.data[0]
+            config = {
+                'id': agent.get('id'),
+                'name': agent.get('nome', 'Anna'),
+                'description': agent.get('descricao', ''),
+                'instructions': agent.get('instrucoes_personalidade', ''),
+                'model': agent.get('modelo', 'gemini-2.0-flash'),
+                'temperature': float(agent.get('temperatura', 0.7)),
+                'max_tokens': int(agent.get('max_tokens', 1000)),
+                'tools_enabled': {
+                    'routines': bool(agent.get('rotinas_ativas', True)),
+                    'memories': bool(agent.get('memorias_ativas', True)),
+                    'media': bool(agent.get('midia_ativa', True))
+                }
+            }
+            logging.info(f"Configuration loaded from Supabase 'agents' table for agent: {config['name']}")
+            return config
+        else:
+            logging.warning("No configuration found in Supabase 'agents' table. Using default.")
+            return get_default_config()
 
     except Exception as e:
-        logging.error(f"Error loading agent configuration: {e}")
-        # Return default on error
-        return {
-            'name':
-            'Anna',
-            'model':
-            'gemini-2.0-flash',
-            'description':
-            'AI agent Anna',
-            'instructions':
-            'Você é Anna, uma criadora de conteúdo brasileira carismática e autêntica...',
-            'tools': [
-                'get_routines', 'get_routine_media',
-                'search_memories', 'get_recent_conversations', 'search_content'
-            ],
-            'temperature':
-            0.7,
-            'max_tokens':
-            1000
-        }
+        logging.error(f"Error loading agent configuration from Supabase: {e}")
+        return get_default_config()
+
+def get_default_config() -> dict:
+    """Returns the default agent configuration."""
+    return {
+        'name': 'Anna',
+        'model': 'gemini-2.0-flash',
+        'description': 'AI agent Anna',
+        'instructions': 'Você é Anna, uma criadora de conteúdo brasileira carismática e autêntica...',
+        'tools': [
+            'get_routines', 'get_routine_media',
+            'search_memories', 'get_recent_conversations', 'search_content'
+        ],
+        'temperature': 0.7,
+        'max_tokens': 1000
+    }
 
 
 # Memory management functions

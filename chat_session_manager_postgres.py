@@ -21,8 +21,8 @@ class ChatSessionManager:
         self.database_url = os.environ.get("DATABASE_URL")
         
         if not self.database_url:
-            logger.error("Variável DATABASE_URL é necessária")
-            raise Exception("Configuração PostgreSQL não encontrada")
+            logger.warning("DATABASE_URL not set, using fallback SQLite database")
+            self.database_url = "sqlite:///fallback.db"
         
         logger.info("ChatSessionManager inicializado com sucesso")
 
