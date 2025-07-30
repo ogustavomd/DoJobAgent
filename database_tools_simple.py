@@ -10,22 +10,22 @@ def get_anna_routines(days_ahead: int = 7, status_filter: Optional[str] = None) 
     """Get Anna's routine activities from PostgreSQL"""
     try:
         from app import db
-        from models import AnnaRoutine
+        from models import Routine
         from datetime import date, timedelta
         
         today = date.today()
         end_date = today + timedelta(days=days_ahead)
         
         # Build query
-        query = db.session.query(AnnaRoutine).filter(
-            AnnaRoutine.date >= today.strftime('%Y-%m-%d'),
-            AnnaRoutine.date <= end_date.strftime('%Y-%m-%d')
+        query = db.session.query(Routine).filter(
+            Routine.date >= today.strftime('%Y-%m-%d'),
+            Routine.date <= end_date.strftime('%Y-%m-%d')
         )
         
         if status_filter:
-            query = query.filter(AnnaRoutine.status == status_filter)
+            query = query.filter(Routine.status == status_filter)
         
-        routines = query.order_by(AnnaRoutine.date, AnnaRoutine.time_start).all()
+        routines = query.order_by(Routine.date, Routine.time_start).all()
         
         # Convert to dictionaries
         routine_data = []
@@ -66,20 +66,20 @@ def search_memories(query_text: str, limit: int = 10) -> Dict[str, Any]:
     """Search Anna's memories from PostgreSQL"""
     try:
         from app import db
-        from models import AnnaMemory
+        from models import Memory
         from sqlalchemy import or_, and_
         
         # Search in memory content using ILIKE for case-insensitive search
-        memories = db.session.query(AnnaMemory).filter(
+        memories = db.session.query(Memory).filter(
             and_(
-                AnnaMemory.is_active == True,
+                Memory.is_active == True,
                 or_(
-                    AnnaMemory.content.ilike(f'%{query_text}%'),
-                    AnnaMemory.context.ilike(f'%{query_text}%'),
-                    AnnaMemory.tags.ilike(f'%{query_text}%')
+                    Memory.content.ilike(f'%{query_text}%'),
+                    Memory.context.ilike(f'%{query_text}%'),
+                    Memory.tags.ilike(f'%{query_text}%')
                 )
             )
-        ).order_by(AnnaMemory.importance_score.desc(), AnnaMemory.created_at.desc()).limit(limit).all()
+        ).order_by(Memory.importance_score.desc(), Memory.created_at.desc()).limit(limit).all()
         
         # Convert to dictionaries
         memory_data = []

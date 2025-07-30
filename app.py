@@ -28,20 +28,51 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+# Configure the database with error handling
+database_url = os.environ.get("DATABASE_URL")
+if not database_url:
+    logging.error("DATABASE_URL environment variable not set")
+    # Use fallback SQLite for development/testing
+    database_url = "sqlite:///fallback.db"
+    logging.warning("Using fallback SQLite database")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
+    "pool_timeout": 30,
+    "max_overflow": 10,
 }
 
 # Initialize the app with the extension
 db.init_app(app)
 
-with app.app_context():
-    # Make sure to import the models here or their tables won't be created
-    import models  # noqa: F401
-    db.create_all()
+def initialize_database():
+    """Initialize database with error handling and retry logic"""
+    max_retries = 3
+    retry_delay = 2
+    
+    for attempt in range(max_retries):
+        try:
+            with app.app_context():
+                # Make sure to import the models here or their tables won't be created
+                import models  # noqa: F401
+                db.create_all()
+                logging.info("Database initialized successfully")
+                return True
+        except Exception as e:
+            logging.error(f"Database initialization attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                import time
+                time.sleep(retry_delay)
+            else:
+                logging.error("Failed to initialize database after all retries")
+                return False
+    return False
+
+# Initialize database with retry logic
+if not initialize_database():
+    logging.error("Database initialization failed - application may not work correctly")
 
 # Initialize Anna agent
 anna_agent = None
@@ -171,14 +202,22 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str):
             event_count += 1
             agent_logger.debug(f"Agent event {event_count}: {type(event).__name__}")
             
-            if hasattr(event, 'function_call') and event.function_call:
-                agent_logger.debug(f"Function call: {event.function_call.name}")
+            # Check for function call events safely
+            try:
+                if hasattr(event, 'function_call') and event.function_call:
+                    agent_logger.debug(f"Function call event detected")
+            except AttributeError:
+                pass
             
-            if event.is_final_response():
-                if event.content and event.content.parts:
-                    final_response = event.content.parts[0].text
-                    agent_logger.debug(f"Final response generated: {final_response[:100]}...")
-                break
+            # Check for final response safely
+            try:
+                if hasattr(event, 'is_final_response') and event.is_final_response():
+                    if hasattr(event, 'content') and event.content and hasattr(event.content, 'parts') and event.content.parts:
+                        final_response = event.content.parts[0].text if len(event.content.parts) > 0 else ""
+                        agent_logger.debug(f"Final response generated: {final_response[:100]}...")
+                    break
+            except (AttributeError, IndexError):
+                pass
         
         agent_logger.info(f"Agent processing completed for session {session_id} with {event_count} events")
         
@@ -700,8 +739,38 @@ def admin_delete_media(media_id):
 
 @app.route('/health')
 def health():
-    """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'agent_initialized': anna_agent is not None})
+    """Health check endpoint with database connectivity"""
+    try:
+        # Test database connection
+        db_status = 'connected'
+        try:
+            with app.app_context():
+                db.session.execute(db.text('SELECT 1'))
+        except Exception as db_error:
+            db_status = f'disconnected: {str(db_error)}'
+            logging.error(f"Database health check failed: {db_error}")
+        
+        # Test agent status
+        agent_status = anna_agent is not None
+        
+        health_status = {
+            'status': 'healthy' if db_status == 'connected' and agent_status else 'degraded',
+            'database': db_status,
+            'agent_initialized': agent_status,
+            'database_url_configured': bool(os.environ.get("DATABASE_URL"))
+        }
+        
+        status_code = 200 if health_status['status'] == 'healthy' else 503
+        return jsonify(health_status), status_code
+        
+    except Exception as e:
+        logging.error(f"Health check error: {e}")
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'database': 'unknown',
+            'agent_initialized': False
+        }), 503
 
 # Configuration API routes
 @app.route('/config/api/current')
@@ -760,22 +829,28 @@ def config_save():
         existing_agent = db.session.query(Agent).filter_by(nome=config['name']).first()
         
         if existing_agent:
-            # Update existing agent
-            agent = existing_agent
-            agent.modelo = config['model']
-            agent.descricao = config.get('description', 'Agent configuration')
-            agent.instrucoes_personalidade = config['instructions']
-            agent.temperatura = config.get('temperature', 0.7)
-            agent.max_tokens = config.get('max_tokens', 1000)
-            agent.rotinas_ativas = config.get('tools_enabled', {}).get('routines', True)
-            agent.memorias_ativas = config.get('tools_enabled', {}).get('memories', True)
-            agent.midia_ativa = config.get('tools_enabled', {}).get('media', True)
-            agent.atualizado_em = datetime.utcnow()
-            agent_logger.debug(f"Updating existing agent UUID: {agent.id}")
+            # Update existing agent using a new approach to avoid UUID casting issues
+            agent_logger.debug(f"Updating existing agent UUID: {existing_agent.id}")
+            
+            # Update using update() method instead of direct attribute assignment
+            db.session.query(Agent).filter_by(nome=config['name']).update({
+                'modelo': config['model'],
+                'descricao': config.get('description', 'Agent configuration'),
+                'instrucoes_personalidade': config['instructions'],
+                'temperatura': config.get('temperature', 0.7),
+                'max_tokens': config.get('max_tokens', 1000),
+                'rotinas_ativas': config.get('tools_enabled', {}).get('routines', True),
+                'memorias_ativas': config.get('tools_enabled', {}).get('memories', True),
+                'midia_ativa': config.get('tools_enabled', {}).get('media', True),
+                'atualizado_em': datetime.utcnow()
+            })
+            
+            # Get the updated agent for returning config
+            agent = db.session.query(Agent).filter_by(nome=config['name']).first()
         else:
             # Create new agent record with UUID generation
             agent = Agent()
-            agent.id = uuid.uuid4()  # Generate UUID explicitly
+            agent.id = uuid.uuid4()
             agent.nome = config['name']
             agent.modelo = config['model']
             agent.descricao = config.get('description', 'Agent configuration')
@@ -790,10 +865,13 @@ def config_save():
             agent_logger.debug(f"Creating new agent with UUID: {agent.id}")
         
         # Log detailed configuration before saving
-        agent_logger.debug(f"Agent config before save - Name: {agent.nome}, Instructions: {agent.instrucoes_personalidade[:100]}...")
+        agent_logger.debug(f"Agent config before save - Name: {config['name']}, Instructions: {config['instructions'][:100]}...")
         
         db.session.commit()
-        agent_logger.info(f"Agent configuration saved to PostgreSQL with ID: {agent.id}")
+        
+        # Safely log agent ID
+        agent_id = getattr(agent, 'id', 'unknown') if agent else 'none'
+        agent_logger.info(f"Agent configuration saved to PostgreSQL with ID: {agent_id}")
         
         # Also save to Supabase agent_config table with correct schema
         try:
@@ -839,11 +917,14 @@ def config_save():
             logging.error(f"Error reinitializing agent: {e}")
             return jsonify({'error': f'Erro ao reinicializar agente: {str(e)}'}), 500
         
-        return jsonify({
+        config_response = {
             'success': True, 
-            'message': 'Configuração salva e agente reinicializado',
-            'config': {
-                'id': agent.id,
+            'message': 'Configuração salva e agente reinicializado'
+        }
+        
+        if agent:
+            config_response['config'] = {
+                'id': str(agent.id),
                 'name': agent.nome,
                 'model': agent.modelo,
                 'description': agent.descricao,
@@ -856,7 +937,8 @@ def config_save():
                     'media': agent.midia_ativa
                 }
             }
-        })
+        
+        return jsonify(config_response)
         
     except Exception as e:
         logging.error(f"Error saving config: {e}")
@@ -905,8 +987,8 @@ def create_anna_agent_from_config(config):
 def get_memories():
     """Get all memories"""
     try:
-        from supabase_tools import get_anna_memories
-        result = get_anna_memories(50)
+        from database_tools_simple import search_memories
+        result = search_memories("", 50)  # Get all memories with empty search
         return jsonify(result)
     except Exception as e:
         logging.error(f"Error getting memories: {e}")
