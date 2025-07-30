@@ -1,6 +1,7 @@
 import os
 import logging
 import asyncio
+import uuid
 from flask import Flask, render_template, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -12,8 +13,10 @@ from ai_routine_engine import RoutineSuggestionEngine
 from whatsapp_integration import whatsapp_manager
 from chat_session_manager_postgres import chat_session_manager
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure logging with detailed agent debugging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+agent_logger = logging.getLogger('agent_debug')
+agent_logger.setLevel(logging.DEBUG)
 
 class Base(DeclarativeBase):
     pass
@@ -151,21 +154,33 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str):
         # Create runner
         if anna_agent:
             runner = Runner(agent=anna_agent, app_name="anna_chat", session_service=session_service)
+            agent_logger.debug(f"Anna agent initialized for session {session_id}")
         else:
             raise Exception("Agent not initialized")
         
         # Create user content
         content = types.Content(role='user', parts=[types.Part(text=user_message)])
+        agent_logger.debug(f"Processing user message: {user_message[:100]}...")
         
         # Run agent and collect response
         events = runner.run_async(user_id=user_id, session_id=session_id, new_message=content)
         
         final_response = ""
+        event_count = 0
         async for event in events:
+            event_count += 1
+            agent_logger.debug(f"Agent event {event_count}: {type(event).__name__}")
+            
+            if hasattr(event, 'function_call') and event.function_call:
+                agent_logger.debug(f"Function call: {event.function_call.name}")
+            
             if event.is_final_response():
                 if event.content and event.content.parts:
                     final_response = event.content.parts[0].text
+                    agent_logger.debug(f"Final response generated: {final_response[:100]}...")
                 break
+        
+        agent_logger.info(f"Agent processing completed for session {session_id} with {event_count} events")
         
         # Save conversation to database
         if final_response:
@@ -702,7 +717,7 @@ def config_get_current():
             return jsonify({'error': 'No agent configuration found'}), 404
         
         config = {
-            'id': agent.id,
+            'id': str(agent.id),
             'name': agent.nome,
             'model': agent.modelo,
             'description': agent.descricao,
@@ -715,6 +730,8 @@ def config_get_current():
                 'media': agent.midia_ativa
             }
         }
+        
+        agent_logger.debug(f"Returning config - Instructions length: {len(config['instructions'])} chars")
         
         return jsonify(config)
     except Exception as e:
@@ -754,10 +771,11 @@ def config_save():
             agent.memorias_ativas = config.get('tools_enabled', {}).get('memories', True)
             agent.midia_ativa = config.get('tools_enabled', {}).get('media', True)
             agent.atualizado_em = datetime.utcnow()
-            logging.info(f"Updating existing agent: {agent.id}")
+            agent_logger.debug(f"Updating existing agent UUID: {agent.id}")
         else:
-            # Create new agent record
+            # Create new agent record with UUID generation
             agent = Agent()
+            agent.id = uuid.uuid4()  # Generate UUID explicitly
             agent.nome = config['name']
             agent.modelo = config['model']
             agent.descricao = config.get('description', 'Agent configuration')
@@ -769,10 +787,13 @@ def config_save():
             agent.midia_ativa = config.get('tools_enabled', {}).get('media', True)
             agent.atualizado_em = datetime.utcnow()
             db.session.add(agent)
-            logging.info(f"Creating new agent configuration")
+            agent_logger.debug(f"Creating new agent with UUID: {agent.id}")
+        
+        # Log detailed configuration before saving
+        agent_logger.debug(f"Agent config before save - Name: {agent.nome}, Instructions: {agent.instrucoes_personalidade[:100]}...")
         
         db.session.commit()
-        logging.info(f"Agent configuration saved to PostgreSQL")
+        agent_logger.info(f"Agent configuration saved to PostgreSQL with ID: {agent.id}")
         
         # Also save to Supabase agent_config table with correct schema
         try:
