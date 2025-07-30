@@ -91,7 +91,7 @@ class Agent(db.Model):
     """Agent configuration settings matching the PostgreSQL agents table"""
     __tablename__ = 'agents'
     
-    id = db.Column(db.String(36), primary_key=True)  # UUID as string
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nome = db.Column(db.Text, nullable=False)
     modelo = db.Column(db.Text, nullable=False)
     descricao = db.Column(db.Text)

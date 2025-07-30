@@ -1,0 +1,44 @@
+<i data-lucide="magic-wand" width="16" height="16"></i> icon name was not found in the provided icons object.
+replaceElement @ replaceElement.ts:79
+admin:2507 Admin systems initialized successfully
+admin.js:537 Calendar events loaded: 11
+admin.js:984 Rendering today activities: Array(3)
+replaceElement.ts:79  <i data-lucide="magic-wand" width="16" height="16"></i> icon name was not found in the provided icons object.
+replaceElement @ replaceElement.ts:79
+admin.js:1014 Today activities rendered successfully
+admin.js:44 Initializing activity tab handlers
+admin.js:91 Loading filter options
+admin.js:208 Switching to tab: calendario
+admin.js:44 Initializing activity tab handlers
+admin.js:91 Loading filter options
+admin.js:208 Switching to tab: calendario
+admin.js:1630 Agent configuration loaded: Object
+admin:2271  Error: TypeError: Cannot read properties of undefined (reading 'toUpperCase')
+    at admin:2329:82
+    at Array.map (<anonymous>)
+    at renderClientesAdmin (admin:2323:47)
+    at loadClientesAdmin (admin:2265:21)
+loadClientesAdmin @ admin:2271
+favicon.ico:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+admin:2292  Error: TypeError: Cannot read properties of undefined (reading 'toUpperCase')
+    at admin:2378:78
+    at Array.map (<anonymous>)
+    at renderUsuariosAdmin (admin:2370:45)
+    at loadUsuariosAdmin (admin:2286:21)
+loadUsuariosAdmin @ admin:2292
+admin.js:537 Calendar events loaded: 11
+admin.js:984 Rendering today activities: Array(3)
+replaceElement.ts:79  <i data-lucide="magic-wand" width="16" height="16"></i> icon name was not found in the provided icons object.
+replaceElement @ replaceElement.ts:79
+admin.js:1014 Today activities rendered successfully
+[NOVO] Explique os erros do Console usando o Copilot no Edge: clique em
+         
+         para explicar um erro.
+        Saiba mais
+        Não mostrar novamente
+admin:2158 Using direct implementation
+admin:2174 Saving agent config: {name: 'Anna', model: 'gemini-2.0-flash', description: 'Criadora de conteúdo brasileira carismática', instructions: 'teste', temperature: 0.7, …}
+admin:2176   POST https://c8b7d1a6-6e5d-47f1-ac1f-0066cbd4c2fd-00-1o86kztfffbjy.picard.replit.dev/config/api/config 500 (Internal Server Error)
+saveAgentConfig @ admin:2176
+onclick @ admin:1305
+admin:2185 Save result: {error: '(psycopg2.errors.NotNullViolation) null value in c… on this error at: https://sqlalche.me/e/20/gkpj)'}

@@ -739,20 +739,38 @@ def config_save():
         from models import Agent
         from datetime import datetime
         
-        # Create new agent record
-        agent = Agent()
-        agent.nome = config['name']
-        agent.modelo = config['model']
-        agent.descricao = config.get('description', 'Agent configuration')
-        agent.instrucoes_personalidade = config['instructions']
-        agent.temperatura = config.get('temperature', 0.7)
-        agent.max_tokens = config.get('max_tokens', 1000)
-        agent.rotinas_ativas = True
-        agent.memorias_ativas = True
-        agent.midia_ativa = True
-        agent.atualizado_em = datetime.utcnow()
+        # Check if agent with this name already exists
+        existing_agent = db.session.query(Agent).filter_by(nome=config['name']).first()
         
-        db.session.add(agent)
+        if existing_agent:
+            # Update existing agent
+            agent = existing_agent
+            agent.modelo = config['model']
+            agent.descricao = config.get('description', 'Agent configuration')
+            agent.instrucoes_personalidade = config['instructions']
+            agent.temperatura = config.get('temperature', 0.7)
+            agent.max_tokens = config.get('max_tokens', 1000)
+            agent.rotinas_ativas = config.get('tools_enabled', {}).get('routines', True)
+            agent.memorias_ativas = config.get('tools_enabled', {}).get('memories', True)
+            agent.midia_ativa = config.get('tools_enabled', {}).get('media', True)
+            agent.atualizado_em = datetime.utcnow()
+            logging.info(f"Updating existing agent: {agent.id}")
+        else:
+            # Create new agent record
+            agent = Agent()
+            agent.nome = config['name']
+            agent.modelo = config['model']
+            agent.descricao = config.get('description', 'Agent configuration')
+            agent.instrucoes_personalidade = config['instructions']
+            agent.temperatura = config.get('temperature', 0.7)
+            agent.max_tokens = config.get('max_tokens', 1000)
+            agent.rotinas_ativas = config.get('tools_enabled', {}).get('routines', True)
+            agent.memorias_ativas = config.get('tools_enabled', {}).get('memories', True)
+            agent.midia_ativa = config.get('tools_enabled', {}).get('media', True)
+            agent.atualizado_em = datetime.utcnow()
+            db.session.add(agent)
+            logging.info(f"Creating new agent configuration")
+        
         db.session.commit()
         logging.info(f"Agent configuration saved to PostgreSQL")
         
