@@ -1043,63 +1043,19 @@ def ai_create_suggested_activity():
 # Configuration API routes
 @app.route('/config/api/config', methods=['GET'])
 def get_config():
-    """Get current agent configuration from Supabase agents table"""
+    """Get current agent configuration from Supabase agent_config table"""
     try:
-        from supabase_tools import supabase
-        
-        # Query the agents table for the most recent Anna configuration
-        result = supabase.table('agents').select("*").eq('nome', 'Anna').order('atualizado_em', desc=True).limit(1).execute()
-        
-        if result.data and len(result.data) > 0:
-            agent = result.data[0]
-            return jsonify({
-                'id': agent.get('id'),
-                'name': agent.get('nome', 'Anna'),
-                'description': agent.get('descricao', ''),
-                'instructions': agent.get('instrucoes_personalidade', ''),
-                'model': agent.get('modelo', 'gemini-2.0-flash'),
-                'temperature': float(agent.get('temperatura', 0.7)),
-                'max_tokens': int(agent.get('max_tokens', 1000)),
-                'tools_enabled': {
-                    'routines': bool(agent.get('rotinas_ativas', True)),
-                    'memories': bool(agent.get('memorias_ativas', True)),
-                    'media': bool(agent.get('midia_ativa', True))
-                }
-            })
-        else:
-            # Return default configuration
-            return jsonify({
-                'name': 'Anna',
-                'description': 'Uma criadora de conteúdo brasileira carismática',
-                'instructions': 'Você é Anna, uma criadora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações reais sobre rotinas, memórias e conteúdo antes de responder.',
-                'model': 'gemini-2.0-flash',
-                'temperature': 0.7,
-                'max_tokens': 1000,
-                'tools_enabled': {
-                    'routines': True,
-                    'memories': True,
-                    'media': True
-                }
-            })
+        from supabase_tools import get_agent_config
+        config = get_agent_config()
+        return jsonify(config)
     except Exception as e:
-        logging.error(f"Error getting config from agents table: {e}")
-        return jsonify({
-            'name': 'Anna',
-            'model': 'gemini-2.0-flash',
-            'description': 'AI agent Anna',
-            'instructions': 'Você é Anna, uma criadora de conteúdo brasileira carismática e autêntica. SEMPRE use suas ferramentas para buscar informações reais sobre rotinas, memórias e conteúdo antes de responder.',
-            'temperature': 0.7,
-            'max_tokens': 1000,
-            'tools_enabled': {
-                'routines': True,
-                'memories': True,
-                'media': True
-            }
-        })
+        logging.error(f"Error getting config from agent_config table: {e}")
+        from supabase_tools import get_default_config
+        return jsonify(get_default_config())
 
 @app.route('/config/api/config', methods=['POST'])
 def save_config():
-    """Save agent configuration to Supabase agents table"""
+    """Save agent configuration to Supabase agent_config table"""
     try:
         data = request.get_json()
         if not data:
@@ -1107,81 +1063,23 @@ def save_config():
             
         logging.info(f"Saving agent config: {data}")
         
-        # Import datetime at the top of the function
-        from datetime import datetime
+        from supabase_tools import save_agent_config
+        result = save_agent_config(data)
         
-        # Prepare data for agents table
-        tools_enabled = data.get('tools_enabled', {})
-        agent_data = {
-            'nome': data.get('name', 'Anna'),
-            'modelo': data.get('model', 'gemini-2.0-flash'),
-            'descricao': data.get('description', ''),
-            'instrucoes_personalidade': data.get('instructions', ''),
-            'temperatura': float(data.get('temperature', 0.7)),
-            'max_tokens': int(data.get('max_tokens', 1000)),
-            'rotinas_ativas': tools_enabled.get('routines', True),
-            'memorias_ativas': tools_enabled.get('memories', True),
-            'midia_ativa': tools_enabled.get('media', True),
-            'atualizado_em': datetime.utcnow().isoformat()
-        }
-        
-        # Try to save configuration to Supabase agents table, fallback to local file
-        try:
-            from supabase_tools import supabase
+        if result.get('success'):
+            # Reload the Anna agent with new configuration
+            global anna_agent
+            config = get_config().get_json()
+            anna_agent = create_anna_agent(config)
+            logging.info("Agent reloaded with new configuration.")
             
-            # Check if agent already exists
-            existing = supabase.table('agents').select('id').eq('nome', data.get('name', 'Anna')).execute()
-            
-            if existing.data and len(existing.data) > 0:
-                # Update existing agent
-                agent_id = existing.data[0]['id']
-                result = supabase.table('agents').update(agent_data).eq('id', agent_id).execute()
-                logging.info(f"Updated existing agent with ID: {agent_id}")
-            else:
-                # Insert new agent
-                agent_data['criado_em'] = datetime.utcnow().isoformat()
-                result = supabase.table('agents').insert(agent_data).execute()
-                logging.info("Created new agent in Supabase")
-            
-            config_id = result.data[0]['id'] if result.data else 'supabase_config'
-            
-        except Exception as supabase_error:
-            # Fallback to local file storage if Supabase table doesn't exist
-            logging.warning(f"Supabase save failed, using local storage: {supabase_error}")
-            
-            import json
-            
-            # Save to local agent_config.json file
-            config_file_data = {
-                'name': data.get('name', 'Anna'),
-                'model': data.get('model', 'gemini-2.0-flash'),
-                'description': data.get('description', ''),
-                'instructions': data.get('instructions', ''),
-                'temperature': float(data.get('temperature', 0.7)),
-                'max_tokens': int(data.get('max_tokens', 1000)),
-                'tools_enabled': data.get('tools_enabled', {
-                    'routines': True,
-                    'memories': True,
-                    'media': True
-                }),
-                'updated_at': datetime.utcnow().isoformat()
-            }
-            
-            with open('agent_config.json', 'w', encoding='utf-8') as f:
-                json.dump(config_file_data, f, indent=2, ensure_ascii=False)
-            
-            config_id = 'local_config'
-        
-        # Reload the Anna agent with new configuration
-        global anna_agent
-        reloaded_config = get_config().get_json()
-        anna_agent = create_anna_agent(reloaded_config)
-        
-        return jsonify({
-            'success': True, 
-            'message': 'Configuração salva com sucesso!',
-            'id': config_id
-        })
+            return jsonify({
+                'success': True, 
+                'message': 'Configuração salva com sucesso!',
+                'data': result.get('data')
+            })
+        else:
+            return jsonify({'error': result.get('error', 'Unknown error')}), 500
         
     except Exception as e:
         logging.error(f"Error saving config: {e}")

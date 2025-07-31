@@ -391,41 +391,81 @@ def search_content(search_term: str, content_type: Optional[str],
         }
 
 
+def get_agent_config() -> dict:
+    """
+    Get the agent configuration from the agent_config table.
+    Fetches the first active configuration found.
+    """
+    try:
+        result = supabase.table('agent_config').select("*").eq('is_active', True).limit(1).execute()
+        
+        if result.data:
+            config_data = result.data[0]
+            logging.info(f"Configuration loaded from agent_config table with ID: {config_data['id']}")
+            return config_data
+        else:
+            logging.warning("No active configuration found in agent_config table. Using default.")
+            return get_default_config()
+            
+    except Exception as e:
+        logging.error(f"Error loading configuration from agent_config: {e}")
+        return get_default_config()
+
+def save_agent_config(config_data: dict) -> dict:
+    """
+    Save agent configuration to the agent_config table.
+    Updates if a config exists, otherwise creates a new one.
+    """
+    try:
+        from datetime import datetime
+
+        # Prepare data for Supabase
+        data_to_save = {
+            'name': config_data.get('name'),
+            'description': config_data.get('description'),
+            'instructions': config_data.get('instructions'),
+            'model': config_data.get('model'),
+            'temperature': config_data.get('temperature'),
+            'max_tokens': config_data.get('max_tokens'),
+            'tools_enabled': config_data.get('tools_enabled'),
+            'is_active': True,
+            'updated_at': datetime.utcnow().isoformat()
+        }
+        
+        # Check if a configuration already exists
+        existing_config = supabase.table('agent_config').select('id').limit(1).execute()
+        
+        if existing_config.data:
+            # Update existing configuration
+            config_id = existing_config.data[0]['id']
+            response = supabase.table('agent_config').update(data_to_save).eq('id', config_id).execute()
+            logging.info(f"Updated agent configuration with ID: {config_id}")
+        else:
+            # Insert new configuration
+            response = supabase.table('agent_config').insert(data_to_save).execute()
+            logging.info("Created new agent configuration.")
+            
+        return {'success': True, 'data': response.data[0]}
+
+    except Exception as e:
+        logging.error(f"Error saving agent configuration: {e}")
+        return {'success': False, 'error': str(e)}
+
 def get_active_agent_configuration() -> dict:
     """
-    Get the active agent configuration from the Supabase 'agents' table.
+    Get the active agent configuration from the Supabase 'agent_config' table.
     
     Returns:
         Dictionary with active configuration or default config.
     """
     try:
-        # Fetch the most recent configuration for 'Anna'
-        result = supabase.table('agents').select("*").eq('nome', 'Anna').order('atualizado_em', desc=True).limit(1).execute()
-        
-        if result.data:
-            agent = result.data[0]
-            config = {
-                'id': agent.get('id'),
-                'name': agent.get('nome', 'Anna'),
-                'description': agent.get('descricao', ''),
-                'instructions': agent.get('instrucoes_personalidade', ''),
-                'model': agent.get('modelo', 'gemini-2.0-flash'),
-                'temperature': float(agent.get('temperatura', 0.7)),
-                'max_tokens': int(agent.get('max_tokens', 1000)),
-                'tools_enabled': {
-                    'routines': bool(agent.get('rotinas_ativas', True)),
-                    'memories': bool(agent.get('memorias_ativas', True)),
-                    'media': bool(agent.get('midia_ativa', True))
-                }
-            }
-            logging.info(f"Configuration loaded from Supabase 'agents' table for agent: {config['name']}")
+        config = get_agent_config()
+        if config and config.get('id'): # Check if it's a real config
             return config
         else:
-            logging.warning("No configuration found in Supabase 'agents' table. Using default.")
             return get_default_config()
-
     except Exception as e:
-        logging.error(f"Error loading agent configuration from Supabase: {e}")
+        logging.error(f"Error getting active agent configuration: {e}")
         return get_default_config()
 
 def get_default_config() -> dict:
@@ -435,12 +475,13 @@ def get_default_config() -> dict:
         'model': 'gemini-2.0-flash',
         'description': 'AI agent Anna',
         'instructions': 'Você é Anna, uma criadora de conteúdo brasileira carismática e autêntica...',
-        'tools': [
-            'get_routines', 'get_routine_media',
-            'search_memories', 'get_recent_conversations', 'search_content'
-        ],
         'temperature': 0.7,
-        'max_tokens': 1000
+        'max_tokens': 1000,
+        'tools_enabled': {
+            'routines': True,
+            'memories': True,
+            'media': True
+        }
     }
 
 

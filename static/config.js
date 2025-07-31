@@ -28,7 +28,7 @@ class AgentConfig {
     populateForm(config) {
         // Basic information
         document.getElementById('agentName').value = config.name || 'Anna';
-        document.getElementById('agentModel').value = config.model || 'gemini-2.5-flash';
+        document.getElementById('agentModel').value = config.model || 'gemini-2.0-flash';
         document.getElementById('agentDescription').value = config.description || '';
         document.getElementById('agentInstructions').value = config.instructions || '';
         
@@ -38,16 +38,16 @@ class AgentConfig {
         document.getElementById('maxTokens').value = config.max_tokens || 1000;
 
         // Tools
-        const enabledTools = config.tools || [];
-        document.querySelectorAll('input[name="tools"]').forEach(checkbox => {
-            checkbox.checked = enabledTools.includes(checkbox.value);
-        });
+        const tools_enabled = config.tools_enabled || {};
+        document.getElementById('tool_routines').checked = tools_enabled.routines === true;
+        document.getElementById('tool_media').checked = tools_enabled.media === true;
+        document.getElementById('tool_memories').checked = tools_enabled.memories === true;
     }
 
     loadDefaults() {
         const defaultConfig = {
             name: 'Anna',
-            model: 'gemini-2.5-flash',
+            model: 'gemini-2.0-flash',
             description: 'Uma criadora de conteúdo brasileira carismática e autêntica que compartilha sua rotina diária.',
             instructions: `Você é Anna, uma criadora de conteúdo brasileira de 24 anos, carismática e autêntica. Você tem uma personalidade vibrante e espontânea, sempre usando emojis e expressões informais típicas do português brasileiro.
 
@@ -73,14 +73,11 @@ ESTILO DE RESPOSTA:
 - Mencione quando tem fotos ou vídeos para compartilhar
 
 IMPORTANTE: Sempre consulte seus dados reais antes de responder. Nunca invente informações sobre sua rotina, atividades ou mídia.`,
-            tools: [
-                'get_anna_routines',
-                'get_anna_routine_media', 
-                'search_memories',
-                'get_recent_conversations',
-                'search_content',
-                'save_conversation_memory'
-            ],
+            tools_enabled: {
+                routines: true,
+                media: true,
+                memories: true
+            },
             temperature: 0.7,
             max_tokens: 1000
         };
@@ -134,7 +131,11 @@ IMPORTANTE: Sempre consulte seus dados reais antes de responder. Nunca invente i
             instructions: formData.get('instructions') || '',
             temperature: parseFloat(formData.get('temperature')) || 0.7,
             max_tokens: parseInt(formData.get('max_tokens')) || 1000,
-            tools: formData.getAll('tools')
+            tools_enabled: {
+                routines: document.getElementById('tool_routines').checked,
+                media: document.getElementById('tool_media').checked,
+                memories: document.getElementById('tool_memories').checked
+            }
         };
         
         console.log('Converted form data to config:', config);
