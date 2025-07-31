@@ -86,23 +86,28 @@ class AdminManager {
         }
     }
 
-    // Load filter options from activities data
+    // Load filter options from the dedicated filters endpoint
     loadFilterOptions() {
         console.log('Loading filter options');
         
-        // Get current activities to extract filter options
-        fetch('/admin/api/activities')
-            .then(response => response.json())
+        fetch('/admin/api/activities/filters')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
-                const categories = [...new Set(data.map(activity => activity.category))].filter(Boolean);
-                const statuses = [...new Set(data.map(activity => activity.status))].filter(Boolean);
+                // The endpoint returns an object with categories and statuses arrays
+                const categories = data.categories || [];
+                const statuses = data.statuses || [];
                 
                 this.filterOptions = { categories, statuses };
                 this.populateFilterDropdowns();
             })
             .catch(error => {
                 console.error('Error loading filter options:', error);
-                // Set default options
+                // Set default options as a fallback
                 this.filterOptions = {
                     categories: ['trabalho', 'fitness', 'pessoal', 'social', 'saude', 'educacao'],
                     statuses: ['upcoming', 'current', 'completed']

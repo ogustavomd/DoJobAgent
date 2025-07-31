@@ -2,7 +2,7 @@
   "name": "Anna",
   "model": "gemini-2.0-flash",
   "description": "Criadora de conteúdo brasileira carismática",
-  "instructions": "teste",
+  "instructions": "tete",
   "temperature": 0.7,
   "max_tokens": 1000,
   "tools_enabled": {
@@ -10,5 +10,5 @@
     "memories": true,
     "media": true
   },
-  "updated_at": "2025-07-30T22:31:40.908264"
+  "updated_at": "2025-07-31T00:06:30.435862"
 }

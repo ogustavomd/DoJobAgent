@@ -6,7 +6,7 @@ import os
 import uuid
 import logging
 from app import app, db
-from models import Agent, AnnaRoutine, AnnaRoutineMedia, Message, AnnaMemory
+from models import Agent, Routine, RoutineMedia, Message, Memory
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -74,21 +74,21 @@ def create_sample_routines():
     """Create sample routine data"""
     try:
         # Check if routines already exist
-        existing_routines = db.session.query(AnnaRoutine).first()
+        existing_routines = db.session.query(Routine).first()
         if existing_routines:
             logging.info("Sample routines already exist")
             return
         
-        from datetime import date, timedelta
+        from datetime import date, timedelta, time
         today = date.today()
         
         sample_routines = [
             {
                 'activity': 'Treino na academia',
                 'category': 'fitness',
-                'date': (today + timedelta(days=1)).strftime('%Y-%m-%d'),
-                'time_start': '07:00',
-                'time_end': '08:30',
+                'date': today + timedelta(days=1),
+                'time_start': time(7, 0),
+                'time_end': time(8, 30),
                 'status': 'upcoming',
                 'description': 'Treino de força e cardio',
                 'location': 'Smart Fit - Vila Madalena',
@@ -98,9 +98,9 @@ def create_sample_routines():
             {
                 'activity': 'Gravação de conteúdo',
                 'category': 'trabalho',
-                'date': (today + timedelta(days=1)).strftime('%Y-%m-%d'),
-                'time_start': '10:00',
-                'time_end': '12:00',
+                'date': today + timedelta(days=1),
+                'time_start': time(10, 0),
+                'time_end': time(12, 0),
                 'status': 'upcoming',
                 'description': 'Gravação de vídeos para Instagram',
                 'location': 'Estúdio em casa',
@@ -110,9 +110,9 @@ def create_sample_routines():
             {
                 'activity': 'Almoço com amigas',
                 'category': 'social',
-                'date': (today + timedelta(days=2)).strftime('%Y-%m-%d'),
-                'time_start': '12:30',
-                'time_end': '14:00',
+                'date': today + timedelta(days=2),
+                'time_start': time(12, 30),
+                'time_end': time(14, 0),
                 'status': 'upcoming',
                 'description': 'Encontro com as meninas no restaurante',
                 'location': 'Restaurante Italiano - Jardins',
@@ -122,7 +122,7 @@ def create_sample_routines():
         ]
         
         for routine_data in sample_routines:
-            routine = AnnaRoutine(**routine_data)
+            routine = Routine(**routine_data)
             db.session.add(routine)
         
         db.session.commit()
@@ -136,7 +136,7 @@ def create_sample_memories():
     """Create sample memory data"""
     try:
         # Check if memories already exist
-        existing_memories = db.session.query(AnnaMemory).first()
+        existing_memories = db.session.query(Memory).first()
         if existing_memories:
             logging.info("Sample memories already exist")
             return
@@ -169,7 +169,7 @@ def create_sample_memories():
         ]
         
         for memory_data in sample_memories:
-            memory = AnnaMemory(**memory_data)
+            memory = Memory(**memory_data)
             db.session.add(memory)
         
         db.session.commit()
