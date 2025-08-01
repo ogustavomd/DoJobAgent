@@ -346,31 +346,40 @@ def save_conversation_memory(user_id: str, session_id: str, user_message: str, a
         db.session.rollback()
         return {'success': False, 'error': str(e)}
 
+from flask import current_app
+
 def get_active_agent_configuration() -> Dict[str, Any]:
     """
-    Get the active agent configuration from database, fallback to file.
+    Get the active agent configuration from the PostgreSQL database, with a fallback to a JSON file.
     
     Returns:
-        Dictionary with active configuration
+        A dictionary with the active agent's configuration.
     """
     try:
-        # Try to get from database first
-        config = db.session.query(AgentConfiguration).filter(
-            AgentConfiguration.is_active == True
-        ).first()
+        from models import Agent
+        db = current_app.extensions['sqlalchemy']
+        
+        # Get the first available agent configuration from the database.
+        config = db.session.query(Agent).first()
         
         if config:
             config_data = {
-                'name': config.name,
-                'model': config.model,
-                'description': config.description,
-                'instructions': config.instructions,
-                'tools_enabled': config.tools_enabled
+                'name': config.nome,
+                'model': config.modelo,
+                'description': config.descricao,
+                'instructions': config.instrucoes_personalidade,
+                'temperature': float(config.temperatura) if config.temperatura is not None else 0.7,
+                'max_tokens': config.max_tokens if config.max_tokens is not None else 1000,
+                'tools_enabled': {
+                    'routines': config.rotinas_ativas,
+                    'memories': config.memorias_ativas,
+                    'media': config.midia_ativa
+                }
             }
-            logging.info("Configuration loaded from database")
+            logging.info("Agent configuration loaded from PostgreSQL database.")
             return config_data
-        
-        # Fallback to file
+            
+        # Fallback to a local JSON configuration file.
         import json
         import os
         
@@ -381,20 +390,27 @@ def get_active_agent_configuration() -> Dict[str, Any]:
                 logging.info(f"Configuration loaded from {config_file}")
                 return config_data
         
-        # Default configuration
-        logging.info("Using default configuration")
+        # Fallback to a default configuration if no other source is available.
+        logging.warning("No database or file configuration found. Using default settings.")
         return {
             'name': 'Anna',
             'model': 'gemini-2.0-flash',
             'description': 'AI agent Anna',
-            'instructions': '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica.'''
+            'instructions': 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica.',
+            'temperature': 0.7,
+            'max_tokens': 1000,
+            'tools_enabled': {'routines': True, 'memories': True, 'media': True}
         }
         
     except Exception as e:
         logging.error(f"Error getting agent configuration: {e}")
+        # Return default configuration in case of any error.
         return {
             'name': 'Anna',
             'model': 'gemini-2.0-flash',
             'description': 'AI agent Anna',
-            'instructions': '''Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica.'''
+            'instructions': 'Você é Anna, uma produtora de conteúdo brasileira carismática e autêntica.',
+            'temperature': 0.7,
+            'max_tokens': 1000,
+            'tools_enabled': {'routines': True, 'memories': True, 'media': True}
         }

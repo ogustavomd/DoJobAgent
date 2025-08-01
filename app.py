@@ -1,6 +1,9 @@
 import os
 import logging
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
 import uuid
 from flask import Flask, render_template, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
@@ -71,8 +74,8 @@ def initialize_database():
     return False
 
 # Initialize database with retry logic
-if not initialize_database():
-    logging.error("Database initialization failed - application may not work correctly")
+# if not initialize_database():
+#     logging.error("Database initialization failed - application may not work correctly")
 
 # Initialize Anna agent
 anna_agent = None
@@ -80,25 +83,34 @@ anna_agent = None
 def init_agent():
     """Initialize Anna agent with configuration from persistent storage"""
     global anna_agent
-    try:
-        from supabase_tools import get_active_agent_configuration
-        config = get_active_agent_configuration()
-        anna_agent = create_anna_agent(config)
-        logging.info("Anna agent created successfully with configuration")
-    except Exception as e:
-        logging.error(f"Failed to initialize Anna agent: {e}")
-        # Fallback to default agent
+    with app.app_context():
         try:
-            from supabase_tools import get_default_config
-            config = get_default_config()
+            from database_tools import get_active_agent_configuration
+            config = get_active_agent_configuration()
             anna_agent = create_anna_agent(config)
-            logging.info("Anna agent initialized with fallback configuration")
-        except Exception as fallback_error:
-            logging.error(f"Fallback initialization also failed: {fallback_error}")
-            raise
+            logging.info("Anna agent created successfully with configuration")
+        except Exception as e:
+            logging.error(f"Failed to initialize Anna agent: {e}")
+            # Fallback to default agent
+            try:
+                from database_tools import get_active_agent_configuration
+                config = get_active_agent_configuration()
+                anna_agent = create_anna_agent(config)
+                logging.info("Anna agent initialized with fallback configuration")
+            except Exception as fallback_error:
+                logging.error(f"Fallback initialization also failed: {fallback_error}")
+                raise
 
-# Initialize agent on startup
-init_agent()
+# Initialize agent before the first request
+agent_initialized = False
+
+@app.before_request
+def initialize_agent_before_request():
+    global agent_initialized
+    if not agent_initialized:
+        initialize_database()
+        init_agent()
+        agent_initialized = True
 
 @app.route('/')
 def index():
