@@ -129,21 +129,25 @@ class DualDatabaseSync:
             with self.get_postgres_connection() as pg_conn:
                 cursor = pg_conn.cursor()
                 
+                # Correção: Adicionar session_id, user_id e user_message para compatibilidade
                 cursor.execute("""
                     INSERT INTO messages (
                         chat_session_id, sender_phone, sender_name, content, 
-                        message_type, media_url, is_from_bot, user_id
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        message_type, media_url, is_from_bot,
+                        session_id, user_id, user_message
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
                     message_data.get('chat_session_id'),
                     message_data.get('sender_phone'),
                     message_data.get('sender_name', message_data.get('sender_phone')),
-                    message_data['content'],
+                    message_data.get('content'),
                     message_data.get('message_type', 'text'),
                     message_data.get('media_url'),
                     message_data.get('is_from_bot', False),
-                    message_data.get('user_id')
+                    message_data.get('session_id'),
+                    message_data.get('user_id'),
+                    message_data.get('content')  # Usando 'content' para 'user_message'
                 ))
                 
                 result = cursor.fetchone()
@@ -187,11 +191,10 @@ class DualDatabaseSync:
                         'chat_session_id': supabase_session_id,
                         'sender_phone': contact_phone,
                         'sender_name': contact_phone,
-                        'content': message_data['content'],
+                        'content': message_data.get('content'),
                         'message_type': message_data.get('message_type', 'text'),
                         'media_url': message_data.get('media_url'),
-                        'is_from_bot': message_data.get('is_from_bot', False),
-                        'user_id': message_data.get('user_id')
+                        'is_from_bot': message_data.get('is_from_bot', False)
                     }
                     
                     result = self.supabase.table('messages').insert(supabase_message).execute()

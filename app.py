@@ -11,7 +11,8 @@ from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 from anna_agent import create_anna_agent
-from google.genai import types
+from google.genai.types import Content, Part
+from google.adk.events import Event
 from ai_routine_engine import RoutineSuggestionEngine
 from whatsapp_integration import whatsapp_manager
 from chat_session_manager_postgres import chat_session_manager
@@ -85,7 +86,7 @@ def init_agent():
     global anna_agent
     with app.app_context():
         try:
-            from database_tools import get_active_agent_configuration
+            from supabase_tools import get_active_agent_configuration
             config = get_active_agent_configuration()
             anna_agent = create_anna_agent(config)
             logging.info("Anna agent created successfully with configuration")
@@ -93,7 +94,7 @@ def init_agent():
             logging.error(f"Failed to initialize Anna agent: {e}")
             # Fallback to default agent
             try:
-                from database_tools import get_active_agent_configuration
+                from supabase_tools import get_active_agent_configuration
                 config = get_active_agent_configuration()
                 anna_agent = create_anna_agent(config)
                 logging.info("Anna agent initialized with fallback configuration")
@@ -156,8 +157,11 @@ def chat():
         flask_session_id = session['session_id']
         user_id = contact_phone
         
+        # Get agent_id from request
+        agent_id = data.get('agent_id')
+
         # Run the agent asynchronously
-        response = asyncio.run(run_anna_agent(user_message, user_id, flask_session_id))
+        response = asyncio.run(run_anna_agent(user_message, user_id, flask_session_id, agent_id))
         
         # Save Anna's response
         if response:
@@ -179,11 +183,26 @@ def chat():
         logging.error(f"Error in chat endpoint: {e}")
         return jsonify({'error': 'Internal server error'}), 500
 
-async def run_anna_agent(user_message: str, user_id: str, session_id: str):
+async def run_anna_agent(user_message: str, user_id: str, session_id: str, agent_id: str = None):
     """Run Anna agent with the user message"""
     try:
         from google.adk.runners import Runner
         from google.adk.sessions import InMemorySessionService
+        from supabase_tools import get_agent_config_by_id
+
+        # Get agent configuration
+        if agent_id:
+            config = get_agent_config_by_id(agent_id)
+        else:
+            # Fallback to default active agent
+            from supabase_tools import get_active_agent_configuration
+            config = get_active_agent_configuration()
+
+        if not config:
+            raise Exception("Agent configuration not found")
+
+        # Create agent with the selected configuration
+        agent_to_run = create_anna_agent(config)
         
         # Create session service and session
         session_service = InMemorySessionService()
@@ -197,14 +216,11 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str):
         await load_conversation_history(session_obj, user_id, session_id)
         
         # Create runner
-        if anna_agent:
-            runner = Runner(agent=anna_agent, app_name="anna_chat", session_service=session_service)
-            agent_logger.debug(f"Anna agent initialized for session {session_id}")
-        else:
-            raise Exception("Agent not initialized")
+        runner = Runner(agent=agent_to_run, app_name="anna_chat", session_service=session_service)
+        agent_logger.debug(f"Anna agent initialized for session {session_id} with agent {agent_to_run.name}")
         
         # Create user content
-        content = types.Content(role='user', parts=[types.Part(text=user_message)])
+        content = Content(role='user', parts=[Part(text=user_message)])
         agent_logger.debug(f"Processing user message: {user_message[:100]}...")
         
         # Run agent and collect response
@@ -260,12 +276,12 @@ async def load_conversation_history(session_obj, user_id: str, session_id: str):
             for msg in messages:
                 if msg['is_from_bot']:
                     # Assistant message
-                    assistant_content = types.Content(role='model', parts=[types.Part(text=msg['content'])])
-                    session_obj.add_message(assistant_content)
+                    assistant_content = Content(role='model', parts=[Part(text=msg['content'])])
+                    session_obj.events.append(Event(author='model', content=assistant_content))
                 else:
                     # User message
-                    user_content = types.Content(role='user', parts=[types.Part(text=msg['content'])])
-                    session_obj.add_message(user_content)
+                    user_content = Content(role='user', parts=[Part(text=msg['content'])])
+                    session_obj.events.append(Event(author='user', content=user_content))
                     
             logging.info(f"Loaded {len(messages)} messages for ADK session {session_id}")
         
@@ -1095,6 +1111,20 @@ def save_config():
         
     except Exception as e:
         logging.error(f"Error saving config: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# API to get all agents
+@app.route('/api/agents', methods=['GET'])
+def get_agents():
+    """Get all agent configurations"""
+    try:
+        from supabase_tools import get_all_agents
+        logging.info("Fetching all agents...")
+        agents = get_all_agents()
+        logging.info(f"Found {len(agents)} agents.")
+        return jsonify(agents)
+    except Exception as e:
+        logging.error(f"Error getting agents: {e}")
         return jsonify({'error': str(e)}), 500
 
 # Client and User Management Routes

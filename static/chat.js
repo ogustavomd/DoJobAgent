@@ -7,11 +7,13 @@ class AnnaChat {
         this.sendButton = document.getElementById('sendButton');
         this.messagesContainer = document.getElementById('messagesContainer');
         this.typingIndicator = document.getElementById('typingIndicator');
+        this.agentSelector = document.getElementById('agentSelector');
         
         this.isLoading = false;
         
         this.initializeEventListeners();
         this.setupTextareaAutoResize();
+        this.loadAgents();
     }
 
     initializeEventListeners() {
@@ -90,13 +92,43 @@ class AnnaChat {
         }
     }
 
+    async loadAgents() {
+        console.log("Loading agents...");
+        try {
+            const response = await fetch('/api/agents');
+            console.log("Response from /api/agents:", response);
+            const agents = await response.json();
+            console.log("Agents data:", agents);
+            
+            if (agents && agents.length > 0) {
+                this.agentSelector.innerHTML = ''; // Clear existing options
+                agents.forEach(agent => {
+                    const option = document.createElement('option');
+                    option.value = agent.id;
+                    option.textContent = agent.name;
+                    this.agentSelector.appendChild(option);
+                });
+                console.log("Agents loaded into dropdown.");
+            } else {
+                console.log("No agents found or empty list received.");
+            }
+        } catch (error) {
+            console.error('Error loading agents:', error);
+        }
+    }
+
     async callAnnaAgent(message) {
+        const agentId = this.agentSelector.value;
+
         const response = await fetch('/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: message })
+            body: JSON.stringify({
+                message: message,
+                agent_id: agentId
+            })
         });
 
         if (!response.ok) {

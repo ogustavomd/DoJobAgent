@@ -88,19 +88,20 @@ class Memory(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+from sqlalchemy.dialects.postgresql import JSONB
+
 class Agent(db.Model):
-    """Agent configuration settings matching the PostgreSQL agents table"""
-    __tablename__ = 'agents'
+    """Agent configuration settings matching the agent_config table"""
+    __tablename__ = 'agent_config'
     
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    nome = db.Column(db.Text, nullable=False)
-    modelo = db.Column(db.Text, nullable=False)
-    descricao = db.Column(db.Text)
-    instrucoes_personalidade = db.Column(db.Text)
-    temperatura = db.Column(db.Numeric(2, 1), default=0.7)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    instructions = db.Column(db.Text)
+    model = db.Column(db.String(100), default='gemini-2.0-flash')
+    temperature = db.Column(db.Float, default=0.7)
     max_tokens = db.Column(db.Integer, default=1000)
-    rotinas_ativas = db.Column(db.Boolean, default=True)
-    memorias_ativas = db.Column(db.Boolean, default=True)
-    midia_ativa = db.Column(db.Boolean, default=True)
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
-    atualizado_em = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    tools_enabled = db.Column(JSONB, default={'routines': True, 'memories': True, 'media': True})
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

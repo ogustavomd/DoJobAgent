@@ -432,18 +432,25 @@ def save_agent_config(config_data: dict) -> dict:
             'updated_at': datetime.utcnow().isoformat()
         }
         
-        # Check if a configuration already exists
-        existing_config = supabase.table('agent_config').select('id').limit(1).execute()
+        # Check if an active configuration already exists
+        existing_config = supabase.table('agent_config').select('id').eq('is_active', True).limit(1).execute()
         
         if existing_config.data:
-            # Update existing configuration
+            # Update existing active configuration
             config_id = existing_config.data[0]['id']
             response = supabase.table('agent_config').update(data_to_save).eq('id', config_id).execute()
             logging.info(f"Updated agent configuration with ID: {config_id}")
         else:
-            # Insert new configuration
-            response = supabase.table('agent_config').insert(data_to_save).execute()
-            logging.info("Created new agent configuration.")
+            # If no active config, check for any config to update
+            any_config = supabase.table('agent_config').select('id').limit(1).execute()
+            if any_config.data:
+                config_id = any_config.data[0]['id']
+                response = supabase.table('agent_config').update(data_to_save).eq('id', config_id).execute()
+                logging.info(f"Updated existing (but inactive) agent configuration with ID: {config_id}")
+            else:
+                # Insert new configuration
+                response = supabase.table('agent_config').insert(data_to_save).execute()
+                logging.info("Created new agent configuration.")
             
         return {'success': True, 'data': response.data[0]}
 
@@ -483,6 +490,26 @@ def get_default_config() -> dict:
             'media': True
         }
     }
+
+def get_all_agents() -> List[Dict[str, Any]]:
+    """Get all agent configurations from the agent_config table."""
+    try:
+        result = supabase.table('agent_config').select("id, name").execute()
+        return result.data or []
+    except Exception as e:
+        logging.error(f"Error loading all agent configurations: {e}")
+        return []
+
+def get_agent_config_by_id(agent_id: str) -> Optional[Dict[str, Any]]:
+    """Get agent configuration by ID."""
+    try:
+        result = supabase.table('agent_config').select("*").eq('id', agent_id).limit(1).execute()
+        if result.data:
+            return result.data[0]
+        return None
+    except Exception as e:
+        logging.error(f"Error loading agent configuration by ID: {e}")
+        return None
 
 
 # Memory management functions

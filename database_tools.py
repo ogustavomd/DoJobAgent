@@ -364,17 +364,13 @@ def get_active_agent_configuration() -> Dict[str, Any]:
         
         if config:
             config_data = {
-                'name': config.nome,
-                'model': config.modelo,
-                'description': config.descricao,
-                'instructions': config.instrucoes_personalidade,
-                'temperature': float(config.temperatura) if config.temperatura is not None else 0.7,
+                'name': config.name,
+                'model': config.model,
+                'description': config.description,
+                'instructions': config.instructions,
+                'temperature': float(config.temperature) if config.temperature is not None else 0.7,
                 'max_tokens': config.max_tokens if config.max_tokens is not None else 1000,
-                'tools_enabled': {
-                    'routines': config.rotinas_ativas,
-                    'memories': config.memorias_ativas,
-                    'media': config.midia_ativa
-                }
+                'tools_enabled': config.tools_enabled
             }
             logging.info("Agent configuration loaded from PostgreSQL database.")
             return config_data
