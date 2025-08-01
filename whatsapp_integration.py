@@ -339,9 +339,9 @@ class WhatsAppIntegrationManager:
                 )
                 
                 self.message_processor = WhatsAppMessageProcessor(self.evolution_client)
-                logging.info("Integração WhatsApp configurada")
+                logging.info("Integração WhatsApp configurada a partir de variáveis de ambiente.")
             else:
-                logging.warning("Configuração WhatsApp não encontrada")
+                logging.info("Variáveis de ambiente do WhatsApp não encontradas. A configuração pode ser feita pela UI.")
                 
         except Exception as e:
             logging.error(f"Erro ao carregar configuração WhatsApp: {e}")
