@@ -132,8 +132,8 @@ class DualDatabaseSync:
                 cursor.execute("""
                     INSERT INTO messages (
                         chat_session_id, sender_phone, sender_name, content, 
-                        message_type, media_url, is_from_bot
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        message_type, media_url, is_from_bot, user_id
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
                     message_data.get('chat_session_id'),
@@ -142,7 +142,8 @@ class DualDatabaseSync:
                     message_data['content'],
                     message_data.get('message_type', 'text'),
                     message_data.get('media_url'),
-                    message_data.get('is_from_bot', False)
+                    message_data.get('is_from_bot', False),
+                    message_data.get('user_id')
                 ))
                 
                 result = cursor.fetchone()
@@ -189,7 +190,8 @@ class DualDatabaseSync:
                         'content': message_data['content'],
                         'message_type': message_data.get('message_type', 'text'),
                         'media_url': message_data.get('media_url'),
-                        'is_from_bot': message_data.get('is_from_bot', False)
+                        'is_from_bot': message_data.get('is_from_bot', False),
+                        'user_id': message_data.get('user_id')
                     }
                     
                     result = self.supabase.table('messages').insert(supabase_message).execute()
