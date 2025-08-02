@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from functools import partial
 from google.adk.agents import LlmAgent
 from google.genai import types
 from database_tools import (get_anna_routines, get_anna_routine_media,
@@ -10,6 +11,7 @@ from database_tools import (get_anna_routines, get_anna_routine_media,
 
 
 def create_anna_agent(config: dict):
+    from app import db
     """Create and configure Anna agent using a configuration dictionary."""
     if not config:
         logging.error("Configuration dictionary is missing. Cannot create agent.")
@@ -25,17 +27,24 @@ def create_anna_agent(config: dict):
     # Get tools enabled settings
     tools_enabled = config.get('tools_enabled', {'routines': True, 'memories': True, 'media': True})
     
-    # Build tools list based on configuration
+    # Build tools list based on configuration, injecting the db dependency
     tools = []
     if tools_enabled.get('routines', True):
-        tools.extend([get_anna_routines, get_anna_routine_media])
+        tools.extend([
+            partial(get_anna_routines, db),
+            partial(get_anna_routine_media, db)
+        ])
     if tools_enabled.get('memories', True):
-        tools.extend([search_memories, get_recent_conversations, save_conversation_memory])
+        tools.extend([
+            partial(search_memories, db),
+            partial(get_recent_conversations, db),
+            partial(save_conversation_memory, db)
+        ])
     if tools_enabled.get('media', True):
-        tools.extend([search_content])
+        tools.extend([partial(search_content, db)])
     
     # Always include profile info
-    tools.append(get_profile_info)
+    tools.append(partial(get_profile_info, db))
     
     # Create the agent with tools from configuration
     agent = LlmAgent(

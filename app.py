@@ -184,11 +184,12 @@ def chat():
         return jsonify({'error': 'Internal server error'}), 500
 
 async def run_anna_agent(user_message: str, user_id: str, session_id: str, agent_id: str = None):
-    """Run Anna agent with the user message"""
+    """Run Anna agent with the user message, including proactive memory search."""
     try:
         from google.adk.runners import Runner
         from google.adk.sessions import InMemorySessionService
         from supabase_tools import get_agent_config_by_id
+        from database_tools import search_memories
 
         # Get agent configuration
         if agent_id:
@@ -204,6 +205,34 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str, agent
         # Create agent with the selected configuration
         agent_to_run = create_anna_agent(config)
         
+        # --- Proactive Memory Search ---
+        prompt_to_send = user_message
+        try:
+            search_result = search_memories(db, query_text=user_message, limit=5)
+
+            if search_result and search_result.get('success') and search_result.get('data'):
+                memories = search_result['data']
+                if memories:
+                    # Format memories into a string
+                    formatted_memories = "\n".join([f"- {mem['content']}" for mem in memories])
+
+                    # Construct a new prompt with memory context
+                    prompt_to_send = (
+                        "Com base nestas memórias relevantes do nosso histórico, responda à pergunta do usuário.\n"
+                        "--- Memórias Relevantes ---\n"
+                        f"{formatted_memories}\n"
+                        "---------------------------\n\n"
+                        f"Pergunta do Usuário: {user_message}"
+                    )
+                    agent_logger.info(f"Enriched prompt with {len(memories)} memories.")
+                else:
+                    agent_logger.info("No relevant memories found.")
+            else:
+                agent_logger.warning("Memory search failed or returned no data.")
+        except Exception as e:
+            agent_logger.error(f"Error during proactive memory search: {e}")
+        # --- End of Proactive Memory Search ---
+
         # Create session service and session
         session_service = InMemorySessionService()
         session_obj = await session_service.create_session(
@@ -219,9 +248,9 @@ async def run_anna_agent(user_message: str, user_id: str, session_id: str, agent
         runner = Runner(agent=agent_to_run, app_name="anna_chat", session_service=session_service)
         agent_logger.debug(f"Anna agent initialized for session {session_id} with agent {agent_to_run.name}")
         
-        # Create user content
-        content = Content(role='user', parts=[Part(text=user_message)])
-        agent_logger.debug(f"Processing user message: {user_message[:100]}...")
+        # Create user content with the (potentially enhanced) prompt
+        content = Content(role='user', parts=[Part(text=prompt_to_send)])
+        agent_logger.debug(f"Processing user message: {prompt_to_send[:150]}...")
         
         # Run agent and collect response
         events = runner.run_async(user_id=user_id, session_id=session_id, new_message=content)
