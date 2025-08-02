@@ -6,12 +6,14 @@ Replaces the Supabase functionality with PostgreSQL equivalents
 import logging
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Any
+from sqlalchemy.orm import Session
 
-def get_anna_routines(days_ahead: int = 7, status_filter: Optional[str] = None) -> Dict[str, Any]:
+def get_anna_routines(db: Session, days_ahead: int = 7, status_filter: Optional[str] = None) -> Dict[str, Any]:
     """
     Get Anna's routine activities for the specified number of days ahead.
     
     Args:
+        db: The SQLAlchemy session object.
         days_ahead: Number of days to look ahead (default 7)
         status_filter: Filter by status ('upcoming', 'current', 'completed') or None for all
     
@@ -20,22 +22,21 @@ def get_anna_routines(days_ahead: int = 7, status_filter: Optional[str] = None) 
     """
     try:
         from datetime import date
-        from app import db
-        from models import AnnaRoutine
+        from models import Routine
         
         today = date.today()
         end_date = today + timedelta(days=days_ahead)
         
         # Build query
-        query = db.session.query(AnnaRoutine).filter(
-            AnnaRoutine.date >= today.strftime('%Y-%m-%d'),
-            AnnaRoutine.date <= end_date.strftime('%Y-%m-%d')
+        query = db.session.query(Routine).filter(
+            Routine.date >= today.strftime('%Y-%m-%d'),
+            Routine.date <= end_date.strftime('%Y-%m-%d')
         )
         
         if status_filter:
-            query = query.filter(AnnaRoutine.status == status_filter)
+            query = query.filter(Routine.status == status_filter)
         
-        routines = query.order_by(AnnaRoutine.date, AnnaRoutine.time_start).all()
+        routines = query.order_by(Routine.date, Routine.time_start).all()
         
         # Convert to dictionaries
         routine_data = []
@@ -63,11 +64,12 @@ def get_anna_routines(days_ahead: int = 7, status_filter: Optional[str] = None) 
         logging.error(f"Error getting Anna's routines: {e}")
         return {'success': False, 'error': str(e)}
 
-def get_anna_routine_media(routine_id: Optional[int] = None, media_type: Optional[str] = None, limit: int = 20) -> Dict[str, Any]:
+def get_anna_routine_media(db: Session, routine_id: Optional[int] = None, media_type: Optional[str] = None, limit: int = 20) -> Dict[str, Any]:
     """
     Get media files associated with Anna's routines.
     
     Args:
+        db: The SQLAlchemy session object.
         routine_id: Specific routine ID or None for all
         media_type: Filter by type ('image', 'video') or None for all
         limit: Maximum number of media items to return
@@ -76,16 +78,18 @@ def get_anna_routine_media(routine_id: Optional[int] = None, media_type: Optiona
         Dictionary with success status and data
     """
     try:
+        from models import RoutineMedia
+
         # Build query
-        query = db.session.query(AnnaRoutineMedia)
+        query = db.session.query(RoutineMedia)
         
         if routine_id:
-            query = query.filter(AnnaRoutineMedia.routine_id == routine_id)
+            query = query.filter(RoutineMedia.routine_id == routine_id)
         
         if media_type:
-            query = query.filter(AnnaRoutineMedia.media_type == media_type)
+            query = query.filter(RoutineMedia.media_type == media_type)
         
-        media_items = query.order_by(AnnaRoutineMedia.created_at.desc()).limit(limit).all()
+        media_items = query.order_by(RoutineMedia.created_at.desc()).limit(limit).all()
         
         # Convert to dictionaries and include routine info
         media_data = []
@@ -117,11 +121,12 @@ def get_anna_routine_media(routine_id: Optional[int] = None, media_type: Optiona
         logging.error(f"Error getting routine media: {e}")
         return {'success': False, 'error': str(e)}
 
-def search_memories(query_text: str, limit: int = 10) -> Dict[str, Any]:
+def search_memories(db: Session, query_text: str, limit: int = 10) -> Dict[str, Any]:
     """
     Search Anna's memories for relevant content.
     
     Args:
+        db: The SQLAlchemy session object.
         query_text: Search term to find in memory content
         limit: Maximum number of results to return
     
@@ -129,17 +134,20 @@ def search_memories(query_text: str, limit: int = 10) -> Dict[str, Any]:
         Dictionary with success status and data
     """
     try:
+        from models import Memory
+        from sqlalchemy import and_, or_
+
         # Search in memory content using ILIKE for case-insensitive search
-        memories = db.session.query(AnnaMemory).filter(
+        memories = db.session.query(Memory).filter(
             and_(
-                AnnaMemory.is_active == True,
+                Memory.is_active == True,
                 or_(
-                    AnnaMemory.content.ilike(f'%{query_text}%'),
-                    AnnaMemory.context.ilike(f'%{query_text}%'),
-                    AnnaMemory.tags.ilike(f'%{query_text}%')
+                    Memory.content.ilike(f'%{query_text}%'),
+                    Memory.context.ilike(f'%{query_text}%'),
+                    Memory.tags.ilike(f'%{query_text}%')
                 )
             )
-        ).order_by(AnnaMemory.importance_score.desc(), AnnaMemory.created_at.desc()).limit(limit).all()
+        ).order_by(Memory.importance_score.desc(), Memory.created_at.desc()).limit(limit).all()
         
         # Convert to dictionaries
         memory_data = []
@@ -162,17 +170,20 @@ def search_memories(query_text: str, limit: int = 10) -> Dict[str, Any]:
         logging.error(f"Error searching memories: {e}")
         return {'success': False, 'error': str(e)}
 
-def get_recent_conversations(limit: int = 5) -> Dict[str, Any]:
+def get_recent_conversations(db: Session, limit: int = 5) -> Dict[str, Any]:
     """
     Get recent conversation messages.
     
     Args:
+        db: The SQLAlchemy session object.
         limit: Maximum number of conversations to return
     
     Returns:
         Dictionary with success status and data
     """
     try:
+        from models import Message
+
         messages = db.session.query(Message).order_by(
             Message.created_at.desc()
         ).limit(limit).all()
@@ -197,18 +208,23 @@ def get_recent_conversations(limit: int = 5) -> Dict[str, Any]:
         logging.error(f"Error getting recent conversations: {e}")
         return {'success': False, 'error': str(e)}
 
-def get_profile_info() -> Dict[str, Any]:
+def get_profile_info(db: Session) -> Dict[str, Any]:
     """
     Get Anna's profile information from recent activities and content.
     
+    Args:
+        db: The SQLAlchemy session object.
+
     Returns:
         Dictionary with success status and profile data
     """
     try:
+        from models import Routine
+
         # Get recent activities to build profile
-        recent_activities = db.session.query(AnnaRoutine).filter(
-            AnnaRoutine.date >= (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
-        ).order_by(AnnaRoutine.date.desc()).limit(20).all()
+        recent_activities = db.session.query(Routine).filter(
+            Routine.date >= (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+        ).order_by(Routine.date.desc()).limit(20).all()
         
         # Aggregate profile information
         categories = {}
@@ -235,11 +251,12 @@ def get_profile_info() -> Dict[str, Any]:
         logging.error(f"Error getting profile info: {e}")
         return {'success': False, 'error': str(e)}
 
-def search_content(query_text: str, content_type: Optional[str] = None, limit: int = 10) -> Dict[str, Any]:
+def search_content(db: Session, query_text: str, content_type: Optional[str] = None, limit: int = 10) -> Dict[str, Any]:
     """
     Search content across routines, media, and memories.
     
     Args:
+        db: The SQLAlchemy session object.
         query_text: Search term
         content_type: Filter by type ('routine', 'media', 'memory') or None for all
         limit: Maximum number of results per type
@@ -248,15 +265,18 @@ def search_content(query_text: str, content_type: Optional[str] = None, limit: i
         Dictionary with success status and combined search results
     """
     try:
+        from models import Routine, RoutineMedia, Memory
+        from sqlalchemy import and_, or_
+
         results = {}
         
         if not content_type or content_type == 'routine':
             # Search routines
-            routines = db.session.query(AnnaRoutine).filter(
+            routines = db.session.query(Routine).filter(
                 or_(
-                    AnnaRoutine.activity.ilike(f'%{query_text}%'),
-                    AnnaRoutine.description.ilike(f'%{query_text}%'),
-                    AnnaRoutine.location.ilike(f'%{query_text}%')
+                    Routine.activity.ilike(f'%{query_text}%'),
+                    Routine.description.ilike(f'%{query_text}%'),
+                    Routine.location.ilike(f'%{query_text}%')
                 )
             ).limit(limit).all()
             
@@ -271,8 +291,8 @@ def search_content(query_text: str, content_type: Optional[str] = None, limit: i
         
         if not content_type or content_type == 'media':
             # Search media
-            media = db.session.query(AnnaRoutineMedia).filter(
-                AnnaRoutineMedia.description.ilike(f'%{query_text}%')
+            media = db.session.query(RoutineMedia).filter(
+                RoutineMedia.description.ilike(f'%{query_text}%')
             ).limit(limit).all()
             
             results['media'] = [{
@@ -285,12 +305,12 @@ def search_content(query_text: str, content_type: Optional[str] = None, limit: i
         
         if not content_type or content_type == 'memory':
             # Search memories
-            memories = db.session.query(AnnaMemory).filter(
+            memories = db.session.query(Memory).filter(
                 and_(
-                    AnnaMemory.is_active == True,
+                    Memory.is_active == True,
                     or_(
-                        AnnaMemory.content.ilike(f'%{query_text}%'),
-                        AnnaMemory.context.ilike(f'%{query_text}%')
+                        Memory.content.ilike(f'%{query_text}%'),
+                        Memory.context.ilike(f'%{query_text}%')
                     )
                 )
             ).limit(limit).all()
@@ -311,11 +331,12 @@ def search_content(query_text: str, content_type: Optional[str] = None, limit: i
         logging.error(f"Error searching content: {e}")
         return {'success': False, 'error': str(e)}
 
-def save_conversation_memory(user_id: str, session_id: str, user_message: str, assistant_response: str, importance: int = 1) -> Dict[str, Any]:
+def save_conversation_memory(db: Session, user_id: str, session_id: str, user_message: str, assistant_response: str, importance: int = 1) -> Dict[str, Any]:
     """
     Save a conversation as a memory for future reference.
     
     Args:
+        db: The SQLAlchemy session object.
         user_id: User identifier
         session_id: Session identifier
         user_message: User's message
@@ -326,8 +347,10 @@ def save_conversation_memory(user_id: str, session_id: str, user_message: str, a
         Dictionary with success status
     """
     try:
+        from models import Memory
+
         # Create memory entry
-        memory = AnnaMemory(
+        memory = Memory(
             memory_type='conversation',
             content=f"User: {user_message}\nAnna: {assistant_response}",
             context=f"Session: {session_id}, User: {user_id}",
